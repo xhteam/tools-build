@@ -7,7 +7,6 @@ local.properties
 /build
 gradle/build
 tests/*/build
-tests/*/build
 tests/api/*/build
 tests/multiproject/*/build
 tests/tictactoe/*/build
