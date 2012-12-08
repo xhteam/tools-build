@@ -24,6 +24,7 @@ import com.google.common.collect.Sets;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -475,36 +476,50 @@ public class VariantConfiguration {
     }
 
     /**
-     * Returns the dynamic list of resource folders based on the configuration, its dependencies,
+     * Returns the dynamic list of resource sets based on the configuration, its dependencies,
      * as well as tested config if applicable (test of a library).
-     * @return a list of input resource folders.
+     *
+     * The list is a list of folders. Each list of folder represents a
+     * {@link com.android.builder.resources.ResourceSet}.
+     *
+     * The list is ordered in ascending order of importance, meaning the first set is meant to be
+     * overridden by the 2nd one and so on. This is meant to facilitate usage of the list in a
+     * {@link com.android.builder.resources.ResourceMerger}.
+     *
+     * @return a list of list of resource folders.
      */
-    public List<File> getResourceInputs() {
-        List<File> inputs = Lists.newArrayList();
+    @NonNull public List<List<File>> getResourceSets() {
+        List<List<File>> inputs = Lists.newArrayList();
+
+        // the list of dependency must be reversed to use the right overlay order.
+        for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
+            AndroidDependency dependency = mFlatLibraries.get(n);
+            File resFolder = dependency.getResFolder();
+            if (resFolder != null) {
+                inputs.add(Collections.singletonList(resFolder));
+            }
+        }
+
+        // TODO: fix when flavors and types have more than one folder.
+        File mainResLocation = mDefaultSourceProvider.getResourcesDir();
+        if (mainResLocation != null) {
+            inputs.add(Collections.singletonList(mainResLocation));
+        }
+
+        // the list of flavor must be reversed to use the right overlay order.
+        for (int n = mFlavorSourceProviders.size() - 1; n >= 0 ; n--) {
+            SourceProvider sourceProvider = mFlavorSourceProviders.get(n);
+
+            File flavorResLocation = sourceProvider.getResourcesDir();
+            if (flavorResLocation != null) {
+                inputs.add(Collections.singletonList(flavorResLocation));
+            }
+        }
 
         if (mBuildTypeSourceProvider != null) {
             File typeResLocation = mBuildTypeSourceProvider.getResourcesDir();
             if (typeResLocation != null) {
-                inputs.add(typeResLocation);
-            }
-        }
-
-        for (SourceProvider sourceProvider : mFlavorSourceProviders) {
-            File flavorResLocation = sourceProvider.getResourcesDir();
-            if (flavorResLocation != null) {
-                inputs.add(flavorResLocation);
-            }
-        }
-
-        File mainResLocation = mDefaultSourceProvider.getResourcesDir();
-        if (mainResLocation != null) {
-            inputs.add(mainResLocation);
-        }
-
-        for (AndroidDependency dependency : mFlatLibraries) {
-            File resFolder = dependency.getResFolder();
-            if (resFolder != null) {
-                inputs.add(resFolder);
+                inputs.add(Collections.singletonList(typeResLocation));
             }
         }
 

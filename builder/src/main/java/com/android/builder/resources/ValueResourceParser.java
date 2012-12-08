@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static com.android.SdkConstants.ATTR_NAME;
@@ -51,11 +52,12 @@ class ValueResourceParser {
     List<Resource> parseFile() throws FileNotFoundException {
         Document document = parseDocument();
 
-        NodeList nodes = document.getChildNodes();
-
         // get the root node
-        Node rootNode = nodes.item(0);
-        nodes = rootNode.getChildNodes();
+        Node rootNode = document.getDocumentElement();
+        if (rootNode == null) {
+            return Collections.emptyList();
+        }
+        NodeList nodes = rootNode.getChildNodes();
 
         List<Resource> resources = Lists.newArrayListWithExpectedSize(nodes.getLength());
 

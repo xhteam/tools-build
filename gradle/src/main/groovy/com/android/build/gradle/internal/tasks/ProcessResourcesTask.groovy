@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.internal.AaptOptionsImpl
 import com.android.build.gradle.tasks.ProcessResources
 import com.android.builder.SymbolFileProvider
 import com.android.builder.VariantConfiguration
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 
 public class ProcessResourcesTask extends ProcessResources {
-
-    @InputFiles
-    Iterable<File> resDirectories
 
     @InputDirectory @Optional
     File assetsDir
@@ -54,8 +49,7 @@ public class ProcessResourcesTask extends ProcessResources {
 
         getBuilder().processResources(
                 getManifestFile(),
-                getPreprocessResDir(),
-                getResDirectories(),
+                getMergedResFolder(),
                 getAssetsDir(),
                 getLibraries(),
                 getPackageOverride(),

@@ -34,7 +34,7 @@ import com.android.build.gradle.internal.tasks.InstallTask
 import com.android.build.gradle.internal.tasks.PackageApplicationTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.PrepareLibraryTask
-import com.android.build.gradle.internal.tasks.ProcessImagesTask
+import com.android.build.gradle.internal.tasks.MergeResourcesTask
 import com.android.build.gradle.internal.tasks.ProcessManifestTask
 import com.android.build.gradle.internal.tasks.ProcessResourcesTask
 import com.android.build.gradle.internal.tasks.ProcessTestManifestTask
@@ -303,16 +303,25 @@ public abstract class BasePlugin {
         }
     }
 
-    protected void createProcessImagesTask(ApplicationVariant variant) {
-        def processImagesTask = project.tasks.add("process${variant.name}Images", ProcessImagesTask)
-        variant.processImagesTask = processImagesTask
+    protected void createMergeResourcesTask(ApplicationVariant variant) {
+        createMergeResourcesTask(variant, "$project.buildDir/res/$variant.dirName")
+    }
 
-        processImagesTask.plugin = this
-        processImagesTask.variant = variant
+    protected void createMergeResourcesTask(ApplicationVariant variant, String location) {
+        def mergeResourcesTask = project.tasks.add("merge${variant.name}Resources",
+                MergeResourcesTask)
+        variant.mergeResourcesTask = mergeResourcesTask
 
-        processImagesTask.conventionMapping.resDirectories = { variant.config.resourceInputs }
-        processImagesTask.conventionMapping.outputDir = {
-            project.file("$project.buildDir/res/$variant.dirName")
+        mergeResourcesTask.plugin = this
+        mergeResourcesTask.variant = variant
+
+        mergeResourcesTask.conventionMapping.inputResourceSets = { variant.config.resourceSets }
+        mergeResourcesTask.conventionMapping.rawInputFolders = {
+            MergeResourcesTask.inlineInputs(variant.config.resourceSets)
+        }
+
+        mergeResourcesTask.conventionMapping.outputDir = {
+            project.file(location)
         }
     }
 
@@ -347,9 +356,10 @@ public abstract class BasePlugin {
     }
 
     protected void createProcessResTask(ApplicationVariant variant) {
-        def processResources = project.tasks.add("process${variant.name}Res", ProcessResourcesTask)
+        def processResources = project.tasks.add("process${variant.name}Resources",
+                ProcessResourcesTask)
         variant.processResourcesTask = processResources
-        processResources.dependsOn variant.processManifestTask
+        processResources.dependsOn variant.processManifestTask, variant.mergeResourcesTask
 
         processResources.plugin = this
         processResources.variant = variant
@@ -360,17 +370,8 @@ public abstract class BasePlugin {
             variant.processManifestTask.outManifest
         }
 
-        if (variant.processImagesTask != null) {
-            processResources.dependsOn variant.processImagesTask
-
-            processResources.conventionMapping.preprocessResDir = {
-                variant.processImagesTask.outputDir
-            }
-            processResources.conventionMapping.resDirectories = {
-                variant.processImagesTask.resDirectories
-            }
-        } else {
-            processResources.conventionMapping.resDirectories = { config.resourceInputs }
+        processResources.conventionMapping.mergedResFolder = {
+            variant.mergeResourcesTask.outputDir
         }
 
         processResources.conventionMapping.assetsDir =  {
@@ -520,14 +521,14 @@ public abstract class BasePlugin {
         // Add a task to process the manifest
         createProcessTestManifestTask(variant, "manifests")
 
-        // Add a task to crunch resource files
-        createProcessImagesTask(variant)
+        // Add a task to merge the resource folders
+        createMergeResourcesTask(variant)
 
         if (testedVariant.config.type == VariantConfiguration.Type.LIBRARY) {
             // in this case the tested library must be fully built before test can be built!
             if (testedVariant.assembleTask != null) {
                 variant.processManifestTask.dependsOn testedVariant.assembleTask
-                variant.processImagesTask.dependsOn testedVariant.assembleTask
+                variant.mergeResourcesTask.dependsOn testedVariant.assembleTask
             }
         }
 

@@ -70,7 +70,7 @@ public class LibraryPluginDslTest extends BaseTest {
     private void checkTestTasks(BuildVariant variant) {
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
-        assertNotNull(variant.processImages)
+        assertNotNull(variant.mergeResources)
         assertNotNull(variant.processResources)
         assertNotNull(variant.generateBuildConfig)
         assertNotNull(variant.javaCompile)

@@ -21,7 +21,7 @@ import com.android.build.gradle.internal.tasks.DexTask
 import com.android.build.gradle.internal.tasks.GenerateBuildConfigTask
 import com.android.build.gradle.internal.tasks.PackageApplicationTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
-import com.android.build.gradle.internal.tasks.ProcessImagesTask
+import com.android.build.gradle.internal.tasks.MergeResourcesTask
 import com.android.build.gradle.internal.tasks.ProcessResourcesTask
 import com.android.build.gradle.internal.tasks.RunTestsTask
 import com.android.build.gradle.internal.tasks.ZipAlignTask
@@ -45,7 +45,7 @@ public abstract class ApplicationVariant {
 
     ProcessManifest processManifestTask
     AidlCompileTask aidlCompileTask
-    ProcessImagesTask processImagesTask
+    MergeResourcesTask mergeResourcesTask
     ProcessResourcesTask processResourcesTask
     GenerateBuildConfigTask generateBuildConfigTask
 

@@ -35,6 +35,9 @@ import com.android.builder.internal.signing.SigningInfo;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
+import com.android.builder.resources.DuplicateResourceException;
+import com.android.builder.resources.ResourceMerger;
+import com.android.builder.resources.ResourceSet;
 import com.android.manifmerger.ManifestMerger;
 import com.android.manifmerger.MergerLog;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
@@ -69,7 +72,7 @@ import static com.google.common.base.Preconditions.checkState;
  * {@link #generateBuildConfig(String, boolean, java.util.List, String)}
  * {@link #processManifest(java.io.File, java.util.List, java.util.List, int, String, int, int, String)}
  * {@link #processTestManifest(String, int, String, String, java.util.List, String)}
- * {@link #processResources(java.io.File, java.io.File, Iterable, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
+ * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
  * {@link #compileAidl(java.util.List, java.io.File, java.util.List)}
  * {@link #convertByteCode(Iterable, Iterable, String, DexOptions)}
  * {@link #packageApk(String, String, java.util.List, String, String, boolean, boolean, String, String, String, String, String)}
@@ -192,56 +195,48 @@ public class AndroidBuilder {
     }
 
     /**
-     * Process the images. This optimize the bitmaps and pre-processes the 9-patch files before
-     * they can be packaged.
+     * Merge resources together so that they can be fed to aapt.
+     *
+     * This also pre-processes the images (crunches the pngs and processes the 9 patch files)
      * This is incremental.
      *
      * @param resOutputDir where the processed resources are stored.
-     * @param inputs the input res folders
+     * @param inputFolders the input resource folders
+     * @throws DuplicateResourceException
      * @throws IOException
-     * @throws InterruptedException
      */
-    public void processImages(@NonNull String resOutputDir, List<File> inputs)
-            throws IOException, InterruptedException {
+    public void mergeResources(@NonNull String resOutputDir, @Nullable List<List<File>> inputFolders)
+            throws DuplicateResourceException, IOException {
         checkState(mTarget != null, "Target not set.");
         checkNotNull(resOutputDir, "resOutputDir cannot be null.");
 
-        if (inputs == null || inputs.isEmpty()) {
+        if (inputFolders == null || inputFolders.isEmpty()) {
             return;
         }
 
-        // launch aapt: create the command line
-        ArrayList<String> command = Lists.newArrayList();
+        ResourceMerger merger = new ResourceMerger();
 
-        @SuppressWarnings("deprecation")
-        String aaptPath = mTarget.getPath(IAndroidTarget.AAPT);
+        boolean runMerger = false;
 
-        command.add(aaptPath);
-        command.add("crunch");
+        for (List<File> setFolders : inputFolders) {
+            // create a set and add all the folders from the list to it.
+            ResourceSet set = new ResourceSet();
+            for (File folder : setFolders) {
+                if (folder.isDirectory()) {
+                    set.addSource(folder);
+                }
+            }
 
-        if (mVerboseExec) {
-            command.add("-v");
-        }
-
-        boolean runCommand = false;
-        for (File input : inputs) {
-            if (input.isDirectory()) {
-                command.add("-S");
-                command.add(input.getAbsolutePath());
-                runCommand = true;
+            if (!set.isEmpty()) {
+                merger.addResourceSet(set);
+                runMerger = true;
             }
         }
 
-        if (!runCommand) {
-            return;
+        if (runMerger) {
+            ResourceSet mergedSet = merger.getMergedSet();
+            mergedSet.writeTo(new File(resOutputDir));
         }
-
-        command.add("-C");
-        command.add(resOutputDir);
-
-        mLogger.info("processImages command: %s", command.toString());
-
-        mCmdLineRunner.runCmdLine(command);
     }
 
     /**
@@ -497,9 +492,8 @@ public class AndroidBuilder {
      * TODO support 2+ assets folders.
      *
      * @param manifestFile the location of the manifest file
-     * @param preprocessResDir the pre-processed folder
-     * @param resInputs the res folder inputs
-     * @param assetsDir the main asset folder
+     * @param resFolder the merged res folder
+     * @param assetsDir the merged asset folder
      * @param libraries the flat list of libraries
      * @param sourceOutputDir optional source folder to generate R.java
      * @param resPackageOutput optional filepath for packaged resources
@@ -514,8 +508,7 @@ public class AndroidBuilder {
      */
     public void processResources(
             @NonNull  File manifestFile,
-            @Nullable File preprocessResDir,
-            @NonNull  Iterable<File> resInputs,
+            @NonNull  File resFolder,
             @Nullable File assetsDir,
             @NonNull  List<SymbolFileProvider> libraries,
             @Nullable String packageOverride,
@@ -530,7 +523,7 @@ public class AndroidBuilder {
 
         checkState(mTarget != null, "Target not set.");
         checkNotNull(manifestFile, "manifestFile cannot be null.");
-        checkNotNull(resInputs, "resInputs cannot be null.");
+        checkNotNull(resFolder, "resFolder cannot be null.");
         checkNotNull(libraries, "libraries cannot be null.");
         checkNotNull(options, "options cannot be null.");
         // if both output types are empty, then there's nothing to do and this is an error
@@ -551,7 +544,9 @@ public class AndroidBuilder {
         }
 
         command.add("-f");
-        command.add("--no-crunch");
+
+        //TODO: reenable when we can crunch per-file in the ResourceMerger
+        // command.add("--no-crunch");
 
         // inputs
         command.add("-I");
@@ -560,30 +555,10 @@ public class AndroidBuilder {
         command.add("-M");
         command.add(manifestFile.getAbsolutePath());
 
-        if (preprocessResDir != null && preprocessResDir.isDirectory()) {
+        if (resFolder.isDirectory()) {
             command.add("-S");
-            command.add(preprocessResDir.getAbsolutePath());
+            command.add(resFolder.getAbsolutePath());
         }
-
-        for (File resFolder : resInputs) {
-            if (resFolder.isDirectory()) {
-                command.add("-S");
-                command.add(resFolder.getAbsolutePath());
-            }
-        }
-
-        command.add("--auto-add-overlay");
-
-
-//        if (typeAssetsLocation != null) {
-//            command.add("-A");
-//            command.add(typeAssetsLocation);
-//        }
-//
-//        if (flavorAssetsLocation != null) {
-//            command.add("-A");
-//            command.add(flavorAssetsLocation);
-//        }
 
         if (assetsDir != null && assetsDir.isDirectory()) {
             command.add("-A");
