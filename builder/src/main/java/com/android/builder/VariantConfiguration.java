@@ -399,6 +399,28 @@ public class VariantConfiguration {
         return packageName;
     }
 
+    /**
+     * Returns the version name for this variant. This could be coming from the manifest or
+     * could be overridden through the product flavors, and can have a suffix specified by
+     * the build type.
+     *
+     * @return the version name
+     */
+    public String getVersionName() {
+        String versionName = mMergedFlavor.getVersionName();
+        String versionSuffix = mBuildType.getVersionNameSuffix();
+
+        if (versionSuffix != null && versionSuffix.length() > 0) {
+            if (versionName == null) {
+                versionName = getVersionNameFromManifest();
+            }
+
+            versionName = versionName + versionSuffix;
+        }
+
+        return versionName;
+    }
+
     private final static String DEFAULT_TEST_RUNNER = "android.test.InstrumentationTestRunner";
 
     /**
@@ -421,6 +443,14 @@ public class VariantConfiguration {
     public String getPackageFromManifest() {
         File manifestLocation = mDefaultSourceProvider.getManifestFile();
         return sManifestParser.getPackage(manifestLocation);
+    }
+
+    /**
+     * Reads the version name from the manifest.
+     */
+    public String getVersionNameFromManifest() {
+        File manifestLocation = mDefaultSourceProvider.getManifestFile();
+        return sManifestParser.getVersionName(manifestLocation);
     }
 
     /**

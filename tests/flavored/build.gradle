@@ -30,10 +30,12 @@ android {
     productFlavors {
         f1 {
             packageName = "com.android.tests.flavored.f1"
+            versionName = "1.0.0-f1"
             buildConfig "private final static String FLAVOR = \"f1\";"
         }
         f2 {
             packageName = "com.android.tests.flavored.f2"
+            versionName = "1.0.0-f2"
             buildConfig "private final static String FLAVOR = \"f2\";"
         }
     }
@@ -41,10 +43,12 @@ android {
     buildTypes {
         debug {
             packageNameSuffix = ".debug"
+            versionNameSuffix = ".D"
             buildConfig "private final static boolean DEBUG2 = false;"
         }
         staging {
             packageNameSuffix = ".staging"
+            versionNameSuffix = ".S"
             debugSigned = true
         }
     }

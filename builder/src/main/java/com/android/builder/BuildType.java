@@ -31,6 +31,7 @@ public class BuildType extends BuildConfig {
     private boolean mDebugJniBuild;
     private boolean mDebugSigned;
     private String mPackageNameSuffix = null;
+    private String mVersionNameSuffix = null;
     private boolean mRunProguard = false;
 
     private boolean mZipAlign = true;
@@ -97,6 +98,15 @@ public class BuildType extends BuildConfig {
         return mPackageNameSuffix;
     }
 
+    public BuildType setVersionNameSuffix(@Nullable String versionNameSuffix) {
+        mVersionNameSuffix = versionNameSuffix;
+        return this;
+    }
+
+    @Nullable public String getVersionNameSuffix() {
+        return mVersionNameSuffix;
+    }
+
     public BuildType setRunProguard(boolean runProguard) {
         mRunProguard = runProguard;
         return this;
@@ -133,6 +143,10 @@ public class BuildType extends BuildConfig {
                 !mPackageNameSuffix.equals(buildType.mPackageNameSuffix) :
                 buildType.mPackageNameSuffix != null)
             return false;
+        if (mVersionNameSuffix != null ?
+                !mVersionNameSuffix.equals(buildType.mVersionNameSuffix) :
+                buildType.mVersionNameSuffix != null)
+            return false;
 
         return true;
     }
@@ -145,6 +159,7 @@ public class BuildType extends BuildConfig {
         result = 31 * result + (mDebugJniBuild ? 1 : 0);
         result = 31 * result + (mDebugSigned ? 1 : 0);
         result = 31 * result + (mPackageNameSuffix != null ? mPackageNameSuffix.hashCode() : 0);
+        result = 31 * result + (mVersionNameSuffix != null ? mVersionNameSuffix.hashCode() : 0);
         result = 31 * result + (mRunProguard ? 1 : 0);
         result = 31 * result + (mZipAlign ? 1 : 0);
         return result;
@@ -158,6 +173,7 @@ public class BuildType extends BuildConfig {
                 .add("debugJniBuild", mDebugJniBuild)
                 .add("debugSigned", mDebugSigned)
                 .add("packageNameSuffix", mPackageNameSuffix)
+                .add("versionNameSuffix", mVersionNameSuffix)
                 .add("runProguard", mRunProguard)
                 .add("zipAlign", mZipAlign)
                 .omitNullValues()

@@ -32,11 +32,27 @@ import java.io.FileNotFoundException;
 public class DefaultManifestParser implements ManifestParser {
 
     @Override
-    public String getPackage(File manifestFile) {
+    public String getPackage(@NonNull File manifestFile) {
         XPath xpath = AndroidXPathFactory.newXPath();
 
         try {
             return xpath.evaluate("/manifest/@package",
+                    new InputSource(new FileInputStream(manifestFile)));
+        } catch (XPathExpressionException e) {
+            // won't happen.
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    @Override
+    public String getVersionName(@NonNull File manifestFile) {
+        XPath xpath = AndroidXPathFactory.newXPath();
+
+        try {
+            return xpath.evaluate("/manifest/@android:versionName",
                     new InputSource(new FileInputStream(manifestFile)));
         } catch (XPathExpressionException e) {
             // won't happen.
