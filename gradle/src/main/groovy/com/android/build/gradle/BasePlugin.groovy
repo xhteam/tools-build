@@ -75,12 +75,16 @@ import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.tooling.BuildException
 import org.gradle.util.GUtil
 
 /**
  * Base class for all Android plugins
  */
 public abstract class BasePlugin {
+
+    public final static String GRADLE_VERSION = "1.3";
+
 
     public final static String INSTALL_GROUP = "Install"
     protected static File TEST_SDK_DIR;
@@ -117,6 +121,14 @@ public abstract class BasePlugin {
 
     protected void apply(Project project) {
         this.project = project
+
+        if (!project.getGradle().gradleVersion.startsWith(GRADLE_VERSION)) {
+            throw new BuildException(
+                    String.format(
+                            "Gradle version %s is required. Current version is %s",
+                            GRADLE_VERSION, project.getGradle().gradleVersion), null);
+        }
+
         project.apply plugin: JavaBasePlugin
 
         project.tasks.assemble.description =
@@ -795,7 +807,7 @@ public abstract class BasePlugin {
         List<AndroidDependency> bundles = []
         List<JarDependency> jars = []
         collectArtifacts(compileClasspath, artifacts)
-        compileClasspath.resolvedConfiguration.resolutionResult.root.dependencies.each { ResolvedDependencyResult dep ->
+        compileClasspath.incoming.resolutionResult.root.dependencies.each { ResolvedDependencyResult dep ->
             addDependency(dep.selected, configDependencies, bundles, jars, modules,
                     artifacts, reverseMap)
         }

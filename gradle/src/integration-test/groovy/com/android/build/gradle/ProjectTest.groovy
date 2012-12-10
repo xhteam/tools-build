@@ -152,7 +152,7 @@ class ProjectTest extends BaseTest {
             GradleConnector connector = GradleConnector.newConnector()
 
             ProjectConnection connection = connector
-                    .useGradleVersion("1.2")
+                    .useGradleVersion(BasePlugin.GRADLE_VERSION)
                     .forProjectDirectory(project)
                     .connect()
 
