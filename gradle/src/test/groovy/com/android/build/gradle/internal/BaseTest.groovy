@@ -58,6 +58,14 @@ public abstract class BaseTest extends TestCase {
      * @return
      */
     protected File getSdkDir() {
+        String androidHome = System.getenv("ANDROID_HOME");
+        if (androidHome != null) {
+            File f = new File(androidHome);
+            if (f.isDirectory()) {
+                return f;
+            }
+        }
+
         // get the gradle project root dir.
         File rootDir = getRootDir()
 
@@ -65,7 +73,8 @@ public abstract class BaseTest extends TestCase {
         File androidRootDir = rootDir.getParentFile().getParentFile()
 
         // get the sdk folder
-        File sdk = new File(androidRootDir, "out" + File.separatorChar + "host" + File.separatorChar + "darwin-x86" + File.separatorChar + "sdk")
+        String outFolder = "out" + File.separatorChar + "host" + File.separatorChar + "darwin-x86" + File.separatorChar + "sdk";
+        File sdk = new File(androidRootDir, outFolder)
 
         File[] files = sdk.listFiles(new FilenameFilter() {
 
@@ -75,8 +84,13 @@ public abstract class BaseTest extends TestCase {
             }
         })
 
-        if (files.length == 1) {
+        if (files != null && files.length == 1) {
             return files[0]
         }
+
+        fail(String.format(
+                "Failed to find a valid SDK. Make sure %s is present at the root of the Android tree, or that ANDROID_HOME is defined.",
+                outFolder))
+        return null
     }
 }
