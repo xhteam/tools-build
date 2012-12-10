@@ -18,14 +18,136 @@ package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.internal.ApplicationVariant
 import com.android.builder.AndroidBuilder
+import com.android.builder.internal.incremental.ChangeManager
+import com.android.builder.resources.FileStatus
+import com.android.builder.resources.SourceSet
+import com.google.common.collect.Lists
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.TaskInputs
 
 public abstract class BaseTask extends DefaultTask {
 
     BasePlugin plugin
     ApplicationVariant variant
 
+    @OutputDirectory @Optional
+    File incrementalFolder
+
+    private Map<File, FileStatus> sEmptyMap = Collections.emptyMap()
+
     protected AndroidBuilder getBuilder() {
-        return plugin.getAndroidBuilder(variant);
+        return plugin.getAndroidBuilder(variant)
+    }
+
+    /**
+     * Whether this task can support incremental update using the {@link ChangeManager}
+     *
+     * @return whether this task can support incremental update.
+     */
+    protected boolean isIncremental() {
+        return false
+    }
+
+    /**
+     * Actual task action. This is called when a full run is needed, which is always the case if
+     * {@link #isIncremental()} returns false.
+     *
+     */
+    protected abstract void doFullTaskAction();
+
+    /**
+     * Optional incremental task action.
+     * Only used if {@link #isIncremental()} returns true.
+     *
+     * @param changedInputs the changed input files.
+     * @param changedOutputs the changed output files.
+     */
+    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs,
+                                           Map<File, FileStatus> changedOutputs) {
+        // do nothing.
+    }
+
+    protected Collection<File> getOutputForIncrementalBuild() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Actual entry point for the action.
+     * Calls out to the doTaskAction as needed.
+     */
+    @TaskAction
+    void taskAction() {
+        if (!isIncremental() || incrementalFolder == null) {
+            doFullTaskAction()
+            return;
+        }
+
+        // load known state.
+        ChangeManager changeManager = new ChangeManager()
+        boolean fullBuild = !changeManager.load(incrementalFolder)
+
+        // update with current files.
+        TaskInputs inputs = getInputs()
+        FileCollection inputCollection = inputs.getFiles()
+
+        for (File f : inputCollection.files) {
+            changeManager.addInput(f)
+        }
+
+        for (File f : getOutputForIncrementalBuild()) {
+            changeManager.addOutput(f);
+        }
+
+        try {
+            // force full build if output changed somehow.
+            Map<File, FileStatus> changedOutputs = changeManager.getChangedOutputs()
+            Map<File, FileStatus> changedInputs = changeManager.getChangedInputs()
+            if (fullBuild) {
+                project.logger.info("No incremental data: full task run")
+                doFullTaskAction();
+            } else if (!changedOutputs.isEmpty()) {
+                for (File f : changedOutputs.keySet()) {
+                    project.logger.info(">> " + f)
+                }
+                project.logger.info("Changed output: full task run")
+
+                doFullTaskAction();
+            } else if (changedInputs.isEmpty() && changedOutputs.isEmpty()) {
+                // both input and output are empty, this is something we don't control
+                // through files, just do a full run
+                project.logger.info("Changed non file input/output: full task run")
+                doFullTaskAction()
+            } else {
+                doIncrementalTaskAction(
+                        changeManager.getChangedInputs(), changeManager.getChangedOutputs())
+            }
+
+            // update the outputs post task-action, to record their state
+            // for the next run
+            changeManager.updateOutputs(getOutputForIncrementalBuild())
+
+            // write the result down to be used next time the task is run.
+            changeManager.write(incrementalFolder)
+        } catch (Exception e) {
+            // Easiest to do here, is to delete the incremental Data so that
+            // next run is full.
+            ChangeManager.delete(incrementalFolder)
+
+            throw e
+        }
+    }
+
+    public static List<File> flattenSourceSets(List<? extends SourceSet> resourceSets) {
+        List<File> list = Lists.newArrayList();
+
+        for (SourceSet sourceSet : resourceSets) {
+            list.addAll(sourceSet.sourceFiles)
+        }
+
+        return list;
     }
 }

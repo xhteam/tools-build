@@ -35,6 +35,7 @@ public class VariantConfigurationTest extends TestCase {
             mPackageName = packageName;
         }
 
+        @Override
         public String getPackage(File manifestFile) {
             return mPackageName;
         }
@@ -44,6 +45,7 @@ public class VariantConfigurationTest extends TestCase {
             return 0;
         }
 
+        @Override
         public String getVersionName(File manifestFile) {
             return "1.0";
         }

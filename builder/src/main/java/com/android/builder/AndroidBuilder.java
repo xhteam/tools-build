@@ -35,9 +35,6 @@ import com.android.builder.internal.signing.SigningInfo;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
-import com.android.builder.resources.DuplicateResourceException;
-import com.android.builder.resources.ResourceMerger;
-import com.android.builder.resources.ResourceSet;
 import com.android.manifmerger.ManifestMerger;
 import com.android.manifmerger.MergerLog;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
@@ -192,51 +189,6 @@ public class AndroidBuilder {
         BuildConfigGenerator generator = new BuildConfigGenerator(
                 sourceOutputDir, packageName, debuggable);
         generator.generate(javaLines);
-    }
-
-    /**
-     * Merge resources together so that they can be fed to aapt.
-     *
-     * This also pre-processes the images (crunches the pngs and processes the 9 patch files)
-     * This is incremental.
-     *
-     * @param resOutputDir where the processed resources are stored.
-     * @param inputFolders the input resource folders
-     * @throws DuplicateResourceException
-     * @throws IOException
-     */
-    public void mergeResources(@NonNull String resOutputDir, @Nullable List<List<File>> inputFolders)
-            throws DuplicateResourceException, IOException {
-        checkState(mTarget != null, "Target not set.");
-        checkNotNull(resOutputDir, "resOutputDir cannot be null.");
-
-        if (inputFolders == null || inputFolders.isEmpty()) {
-            return;
-        }
-
-        ResourceMerger merger = new ResourceMerger();
-
-        boolean runMerger = false;
-
-        for (List<File> setFolders : inputFolders) {
-            // create a set and add all the folders from the list to it.
-            ResourceSet set = new ResourceSet();
-            for (File folder : setFolders) {
-                if (folder.isDirectory()) {
-                    set.addSource(folder);
-                }
-            }
-
-            if (!set.isEmpty()) {
-                merger.addResourceSet(set);
-                runMerger = true;
-            }
-        }
-
-        if (runMerger) {
-            ResourceSet mergedSet = merger.getMergedSet();
-            mergedSet.writeTo(new File(resOutputDir));
-        }
     }
 
     /**

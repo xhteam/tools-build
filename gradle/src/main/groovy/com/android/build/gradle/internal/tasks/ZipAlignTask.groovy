@@ -25,7 +25,7 @@ public class ZipAlignTask extends ZipAlign {
     File sdkDir
 
     @TaskAction
-    void generate() {
+    void zipAlign() {
         project.exec {
             executable = new File(getSdkDir(), "tools${File.separator}zipalign")
             args '-f', '4'

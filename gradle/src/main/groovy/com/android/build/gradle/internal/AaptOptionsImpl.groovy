@@ -29,7 +29,7 @@ public class AaptOptionsImpl implements AaptOptions {
     private List<String> noCompressList
 
     public void setIgnoreAssetsPattern(String ignoreAssetsPattern) {
-        ignoreAssetsPattern = ignoreAssetsPattern
+        this.ignoreAssetsPattern = ignoreAssetsPattern
     }
 
     @Override

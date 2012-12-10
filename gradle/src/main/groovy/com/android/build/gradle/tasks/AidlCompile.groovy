@@ -21,7 +21,7 @@ import org.gradle.api.tasks.OutputDirectory
 
 /**
  */
-public class AidlCompile extends BaseTask {
+public abstract class AidlCompile extends BaseTask {
 
     @OutputDirectory
     File sourceOutputDir

@@ -18,7 +18,7 @@ package com.android.build.gradle.tasks
 import com.android.build.gradle.internal.tasks.BaseTask
 import org.gradle.api.tasks.OutputDirectory
 
-class MergeResources extends BaseTask {
+abstract class MergeResources extends BaseTask {
 
     @OutputDirectory
     File outputDir

@@ -72,7 +72,7 @@ class ProjectTest extends BaseTest {
         buildProject("flavors")
     }
 
-    void testlibsTest() {
+    void testLibsTest() {
         buildProject("libsTest")
     }
 
@@ -84,7 +84,7 @@ class ProjectTest extends BaseTest {
         buildProject("multiproject")
     }
 
-    void testMultires() {
+    void testMultiRes() {
         buildProject("multires")
     }
 
@@ -120,8 +120,8 @@ class ProjectTest extends BaseTest {
             buildProject(new File(repo, "app"), "clean", "assemble")
         } finally {
             // clean up the test repository.
-            File testrepo = new File(repo, "testrepo")
-            testrepo.deleteDir()
+            File testRepo = new File(repo, "testrepo")
+            testRepo.deleteDir()
         }
     }
 
@@ -133,6 +133,9 @@ class ProjectTest extends BaseTest {
         File[] projects = testDir.listFiles()
         for (File project : projects) {
             String name = project.name
+            if (name.startsWith(".")) {
+                continue
+            }
             if (!builtProjects.contains(name)) {
                 buildProject(name)
             }
@@ -143,7 +146,7 @@ class ProjectTest extends BaseTest {
         File project = new File(testDir, name)
         builtProjects.add(name)
 
-        buildProject(project, "clean", "assemble")
+        buildProject(project, "clean", "assembleDebug")
 
         return project;
     }

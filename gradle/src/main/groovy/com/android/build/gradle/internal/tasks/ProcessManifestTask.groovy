@@ -22,7 +22,6 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.TaskAction
 
 /**
  */
@@ -49,8 +48,8 @@ public class ProcessManifestTask extends ProcessManifest {
     @Input
     int targetSdkVersion
 
-    @TaskAction
-    void generate() {
+    @Override
+    protected void doFullTaskAction() {
         getBuilder().processManifest(
                 getMainManifest(),
                 getManifestOverlays(),

@@ -14,12 +14,10 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.tasks.Dex
 import com.android.builder.DexOptions
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.TaskAction
 
 public class DexTask extends Dex {
 
@@ -32,8 +30,8 @@ public class DexTask extends Dex {
     @Nested
     DexOptions dexOptions
 
-    @TaskAction
-    void generate() {
+    @Override
+    protected void doFullTaskAction() {
         getBuilder().convertByteCode(
                 getSourceFiles(),
                 getLibraries(),

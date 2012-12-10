@@ -16,10 +16,12 @@
 
 package com.android.builder.resources;
 
+import com.google.common.collect.ListMultimap;
 import junit.framework.TestCase;
 
 import java.io.File;
-import java.util.Map;
+import java.io.IOException;
+import java.util.List;
 
 public abstract class BaseTestCase extends TestCase {
 
@@ -31,11 +33,48 @@ public abstract class BaseTestCase extends TestCase {
         return root;
     }
 
-    protected void verifyResources(ResourceSet resourceSet, String... resourceKeys) {
-        Map<String, Resource> map = resourceSet.getResourceMap();
+    protected static File getCanonicalRoot(String name) throws IOException {
+        File root = getRoot(name);
+        return root.getCanonicalFile();
+    }
 
-        for (String res : resourceKeys) {
-            assertNotNull("resource '" + res + "' is missing!", map.get(res));
+    protected void verifyResourceExists(ResourceMap resourceMap, String... resourceKeys) {
+        ListMultimap<String, Resource> map = resourceMap.getResourceMap();
+
+        for (String resKey : resourceKeys) {
+            List<Resource> resources = map.get(resKey);
+            assertTrue("resource '" + resKey + "' is missing!", resources.size() > 0);
+        }
+    }
+
+    /**
+     * Compares two resource maps.
+     *
+     * if <var>fullCompare</var> is <code>true</code> then it'll make sure the multimaps contains
+     * the same number of items, otherwise it'll only checks that each resource key is present
+     * in both maps.
+     *
+     * @param resourceMap1
+     * @param resourceMap2
+     * @param fullCompare
+     */
+    protected void compareResourceMaps(ResourceMap resourceMap1, ResourceMap resourceMap2,
+                                       boolean fullCompare) {
+        assertEquals(resourceMap1.size(), resourceMap2.size());
+
+        // compare the resources are all the same
+        ListMultimap<String, Resource> map1 = resourceMap1.getResourceMap();
+        ListMultimap<String, Resource> map2 = resourceMap2.getResourceMap();
+        for (String key : map1.keySet()) {
+            List<Resource> items1 = map1.get(key);
+            List<Resource> items2 = map2.get(key);
+            if (fullCompare) {
+                assertEquals("Wrong size for " + key, items1.size(), items2.size());
+            } else {
+                boolean map1HasItem = items1.size() > 0;
+                boolean map2HasItem = items2.size() > 0;
+                assertEquals("resource " + key + " missing from one map", map1HasItem, map2HasItem);
+            }
         }
     }
 }
