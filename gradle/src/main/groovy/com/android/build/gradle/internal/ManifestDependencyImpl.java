@@ -34,7 +34,7 @@ public class ManifestDependencyImpl implements ManifestDependency{
     @Nested
     private List<ManifestDependency> dependencies;
 
-    ManifestDependencyImpl(File manifest, List<ManifestDependency> dependencies) {
+    public ManifestDependencyImpl(File manifest, List<ManifestDependency> dependencies) {
         this.manifest = manifest;
         this.dependencies = dependencies;
     }

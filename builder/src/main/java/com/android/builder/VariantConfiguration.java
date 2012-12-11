@@ -500,27 +500,26 @@ public class VariantConfiguration {
             }
         }
 
-        // TODO: fix when flavors and types have more than one folder.
-        File mainResLocation = mDefaultSourceProvider.getResourcesDir();
-        if (mainResLocation != null) {
-            inputs.add(Collections.singletonList(mainResLocation));
-        }
+        Set<File> mainResDirs = mDefaultSourceProvider.getResourcesDirectories();
+        List<File> mainSet = Lists.newArrayList();
+        mainSet.addAll(mainResDirs);
+        inputs.add(mainSet);
 
         // the list of flavor must be reversed to use the right overlay order.
         for (int n = mFlavorSourceProviders.size() - 1; n >= 0 ; n--) {
             SourceProvider sourceProvider = mFlavorSourceProviders.get(n);
 
-            File flavorResLocation = sourceProvider.getResourcesDir();
-            if (flavorResLocation != null) {
-                inputs.add(Collections.singletonList(flavorResLocation));
-            }
+            Set<File> flavorResDirs = sourceProvider.getResourcesDirectories();
+            List<File> flavorSet = Lists.newArrayList();
+            flavorSet.addAll(flavorResDirs);
+            inputs.add(flavorSet);
         }
 
         if (mBuildTypeSourceProvider != null) {
-            File typeResLocation = mBuildTypeSourceProvider.getResourcesDir();
-            if (typeResLocation != null) {
-                inputs.add(Collections.singletonList(typeResLocation));
-            }
+            Set<File> typeResDirs = mBuildTypeSourceProvider.getResourcesDirectories();
+            List<File> typeSet = Lists.newArrayList();
+            typeSet.addAll(typeResDirs);
+            inputs.add(typeSet);
         }
 
         return inputs;
@@ -528,14 +527,14 @@ public class VariantConfiguration {
 
     public List<File> getAidlSourceList() {
         List<File> sourceList = Lists.newArrayList();
-        sourceList.add(mDefaultSourceProvider.getAidlDir());
+        sourceList.addAll(mDefaultSourceProvider.getAidlDirectories());
         if (mType != Type.TEST) {
-            sourceList.add(mBuildTypeSourceProvider.getAidlDir());
+            sourceList.addAll(mBuildTypeSourceProvider.getAidlDirectories());
         }
 
         if (hasFlavors()) {
             for (SourceProvider flavorSourceSet : mFlavorSourceProviders) {
-                sourceList.add(flavorSourceSet.getAidlDir());
+                sourceList.addAll(flavorSourceSet.getAidlDirectories());
             }
         }
 

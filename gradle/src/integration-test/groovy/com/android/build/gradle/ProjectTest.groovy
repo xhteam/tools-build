@@ -84,6 +84,10 @@ class ProjectTest extends BaseTest {
         buildProject("multiproject")
     }
 
+    void testMultires() {
+        buildProject("multires")
+    }
+
     void testOverlay1() {
         File project = buildProject("overlay1")
         File drawableOutput = new File(project, "build/res/debug/drawable" )

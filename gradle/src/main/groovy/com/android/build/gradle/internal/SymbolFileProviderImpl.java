@@ -32,7 +32,7 @@ public class SymbolFileProviderImpl implements SymbolFileProvider {
     @InputFile
     private File symbolFile;
 
-    SymbolFileProviderImpl(File manifest, File symbolFile) {
+    public SymbolFileProviderImpl(File manifest, File symbolFile) {
         this.manifest = manifest;
         this.symbolFile = symbolFile;
     }

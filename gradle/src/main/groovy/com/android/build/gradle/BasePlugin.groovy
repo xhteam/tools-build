@@ -387,7 +387,7 @@ public abstract class BasePlugin {
         }
 
         processResources.conventionMapping.assetsDir =  {
-            getOptionalDir(config.defaultSourceSet.assetsDir)
+            getFirstOptionalDir(config.defaultSourceSet.assetsDirectories)
         }
 
         processResources.conventionMapping.libraries = {
@@ -935,8 +935,24 @@ public abstract class BasePlugin {
                 useDependedOn, otherProjectTaskName));
     }
 
-    protected File getOptionalDir(File dir) {
+    protected static File getOptionalDir(File dir) {
         if (dir.isDirectory()) {
+            return dir
+        }
+
+        return null
+    }
+
+    /**
+     * TODO: remove once assets support more than one folder.
+     * @param dirs
+     * @return
+     */
+    protected static File getFirstOptionalDir(Set<File> dirs) {
+        Iterator<File> iterator = dirs.iterator();
+
+        File dir = iterator.hasNext() ? iterator.next() : null;
+        if (dir != null && dir.isDirectory()) {
             return dir
         }
 

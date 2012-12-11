@@ -118,13 +118,13 @@ public interface AndroidSourceSet {
      *
      * @return the resources. Never returns null.
      */
-    AndroidSourceDirectory getRes();
+    AndroidSourceDirectorySet getRes();
 
     /**
      * Configures the location of the Android Resources for this set.
      *
-     * <p>The given closure is used to configure the {@link AndroidSourceDirectory} which contains
-     * the resources.
+     * <p>The given closure is used to configure the {@link AndroidSourceDirectorySet}
+     * which contains the resources.
      *
      * @param configureClosure The closure to use to configure the Resources.
      * @return this
@@ -136,13 +136,13 @@ public interface AndroidSourceSet {
      *
      * @return the assets. Never returns null.
      */
-    AndroidSourceDirectory getAssets();
+    AndroidSourceDirectorySet getAssets();
 
     /**
      * Configures the location of the Android Assets for this set.
      *
-     * <p>The given closure is used to configure the {@link AndroidSourceDirectory} which contains
-     * the assets.
+     * <p>The given closure is used to configure the {@link AndroidSourceDirectorySet}
+     * which contains the assets.
      *
      * @param configureClosure The closure to use to configure the Assets.
      * @return this
@@ -154,13 +154,13 @@ public interface AndroidSourceSet {
      *
      * @return the source. Never returns null.
      */
-    AndroidSourceDirectory getAidl();
+    AndroidSourceDirectorySet getAidl();
 
     /**
      * Configures the location of the Android AIDL source for this set.
      *
-     * <p>The given closure is used to configure the {@link AndroidSourceDirectory} which contains
-     * the AIDL source.
+     * <p>The given closure is used to configure the {@link AndroidSourceDirectorySet}
+     * which contains the AIDL source.
      *
      * @param configureClosure The closure to use to configure the AIDL source.
      * @return this
@@ -172,13 +172,13 @@ public interface AndroidSourceSet {
      *
      * @return the source. Never returns null.
      */
-    AndroidSourceDirectory getRenderscript();
+    AndroidSourceDirectorySet getRenderscript();
 
     /**
      * Configures the location of the Android Renderscript source for this set.
      *
-     * <p>The given closure is used to configure the {@link AndroidSourceDirectory} which contains
-     * the Renderscript source.
+     * <p>The given closure is used to configure the {@link AndroidSourceDirectorySet}
+     * which contains the Renderscript source.
      *
      * @param configureClosure The closure to use to configure the Renderscript source.
      * @return this
@@ -190,13 +190,13 @@ public interface AndroidSourceSet {
      *
      * @return the source. Never returns null.
      */
-    AndroidSourceDirectory getJni();
+    AndroidSourceDirectorySet getJni();
 
     /**
      * Configures the location of the Android JNI source for this set.
      *
-     * <p>The given closure is used to configure the {@link AndroidSourceDirectory} which contains
-     * the JNI source.
+     * <p>The given closure is used to configure the {@link AndroidSourceDirectorySet}
+     * which contains the JNI source.
      *
      * @param configureClosure The closure to use to configure the JNI source.
      * @return this

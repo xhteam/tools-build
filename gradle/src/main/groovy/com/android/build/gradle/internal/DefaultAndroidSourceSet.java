@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal;
 
-import com.android.build.gradle.AndroidSourceDirectory;
+import com.android.build.gradle.AndroidSourceDirectorySet;
 import com.android.build.gradle.AndroidSourceFile;
 import com.android.build.gradle.AndroidSourceSet;
 import com.android.builder.SourceProvider;
@@ -31,6 +31,7 @@ import org.gradle.util.ConfigureUtil;
 import org.gradle.util.GUtil;
 
 import java.io.File;
+import java.util.Set;
 
 /**
  */
@@ -40,11 +41,11 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     private final SourceDirectorySet allJavaSource;
     private final SourceDirectorySet javaResources;
     private final AndroidSourceFile manifest;
-    private final AndroidSourceDirectory assets;
-    private final AndroidSourceDirectory res;
-    private final AndroidSourceDirectory aidl;
-    private final AndroidSourceDirectory renderscript;
-    private final AndroidSourceDirectory jni;
+    private final AndroidSourceDirectorySet assets;
+    private final AndroidSourceDirectorySet res;
+    private final AndroidSourceDirectorySet aidl;
+    private final AndroidSourceDirectorySet renderscript;
+    private final AndroidSourceDirectorySet jni;
     private final String displayName;
     private final SourceDirectorySet allSource;
 
@@ -78,19 +79,19 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
         manifest = new DefaultAndroidSourceFile(manifestDisplayName, fileResolver);
 
         String assetsDisplayName = String.format("%s assets", displayName);
-        assets = new DefaultAndroidSourceDirectory(assetsDisplayName, fileResolver);
+        assets = new DefaultAndroidSourceDirectorySet(assetsDisplayName, fileResolver);
 
         String resourcesDisplayName = String.format("%s resources", displayName);
-        res = new DefaultAndroidSourceDirectory(resourcesDisplayName, fileResolver);
+        res = new DefaultAndroidSourceDirectorySet(resourcesDisplayName, fileResolver);
 
         String aidlDisplayName = String.format("%s aidl", displayName);
-        aidl = new DefaultAndroidSourceDirectory(aidlDisplayName, fileResolver);
+        aidl = new DefaultAndroidSourceDirectorySet(aidlDisplayName, fileResolver);
 
         String renderscriptDisplayName = String.format("%s renderscript", displayName);
-        renderscript = new DefaultAndroidSourceDirectory(renderscriptDisplayName, fileResolver);
+        renderscript = new DefaultAndroidSourceDirectorySet(renderscriptDisplayName, fileResolver);
 
         String jniDisplayName = String.format("%s jni", displayName);
-        jni = new DefaultAndroidSourceDirectory(jniDisplayName, fileResolver);
+        jni = new DefaultAndroidSourceDirectorySet(jniDisplayName, fileResolver);
     }
 
     @Override
@@ -137,7 +138,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
-    public AndroidSourceDirectory getRes() {
+    public AndroidSourceDirectorySet getRes() {
         return res;
     }
 
@@ -148,7 +149,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
-    public AndroidSourceDirectory getAssets() {
+    public AndroidSourceDirectorySet getAssets() {
         return assets;
     }
 
@@ -159,7 +160,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
-    public AndroidSourceDirectory getAidl() {
+    public AndroidSourceDirectorySet getAidl() {
         return aidl;
     }
 
@@ -170,7 +171,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
-    public AndroidSourceDirectory getRenderscript() {
+    public AndroidSourceDirectorySet getRenderscript() {
         return renderscript;
     }
 
@@ -181,7 +182,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
-    public AndroidSourceDirectory getJni() {
+    public AndroidSourceDirectorySet getJni() {
         return jni;
     }
 
@@ -231,27 +232,27 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
-    public File getAidlDir() {
-        return getAidl().getDirectory();
+    public Set<File> getAidlDirectories() {
+        return getAidl().getDirectories();
     }
 
     @Override
-    public File getRenderscriptDir() {
-        return getRenderscript().getDirectory();
+    public Set<File> getRenderscriptDirectories() {
+        return getRenderscript().getDirectories();
     }
 
     @Override
-    public File getJniDir() {
-        return getJni().getDirectory();
+    public Set<File> getJniDirectories() {
+        return getJni().getDirectories();
     }
 
     @Override
-    public File getResourcesDir() {
-        return getRes().getDirectory();
+    public Set<File> getResourcesDirectories() {
+        return getRes().getDirectories();
     }
 
     @Override
-    public File getAssetsDir() {
-        return getAssets().getDirectory();
+    public Set<File> getAssetsDirectories() {
+        return getAssets().getDirectories();
     }
 }

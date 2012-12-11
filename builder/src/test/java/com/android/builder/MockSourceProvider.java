@@ -17,6 +17,8 @@
 package com.android.builder;
 
 import java.io.File;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Implementation of SourceProvider for testing that provides the default convention paths.
@@ -30,13 +32,13 @@ class MockSourceProvider implements SourceProvider {
     private final String mRoot;
 
     @Override
-    public File getResourcesDir() {
-        return new File(mRoot, "res");
+    public Set<File> getResourcesDirectories() {
+        return Collections.singleton(new File(mRoot, "res"));
     }
 
     @Override
-    public File getAssetsDir() {
-        return new File(mRoot, "assets");
+    public Set<File> getAssetsDirectories() {
+        return Collections.singleton(new File(mRoot, "assets"));
     }
 
     @Override
@@ -45,17 +47,17 @@ class MockSourceProvider implements SourceProvider {
     }
 
     @Override
-    public File getAidlDir() {
-        return new File(mRoot, "aidl");
+    public Set<File> getAidlDirectories() {
+        return Collections.singleton(new File(mRoot, "aidl"));
     }
 
     @Override
-    public File getRenderscriptDir() {
-        return new File(mRoot, "rs");
+    public Set<File> getRenderscriptDirectories() {
+        return Collections.singleton(new File(mRoot, "rs"));
     }
 
     @Override
-    public File getJniDir() {
-        return new File(mRoot, "jni");
+    public Set<File> getJniDirectories() {
+        return Collections.singleton(new File(mRoot, "jni"));
     }
 }
