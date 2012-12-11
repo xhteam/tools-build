@@ -153,6 +153,9 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         // Add a task to process the manifest(s)
         createProcessManifestTask(variant, DIR_BUNDLES)
 
+        // Add a task to merge the resource folders
+        createMergeResourcesTask(variant, "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/res")
+
         // Add a task to create the BuildConfig class
         createBuildConfigTask(variant)
 
@@ -179,14 +182,6 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         jar.exclude(packageName + "/R.class")
         jar.exclude(packageName + "/R\$*.class")
 
-        // package the android resources into the bundle folder
-        Copy packageRes = project.tasks.add("package${variant.name}Res", Copy)
-        // packageRes from 3 sources. the order is important to make sure the override works well.
-        // TODO: fix the case of values -- need to merge the XML!
-        packageRes.from(defaultConfigData.sourceSet.res.directory,
-                buildTypeData.sourceSet.res.directory)
-        packageRes.into(project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}/res"))
-
         // package the aidl files into the bundle folder
         Copy packageAidl = project.tasks.add("package${variant.name}Aidl", Copy)
         // packageAidl from 3 sources. the order is important to make sure the override works well.
@@ -201,7 +196,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         packageSymbol.into(project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}"))
 
         Zip bundle = project.tasks.add("bundle${variant.name}", Zip)
-        bundle.dependsOn jar, packageRes, packageAidl, packageSymbol
+        bundle.dependsOn jar, packageAidl, packageSymbol
         bundle.setDescription("Assembles a bundle containing the library in ${variant.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
         bundle.extension = BuilderConstants.EXT_LIB_ARCHIVE

@@ -27,8 +27,8 @@ public class ProcessResources extends BaseTask {
     @InputFile
     File manifestFile
 
-    @InputDirectory @Optional
-    File preprocessResDir
+    @InputDirectory
+    File mergedResFolder
 
     @OutputDirectory @Optional
     File sourceOutputDir

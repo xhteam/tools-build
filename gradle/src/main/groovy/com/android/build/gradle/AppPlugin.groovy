@@ -419,8 +419,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         // Add a task to process the manifest(s)
         createProcessManifestTask(variant, "manifests")
 
-        // Add a task to crunch resource files
-        createProcessImagesTask(variant)
+        // Add a task to merge the resource folders
+        createMergeResourcesTask(variant)
 
         // Add a task to create the BuildConfig class
         createBuildConfigTask(variant)

@@ -51,11 +51,6 @@ import java.util.Map;
 public class ResourceSet {
 
     /**
-     * Resource files
-     */
-    //private final List<ResourceFile> mFiles = Lists.newArrayList();
-
-    /**
      * The key is the {@link com.android.builder.resources.Resource#getKey()}.
      */
     private final Map<String, Resource> mItems = Maps.newHashMap();
@@ -79,6 +74,10 @@ public class ResourceSet {
 
     public int getSize() {
         return mItems.size();
+    }
+
+    public boolean isEmpty() {
+        return mItems.isEmpty();
     }
 
     public Collection<Resource> getResources() {

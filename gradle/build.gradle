@@ -29,14 +29,6 @@ dependencies {
     integrationTestRuntime configurations.testRuntime
 }
 
-task integrationTest(type: Test, dependsOn: jar) {
-    testClassesDir = sourceSets.integrationTest.output.classesDir
-    classpath = sourceSets.integrationTest.runtimeClasspath
-    systemProperties['jar.path'] = jar.archivePath
-}
-
-check.dependsOn integrationTest
-
 idea {
     module {
         testSourceDirs += file('src/integration-test/groovy')
@@ -62,6 +54,14 @@ task publishLocal(type: Upload) {
         }
     }
 }
+
+task integrationTest(type: Test, dependsOn: publishLocal) {
+    testClassesDir = sourceSets.integrationTest.output.classesDir
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    systemProperties['jar.path'] = jar.archivePath
+}
+
+check.dependsOn integrationTest
 
 uploadArchives {
     repositories {

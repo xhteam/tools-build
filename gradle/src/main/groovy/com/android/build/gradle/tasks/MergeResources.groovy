@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.build.gradle.internal.tasks
+package com.android.build.gradle.tasks
 
-import com.android.build.gradle.tasks.ProcessImages
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.TaskAction
+import com.android.build.gradle.internal.tasks.BaseTask
+import org.gradle.api.tasks.OutputDirectory
 
-class ProcessImagesTask extends ProcessImages {
+class MergeResources extends BaseTask {
 
-    @InputFiles
-    Iterable<File> resDirectories
+    @OutputDirectory
+    File outputDir
 
-    @TaskAction
-    void generate() {
-        getBuilder().processImages(getOutputDir().absolutePath, getResDirectories())
-    }
 }

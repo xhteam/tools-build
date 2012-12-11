@@ -186,7 +186,7 @@ public class AppPluginDslTest extends BaseTest {
     private void checkTasks(BuildVariant variant, boolean testVariant) {
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
-        assertNotNull(variant.processImages)
+        assertNotNull(variant.mergeResources)
         assertNotNull(variant.processResources)
         assertNotNull(variant.generateBuildConfig)
         assertNotNull(variant.javaCompile)
