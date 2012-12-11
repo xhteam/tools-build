@@ -43,6 +43,10 @@ public class VariantConfigurationTest extends TestCase {
         public int getMinSdkVersion(@NonNull File manifestFile) {
             return 0;
         }
+
+        public String getVersionName(File manifestFile) {
+            return "1.0";
+        }
     }
 
     @Override
@@ -93,6 +97,23 @@ public class VariantConfigurationTest extends TestCase {
         assertEquals("fake.package.name.fortytwo", variant.getPackageOverride());
     }
 
+    public void testVersionNameFromFlavorWithSuffix() {
+        mFlavorConfig.setVersionName("1.0");
+        mBuildType.setVersionNameSuffix("-DEBUG");
+
+        VariantConfiguration variant = getVariant();
+
+        assertEquals("1.0-DEBUG", variant.getVersionName());
+    }
+
+    public void testVersionNameWithSuffixOnly() {
+        mBuildType.setVersionNameSuffix("-DEBUG");
+
+        VariantConfiguration variant = getVariantWithManifestVersion("2.0b1");
+
+        assertEquals("2.0b1-DEBUG", variant.getVersionName());
+    }
+
     private VariantConfiguration getVariant() {
         VariantConfiguration variant = new VariantConfiguration(
                 mDefaultConfig, new MockSourceProvider("main"),
@@ -118,6 +139,26 @@ public class VariantConfigurationTest extends TestCase {
             @Override
             public String getPackageFromManifest() {
                 return packageName;
+            }
+            // don't do validation.
+            @Override
+            protected void validate() {
+
+            }
+        };
+
+        variant.addProductFlavor(mFlavorConfig, new MockSourceProvider("custom"));
+        return variant;
+    }
+
+    private VariantConfiguration getVariantWithManifestVersion(final String versionName) {
+        VariantConfiguration variant = new VariantConfiguration(
+                mDefaultConfig, new MockSourceProvider("main"),
+                mBuildType, new MockSourceProvider("debug"),
+                VariantConfiguration.Type.DEFAULT) {
+            @Override
+            public String getVersionNameFromManifest() {
+                return versionName;
             }
             // don't do validation.
             @Override

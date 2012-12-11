@@ -261,14 +261,14 @@ public abstract class BasePlugin {
         processManifestTask.conventionMapping.manifestOverlays = {
             config.manifestOverlays
         }
+        processManifestTask.conventionMapping.versionName = {
+            config.versionName
+        }
         processManifestTask.conventionMapping.libraries = {
             getManifestDependencies(config.directLibraries)
         }
         processManifestTask.conventionMapping.versionCode = {
             mergedFlavor.versionCode
-        }
-        processManifestTask.conventionMapping.versionName = {
-            mergedFlavor.versionName
         }
         processManifestTask.conventionMapping.minSdkVersion = {
             mergedFlavor.minSdkVersion

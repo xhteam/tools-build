@@ -24,4 +24,5 @@ public interface ManifestParser {
 
     String getPackage(@NonNull File manifestFile);
     int getMinSdkVersion(@NonNull File manifestFile);
+    String getVersionName(@NonNull File manifestFile);
 }
