@@ -54,6 +54,7 @@ task publishLocal(type: Upload) {
         }
     }
 }
+publishLocal.dependsOn ':builder:publishLocal'
 
 task integrationTest(type: Test, dependsOn: publishLocal) {
     testClassesDir = sourceSets.integrationTest.output.classesDir
