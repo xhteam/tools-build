@@ -49,6 +49,27 @@ public class AppPluginDslTest extends BaseTest {
         checkNonTestedVariant("Release", variants)
     }
 
+    public void testMultiRes() {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "multires")).build()
+
+        project.apply plugin: 'android'
+
+        project.android {
+            target "android-15"
+
+            sourceSets {
+                main {
+                    res {
+                        srcDirs 'src/main/res1', 'src/main/res2'
+                    }
+                }
+            }
+        }
+
+        // nothing to be done here. If the DSL fails, it'll throw an exception
+    }
+
     public void testBuildTypes() {
         Project project = ProjectBuilder.builder().withProjectDir(
                 new File(testDir, "basic")).build()

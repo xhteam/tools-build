@@ -15,7 +15,10 @@
  */
 package com.android.builder;
 
+import com.android.annotations.NonNull;
+
 import java.io.File;
+import java.util.Set;
 
 /**
  * Represent an Android SourceProvider for a given configuration.
@@ -23,10 +26,14 @@ import java.io.File;
 public interface SourceProvider {
     File getManifestFile();
 
-    File getAidlDir();
-    File getRenderscriptDir();
-    File getJniDir();
+    Set<File> getAidlDirectories();
 
-    File getResourcesDir();
-    File getAssetsDir();
+    Set<File> getRenderscriptDirectories();
+
+    Set<File> getJniDirectories();
+
+    @NonNull
+    Set<File> getResourcesDirectories();
+
+    Set<File> getAssetsDirectories();
 }

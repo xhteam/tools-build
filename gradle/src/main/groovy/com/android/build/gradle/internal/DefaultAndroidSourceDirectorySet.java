@@ -16,20 +16,24 @@
 
 package com.android.build.gradle.internal;
 
-import com.android.build.gradle.AndroidSourceDirectory;
+import com.android.build.gradle.AndroidSourceDirectorySet;
+import com.google.common.collect.Lists;
 import org.gradle.api.internal.file.FileResolver;
 
 import java.io.File;
+import java.util.List;
+import java.util.Set;
 
 /**
+ * Default implementation of the AndroidSourceDirectorySet.
  */
-public class DefaultAndroidSourceDirectory implements AndroidSourceDirectory {
+public class DefaultAndroidSourceDirectorySet implements AndroidSourceDirectorySet {
 
     private final String name;
     private final FileResolver fileResolver;
-    private Object source;
+    private List<Object> source = Lists.newArrayList();
 
-    DefaultAndroidSourceDirectory(String name, FileResolver fileResolver) {
+    DefaultAndroidSourceDirectorySet(String name, FileResolver fileResolver) {
         this.name = name;
         this.fileResolver = fileResolver;
     }
@@ -40,14 +44,22 @@ public class DefaultAndroidSourceDirectory implements AndroidSourceDirectory {
     }
 
     @Override
-    public AndroidSourceDirectory srcDir(Object o) {
-        source = o;
+    public AndroidSourceDirectorySet srcDir(Object srcDir) {
+        source.add(srcDir);
         return this;
     }
 
     @Override
-    public File getDirectory() {
-        return fileResolver.resolve(source);
+    public AndroidSourceDirectorySet srcDirs(Object... srcDirs) {
+        for (Object srcDir : srcDirs) {
+            source.add(srcDir);
+        }
+        return this;
+    }
+
+    @Override
+    public Set<File> getDirectories() {
+        return fileResolver.resolveFiles(source.toArray()).getFiles();
     }
 
     @Override

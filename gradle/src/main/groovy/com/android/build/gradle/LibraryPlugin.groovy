@@ -185,8 +185,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         // package the aidl files into the bundle folder
         Copy packageAidl = project.tasks.add("package${variant.name}Aidl", Copy)
         // packageAidl from 3 sources. the order is important to make sure the override works well.
-        packageAidl.from(defaultConfigData.sourceSet.aidl.directory,
-                buildTypeData.sourceSet.aidl.directory)
+        packageAidl.from(defaultConfigData.sourceSet.aidl.directories,
+                buildTypeData.sourceSet.aidl.directories)
         packageAidl.into(project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}/aidl"))
 
         // package the R symbol text file into the bundle folder
