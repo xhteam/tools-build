@@ -1,6 +1,4 @@
 apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
@@ -45,6 +43,9 @@ task publishLocal(type: Upload) {
     }
 }
 
+project.ext.sonatypeUsername = project.hasProperty('sonatypeUsername') ? sonatypeUsername : ""
+project.ext.sonatypePassword = project.hasProperty('sonatypePassword') ? sonatypePassword : ""
+
 uploadArchives {
     repositories {
         mavenDeployer {
@@ -53,11 +54,15 @@ uploadArchives {
                     throw new StopExecutionException("uploadArchives must be called with the release.gradle init script")
                 }
 
+                if (ext.sonatypeUsername.length() == 0 || ext.sonatypePassword.length() == 0) {
+                    throw new StopExecutionException("uploadArchives cannot be called without sonatype username and password")
+                }
+
                 signing.signPom(deployment)
             }
 
             repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: sonatypeUsername, password: sonatypePassword)
+                authentication(userName: project.ext.sonatypeUsername, password: project.ext.sonatypePassword)
             }
 
             // Discard all the dependencies from the POM, as they are packaged in the JAR.
@@ -118,5 +123,6 @@ artifacts {
 }
 
 signing {
+    required { project.has("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
 }
