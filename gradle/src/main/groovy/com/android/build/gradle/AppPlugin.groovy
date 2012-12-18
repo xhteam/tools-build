@@ -24,10 +24,13 @@ import com.android.build.gradle.internal.GroupableProductFlavorFactory
 import com.android.build.gradle.internal.PluginHolder
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
+
+import com.android.build.gradle.internal.KeystoreFactory
 import com.android.build.gradle.internal.TestAppVariant
 import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
 import com.android.builder.JarDependency
+import com.android.builder.Keystore
 import com.android.builder.VariantConfiguration
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
@@ -47,6 +50,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
     final Map<String, BuildTypeData> buildTypes = [:]
     final Map<String, ProductFlavorData<GroupableProductFlavor>> productFlavors = [:]
+    final Map<String, Keystore> keystores = [:]
 
     AppExtension extension
 
@@ -67,10 +71,12 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         def buildTypeContainer = project.container(BuildType, new BuildTypeFactory(instantiator))
         def productFlavorContainer = project.container(GroupableProductFlavor,
                 new GroupableProductFlavorFactory(instantiator))
+        def keystoreContainer = project.container(Keystore,
+                new KeystoreFactory(instantiator))
 
         extension = project.extensions.create('android', AppExtension,
                 this, (ProjectInternal) project, instantiator,
-                buildTypeContainer, productFlavorContainer)
+                buildTypeContainer, productFlavorContainer, keystoreContainer)
         setDefaultConfig(extension.defaultConfig, extension.sourceSetsContainer)
 
         buildTypeContainer.whenObjectAdded { BuildType buildType ->
@@ -91,6 +97,14 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             throw new UnsupportedOperationException(
                     "Removing product flavors is not implemented yet.")
         }
+
+        keystoreContainer.whenObjectAdded { Keystore keystore ->
+            keystores[keystore.name] = keystore
+        }
+        keystoreContainer.whenObjectRemoved {
+            throw new UnsupportedOperationException("Removing keystores is not implemented yet.")
+        }
+        keystoreContainer.create(Keystore.DEBUG)
     }
 
     private void addBuildType(BuildType buildType) {

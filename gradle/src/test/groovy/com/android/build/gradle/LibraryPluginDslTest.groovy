@@ -83,7 +83,7 @@ public class LibraryPluginDslTest extends BaseTest {
 
         assertNull(variant.zipAlign)
 
-        if (variant.buildType.debugSigned || variant.mergedConfig.isSigningReady()) {
+        if (variant.isSigningReady()) {
             assertNotNull(variant.install)
         } else {
             assertNull(variant.install)

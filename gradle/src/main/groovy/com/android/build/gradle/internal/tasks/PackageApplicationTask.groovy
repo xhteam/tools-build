@@ -17,6 +17,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.builder.packaging.DuplicateFileException
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
 
@@ -26,13 +27,10 @@ public class PackageApplicationTask extends PackageApplication {
     List<File> packagedJars
 
     @Input
-    boolean debugSigned
-
-    @Input
     boolean debugJni
 
-    @Input @Optional
-    String signingStoreLocation
+    @InputFile @Optional
+    File signingStoreLocation
 
     @Input @Optional
     String signingStorePassword
@@ -52,7 +50,6 @@ public class PackageApplicationTask extends PackageApplication {
                     getPackagedJars(),
                     getJavaResourceDir()?.absolutePath,
                     getJniDir()?.absolutePath,
-                    getDebugSigned(),
                     getDebugJni(),
                     getSigningStoreLocation(),
                     getSigningStorePassword(),

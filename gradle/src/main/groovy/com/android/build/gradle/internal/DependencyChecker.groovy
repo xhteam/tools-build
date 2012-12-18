@@ -89,6 +89,8 @@ public class DependencyChecker {
                 return "Flavor ${configurationDependencies.sourceSet.name.capitalize()}"
             case ConfigurationDependencies.ConfigType.BUILDTYPE:
                 return "Build Type ${configurationDependencies.sourceSet.name.capitalize()}"
+            case ConfigurationDependencies.ConfigType.KEYSTORE:
+                return "Signing Keystore ${configurationDependencies.sourceSet.name.capitalize()}"
         }
     }
 

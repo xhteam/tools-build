@@ -41,11 +41,7 @@ public class ProductFlavor extends BuildConfig {
     private String mPackageName = null;
     private String mTestPackageName = null;
     private String mTestInstrumentationRunner = null;
-
-    private String mSigningStoreLocation = null;
-    private String mSigningStorePassword = null;
-    private String mSigningKeyAlias = null;
-    private String mSigningKeyPassword = null;
+    private Keystore mKeystore = null;
 
     /**
      * Creates a ProductFlavor with a given name.
@@ -144,47 +140,13 @@ public class ProductFlavor extends BuildConfig {
         return mTestInstrumentationRunner;
     }
 
-    public String getSigningStoreLocation() {
-        return mSigningStoreLocation;
+    public Keystore getKeystore() {
+        return mKeystore;
     }
 
-    public ProductFlavor setSigningStoreLocation(String signingStoreLocation) {
-        mSigningStoreLocation = signingStoreLocation;
+    public ProductFlavor setKeystore(Keystore keystore) {
+        mKeystore = keystore;
         return this;
-    }
-
-    public String getSigningStorePassword() {
-        return mSigningStorePassword;
-    }
-
-    public ProductFlavor setSigningStorePassword(String signingStorePassword) {
-        mSigningStorePassword = signingStorePassword;
-        return this;
-    }
-
-    public String getSigningKeyAlias() {
-        return mSigningKeyAlias;
-    }
-
-    public ProductFlavor setSigningKeyAlias(String signingKeyAlias) {
-        mSigningKeyAlias = signingKeyAlias;
-        return this;
-    }
-
-    public String getSigningKeyPassword() {
-        return mSigningKeyPassword;
-    }
-
-    public ProductFlavor setSigningKeyPassword(String signingKeyPassword) {
-        mSigningKeyPassword = signingKeyPassword;
-        return this;
-    }
-
-    public boolean isSigningReady() {
-        return mSigningStoreLocation != null &&
-                mSigningStorePassword != null &&
-                mSigningKeyAlias != null &&
-                mSigningKeyPassword != null;
     }
 
     /**
@@ -207,12 +169,8 @@ public class ProductFlavor extends BuildConfig {
         flavor.mTestInstrumentationRunner = chooseString(mTestInstrumentationRunner,
                 base.mTestInstrumentationRunner);
 
-        flavor.mSigningStoreLocation = chooseString(mSigningStoreLocation,
-                base.mSigningStoreLocation);
-        flavor.mSigningStorePassword = chooseString(mSigningStorePassword,
-                base.mSigningStorePassword);
-        flavor.mSigningKeyAlias = chooseString(mSigningKeyAlias, base.mSigningKeyAlias);
-        flavor.mSigningKeyPassword = chooseString(mSigningKeyPassword, base.mSigningKeyPassword);
+        flavor.mKeystore =
+                mKeystore != null ? mKeystore : base.mKeystore;
 
         return flavor;
     }
@@ -241,22 +199,6 @@ public class ProductFlavor extends BuildConfig {
                 !mPackageName.equals(that.mPackageName) :
                 that.mPackageName != null)
             return false;
-        if (mSigningKeyAlias != null ?
-                !mSigningKeyAlias.equals(that.mSigningKeyAlias) :
-                that.mSigningKeyAlias != null)
-            return false;
-        if (mSigningKeyPassword != null ?
-                !mSigningKeyPassword.equals(that.mSigningKeyPassword) :
-                that.mSigningKeyPassword != null)
-            return false;
-        if (mSigningStoreLocation != null ?
-                !mSigningStoreLocation.equals(that.mSigningStoreLocation) :
-                that.mSigningStoreLocation != null)
-            return false;
-        if (mSigningStorePassword != null ?
-                !mSigningStorePassword.equals(that.mSigningStorePassword) :
-                that.mSigningStorePassword != null)
-            return false;
         if (mTestInstrumentationRunner != null ?
                 !mTestInstrumentationRunner.equals(that.mTestInstrumentationRunner) :
                 that.mTestInstrumentationRunner != null)
@@ -266,6 +208,9 @@ public class ProductFlavor extends BuildConfig {
             return false;
         if (mVersionName != null ?
                 !mVersionName.equals(that.mVersionName) : that.mVersionName != null)
+            return false;
+        if (mKeystore != null ?
+                !mKeystore.equals(that.mKeystore) : that.mKeystore != null)
             return false;
 
         return true;
@@ -283,12 +228,7 @@ public class ProductFlavor extends BuildConfig {
         result = 31 * result + (mTestPackageName != null ? mTestPackageName.hashCode() : 0);
         result = 31 * result + (mTestInstrumentationRunner != null ?
                 mTestInstrumentationRunner.hashCode() : 0);
-        result = 31 * result + (mSigningStoreLocation != null ?
-                mSigningStoreLocation.hashCode() : 0);
-        result = 31 * result + (mSigningStorePassword != null ?
-                mSigningStorePassword.hashCode() : 0);
-        result = 31 * result + (mSigningKeyAlias != null ? mSigningKeyAlias.hashCode() : 0);
-        result = 31 * result + (mSigningKeyPassword != null ? mSigningKeyPassword.hashCode() : 0);
+        result = 31 * result + (mKeystore != null ? mKeystore.hashCode() : 0);
         return result;
     }
 
@@ -303,11 +243,7 @@ public class ProductFlavor extends BuildConfig {
                 .add("packageName", mPackageName)
                 .add("testPackageName", mTestPackageName)
                 .add("testInstrumentationRunner", mTestInstrumentationRunner)
-                .add("signingStoreLocation", mSigningStoreLocation)
-                .add("signingStorePassword", mSigningStorePassword)
-                .add("signingKeyAlias", mSigningKeyAlias)
-                .add("signingKeyPassword", mSigningKeyPassword)
-                .omitNullValues()
+                .add("keystore", mKeystore)
                 .toString();
     }
 

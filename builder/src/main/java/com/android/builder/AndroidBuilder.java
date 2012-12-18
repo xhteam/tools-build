@@ -719,7 +719,6 @@ public class AndroidBuilder {
      * @param packagedJars the jars that are packaged (libraries + jar dependencies)
      * @param javaResourcesLocation the processed Java resource folder
      * @param jniLibsLocation the location of the compiled JNI libraries
-     * @param debugSigned whether the app is signed with the debug key
      * @param debugJni whether the app should include jni debug data
      * @param signingStoreLocation signing store location (if not debug signed)
      * @param signingStorePassword signing store password (if not debug signed)
@@ -736,9 +735,8 @@ public class AndroidBuilder {
             @NonNull List<File> packagedJars,
             @Nullable String javaResourcesLocation,
             @Nullable String jniLibsLocation,
-            boolean debugSigned,
             boolean debugJni,
-            @Nullable String signingStoreLocation,
+            @Nullable File signingStoreLocation,
             @Nullable String signingStorePassword,
             @Nullable String signingKeyAlias,
             @Nullable String signingKeyPassword,
@@ -750,28 +748,15 @@ public class AndroidBuilder {
 
         SigningInfo signingInfo = null;
         try {
-            if (debugSigned) {
-                String storeLocation = DebugKeyHelper.defaultDebugKeyStoreLocation();
-                File storeFile = new File(storeLocation);
-                if (storeFile.isDirectory()) {
-                    throw new RuntimeException(
-                            String.format("A folder is in the way of the debug keystore: %s",
-                                    storeLocation));
-                } else if (!storeFile.exists()) {
-                    if (!DebugKeyHelper.createNewStore(
-                            storeLocation, null /*storeType*/, mLogger)) {
-                        throw new RuntimeException();
-                    }
-                }
-
-                // load the key
-                signingInfo = DebugKeyHelper.getDebugKey(storeLocation, null /*storeStype*/);
-            } else if (signingStoreLocation != null &&
+            if (signingStoreLocation != null &&
                     signingStorePassword != null &&
                     signingKeyAlias != null &&
                     signingKeyPassword != null) {
+                if (DebugKeyHelper.defaultDebugKeyStoreLocation().equals(signingStoreLocation)) {
+                    createDebugKeystore(signingStoreLocation.getAbsolutePath());
+                }
                 signingInfo = KeystoreHelper.getSigningInfo(
-                        signingStoreLocation,
+                        signingStoreLocation.getAbsolutePath(),
                         signingStorePassword,
                         null, /*storeStype*/
                         signingKeyAlias,
@@ -815,6 +800,26 @@ public class AndroidBuilder {
             throw new RuntimeException(e);
         } catch (SealedPackageException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Creates a debug signing keystore at the given location if one does not already exist.
+     *
+     * @param storeLocation the fully-qualified path where the keystore should live.
+     * @throws KeytoolException
+     */
+    private void createDebugKeystore(String storeLocation) throws KeytoolException {
+        File storeFile = new File(storeLocation);
+        if (storeFile.isDirectory()) {
+            throw new RuntimeException(
+                    String.format("A folder is in the way of the debug keystore: %s",
+                            storeLocation));
+        } else if (!storeFile.exists()) {
+            if (!DebugKeyHelper.createNewStore(
+                    storeLocation, null /*storeType*/, mLogger)) {
+                throw new RuntimeException("Unable to recreate missing debug keystore.");
+            }
         }
     }
 }

@@ -26,6 +26,7 @@ import com.android.build.gradle.tasks.ProcessResources
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
+import com.android.builder.Keystore
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Zip
@@ -164,5 +165,15 @@ public class DefaultBuildVariant implements BuildVariant {
     @Override
     Task getRunTests() {
         return variant.runTestsTask
+    }
+
+    @Override
+    Keystore getKeystore() {
+        return variant.config.keystore
+    }
+
+    @Override
+    boolean isSigningReady() {
+        return variant.isSigned()
     }
 }

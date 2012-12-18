@@ -28,6 +28,7 @@ import com.android.build.gradle.tasks.ProcessResources
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
+import com.android.builder.Keystore
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Zip
@@ -97,6 +98,17 @@ public interface BuildVariant {
      */
     @NonNull
     File getOutputFile()
+
+    /**
+     * Returns the {@link Keystore} for this build variant, if one has been specified.
+     */
+    @Nullable
+    Keystore getKeystore()
+
+    /**
+     * Returns true if this variant has the information it needs to create a signed APK.
+     */
+    boolean isSigningReady()
 
     /**
      * Returns the build variant that will test this build variant.
