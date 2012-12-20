@@ -16,15 +16,57 @@
 package com.android.build.gradle
 
 import com.android.SdkConstants
-import com.android.build.gradle.internal.*
-import com.android.build.gradle.internal.tasks.*
-import com.android.builder.*
+import com.android.build.gradle.internal.AndroidDependencyImpl
+import com.android.build.gradle.internal.ApplicationVariant
+import com.android.build.gradle.internal.ConfigurationDependencies
+import com.android.build.gradle.internal.DependencyChecker
+import com.android.build.gradle.internal.LoggerWrapper
+import com.android.build.gradle.internal.ManifestDependencyImpl
+import com.android.build.gradle.internal.ProductFlavorData
+import com.android.build.gradle.internal.ProductionAppVariant
+import com.android.build.gradle.internal.SymbolFileProviderImpl
+import com.android.build.gradle.internal.TestAppVariant
+import com.android.build.gradle.internal.tasks.AidlCompileTask
+import com.android.build.gradle.internal.tasks.AndroidDependencyTask
+import com.android.build.gradle.internal.tasks.BaseTask
+import com.android.build.gradle.internal.tasks.DexTask
+import com.android.build.gradle.internal.tasks.GenerateBuildConfigTask
+import com.android.build.gradle.internal.tasks.InstallTask
+import com.android.build.gradle.internal.tasks.MergeResourcesTask
+import com.android.build.gradle.internal.tasks.PackageApplicationTask
+import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
+import com.android.build.gradle.internal.tasks.PrepareLibraryTask
+import com.android.build.gradle.internal.tasks.ProcessManifestTask
+import com.android.build.gradle.internal.tasks.ProcessResourcesTask
+import com.android.build.gradle.internal.tasks.ProcessTestManifestTask
+import com.android.build.gradle.internal.tasks.RunTestsTask
+import com.android.build.gradle.internal.tasks.UninstallTask
+import com.android.build.gradle.internal.tasks.ZipAlignTask
+import com.android.builder.AndroidBuilder
+import com.android.builder.AndroidDependency
+import com.android.builder.BuilderConstants
+import com.android.builder.DefaultSdkParser
+import com.android.builder.JarDependency
+import com.android.builder.ManifestDependency
+import com.android.builder.ProductFlavor
+import com.android.builder.SdkParser
+import com.android.builder.SourceProvider
+import com.android.builder.SymbolFileProvider
+import com.android.builder.VariantConfiguration
 import com.android.utils.ILogger
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Multimap
-import org.gradle.api.*
-import org.gradle.api.artifacts.*
+import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
+import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ModuleVersionIdentifier
+import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.artifacts.ResolvedArtifact
+import org.gradle.api.artifacts.SelfResolvingDependency
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.ResolvedModuleVersionResult
 import org.gradle.api.internal.plugins.ProcessResources
@@ -473,7 +515,7 @@ public abstract class BasePlugin {
             convention.targetCompatibility.toString()
         }
 
-        // setup the bootclasspath just before the task actually runs since this will
+        // setup the boot classpath just before the task actually runs since this will
         // force the sdk to be parsed.
         compileTask.doFirst {
             compileTask.options.bootClasspath = getRuntimeJars(variant)

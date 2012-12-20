@@ -18,7 +18,12 @@ package com.android.builder.resources;
 
 import com.android.SdkConstants;
 import com.android.annotations.VisibleForTesting;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 
 /**
  * Utility class to handle Nodes.
@@ -44,17 +49,17 @@ class NodeUtils {
     }
 
     static void addAttribute(Document document, Node node,
-                             String NamespaceUri, String attrName, String attrValue) {
+                             String namespaceUri, String attrName, String attrValue) {
         Attr attr;
-        if (NamespaceUri != null) {
-            attr = document.createAttributeNS(NamespaceUri, attrName);
+        if (namespaceUri != null) {
+            attr = document.createAttributeNS(namespaceUri, attrName);
         } else {
             attr = document.createAttribute(attrName);
         }
 
         attr.setValue(attrValue);
 
-        if (NamespaceUri != null) {
+        if (namespaceUri != null) {
             node.getAttributes().setNamedItemNS(attr);
         } else {
             node.getAttributes().setNamedItem(attr);

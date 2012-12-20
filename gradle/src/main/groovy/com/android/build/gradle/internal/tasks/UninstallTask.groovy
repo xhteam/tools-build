@@ -15,7 +15,6 @@
  */
 package com.android.build.gradle.internal.tasks
 
-import com.android.builder.resources.FileStatus
 import org.gradle.api.tasks.Input
 
 public class UninstallTask extends BaseTask {

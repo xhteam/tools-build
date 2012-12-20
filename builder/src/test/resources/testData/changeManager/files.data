@@ -1,4 +1,4 @@
-# golden files created manually to differ form the actual
+# golden files created manually to differ from the actual
 # files in key ways to test various detectors.
 $lm_untouched$ 98 272fbc249474f5c842db3c6273ca94e30e641d06 $TOP$$SEP$untouched.png
 1000000000000 98 272fbc249474f5c842db3c6273ca94e30e641d06 $TOP$$SEP$untouched_date_changed.png

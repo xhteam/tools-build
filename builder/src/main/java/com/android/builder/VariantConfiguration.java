@@ -540,6 +540,8 @@ public class VariantConfiguration {
             SourceProvider sourceProvider = mFlavorSourceProviders.get(n);
 
             Set<File> flavorResDirs = sourceProvider.getResourcesDirectories();
+            // we need the same of the flavor config, but it's in a different list.
+            // This is fine as both list are parallel collections with the same number of items.
             resourceSet = new ResourceSet(mFlavorConfigs.get(n).getName());
             resourceSet.addSources(flavorResDirs);
             resourceSets.add(resourceSet);

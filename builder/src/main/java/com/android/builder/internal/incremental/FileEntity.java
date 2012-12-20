@@ -16,11 +16,12 @@
 
 package com.android.builder.internal.incremental;
 
+import com.google.common.hash.HashCode;
+import com.google.common.hash.Hashing;
+import com.google.common.io.ByteStreams;
+import com.google.common.io.Files;
+
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.MessageDigest;
-import java.util.Formatter;
 
 /**
  * A {@link File} and its associated data needed to figure out if a file changed or not.
@@ -29,10 +30,10 @@ class FileEntity {
 
     private static final byte[] sBuffer = new byte[4096];
 
-    private final File file;
-    private final long lastModified;
-    private long length;
-    private String sha1;
+    private final File mFile;
+    private final long mLastModified;
+    private long mLength;
+    private String mSha1;
 
     /**
      * Exception to indicate a failure to check a jar file's content.
@@ -60,10 +61,10 @@ class FileEntity {
      * @param sha1 its sha1
      */
     FileEntity(File file, long lastModified, long length, String sha1) {
-        this.file = file;
-        this.lastModified = lastModified;
-        this.length = length;
-        this.sha1 = sha1;
+        mFile = file;
+        mLastModified = lastModified;
+        mLength = length;
+        mSha1 = sha1;
     }
 
     /**
@@ -74,9 +75,9 @@ class FileEntity {
      * @param file the file.
      */
     FileEntity(File file) {
-        this.file = file;
-        lastModified = file.lastModified();
-        length = file.length();
+        mFile = file;
+        mLastModified = file.lastModified();
+        mLength = file.length();
     }
 
     /**
@@ -84,7 +85,7 @@ class FileEntity {
      * @return the file's last modified info.
      */
     long getLastModified() {
-        return lastModified;
+        return mLastModified;
     }
 
     /**
@@ -92,7 +93,7 @@ class FileEntity {
      * @return the file length.
      */
     long getLength() {
-        return length;
+        return mLength;
     }
 
     /**
@@ -100,13 +101,13 @@ class FileEntity {
      * @return the file.
      */
     File getFile() {
-        return file;
+        return mFile;
     }
 
     /**
      * Returns the file's sha1, computing it if necessary.
      *
-     * @return the sha1 or null if it couldn't be computed.
+     * @return the fha1 or null if it couldn't be computed.
      */
     String getSha1() {
         try {
@@ -123,9 +124,9 @@ class FileEntity {
      * @return return whether the file was changed.
      */
     private boolean checkValidity() {
-        if (lastModified != file.lastModified()) {
-            length = file.length();
-            sha1 = null;
+        if (mLastModified != mFile.lastModified()) {
+            mLength = mFile.length();
+            mSha1 = null;
             return true;
         }
 
@@ -141,17 +142,17 @@ class FileEntity {
      * @return true if the files are the same, false otherwise.
      */
     public boolean isDifferentThan(FileEntity fileEntity) {
-        assert fileEntity.file.equals(file);
+        assert fileEntity.mFile.equals(mFile);
 
         // same date, same files.
-        if (lastModified == fileEntity.lastModified) {
+        if (mLastModified == fileEntity.mLastModified) {
             return false;
         }
 
         try {
             // different date doesn't necessarily mean different file.
             // start with size, less computing intensive than sha1.
-            return length != fileEntity.length ||
+            return mLength != fileEntity.mLength ||
                     !computeAndReturnSha1().equals(fileEntity.computeAndReturnSha1());
         } catch (Sha1Exception e) {
             // if we can't compute the sha1, we consider the files different.
@@ -166,10 +167,10 @@ class FileEntity {
      * @throws Sha1Exception
      */
     private String computeAndReturnSha1() throws Sha1Exception {
-        if (sha1 == null) {
-            sha1 = getSha1(file);
+        if (mSha1 == null) {
+            mSha1 = getSha1(mFile);
         }
-        return sha1;
+        return mSha1;
     }
 
     /**
@@ -181,60 +182,23 @@ class FileEntity {
      */
     static String getSha1(File f) throws Sha1Exception {
         synchronized (sBuffer) {
-            FileInputStream fis = null;
+
             try {
-                MessageDigest md = MessageDigest.getInstance("SHA-1");
-
-                fis = new FileInputStream(f);
-                while (true) {
-                    int length = fis.read(sBuffer);
-                    if (length > 0) {
-                        md.update(sBuffer, 0, length);
-                    } else {
-                        break;
-                    }
-                }
-
-                return byteArray2Hex(md.digest());
-
+                HashCode value = ByteStreams.hash(Files.newInputStreamSupplier(f), Hashing.sha1());
+                return value.toString();
             } catch (Exception e) {
                 throw new Sha1Exception(f, e);
-            } finally {
-                if (fis != null) {
-                    try {
-                        fis.close();
-                    } catch (IOException e) {
-                        // ignore
-                    }
-                }
             }
-        }
-    }
-
-    /**
-     * Converts a byte array to an Hex string.
-     * @param hash the byte array to convert,
-     * @return the converted string.
-     */
-    private static String byteArray2Hex(final byte[] hash) {
-        Formatter formatter = new Formatter();
-        try {
-            for (byte b : hash) {
-                formatter.format("%02x", b);
-            }
-            return formatter.toString();
-        } finally {
-            formatter.close();
         }
     }
 
     @Override
     public String toString() {
         return "FileEntity{" +
-                "file=" + file +
-                ", lastModified=" + lastModified +
-                ", length=" + length +
-                ", sha1='" + sha1 + '\'' +
+                "mFile=" + mFile +
+                ", mLastModified=" + mLastModified +
+                ", mLength=" + mLength +
+                ", mSha1='" + mSha1 + '\'' +
                 '}';
     }
 }

@@ -44,7 +44,7 @@ public class CommandLineRunner {
 
         // get the output and return code from the process
         if (grabProcessOutput(process) != 0) {
-            throw new RuntimeException(String.format("running %s failed. see output", command[0]));
+            throw new RuntimeException(String.format("Running %s failed. See output", command[0]));
         }
     }
 
