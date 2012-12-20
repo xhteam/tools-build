@@ -840,7 +840,7 @@ public abstract class BasePlugin {
         }
     }
 
-    def collectArtifacts(Configuration configuration, Map<ModuleVersionIdentifier,
+    static def collectArtifacts(Configuration configuration, Map<ModuleVersionIdentifier,
                          List<ResolvedArtifact>> artifacts) {
         configuration.resolvedConfiguration.resolvedArtifacts.each { ResolvedArtifact artifact ->
             def id = artifact.moduleVersion.id
@@ -927,7 +927,7 @@ public abstract class BasePlugin {
      * @param otherProjectTaskName name of task in other projects
      * @param configurationName name of configuration to use to find the other projects
      */
-    private void addDependsOnTaskInOtherProjects(final Task task, boolean useDependedOn,
+    private static void addDependsOnTaskInOtherProjects(final Task task, boolean useDependedOn,
                                                  String otherProjectTaskName,
                                                  String configurationName) {
         Project project = task.getProject();
@@ -973,7 +973,7 @@ public abstract class BasePlugin {
         return list
     }
 
-    protected List<SymbolFileProvider> getTextSymbolDependencies(
+    protected static List<SymbolFileProvider> getTextSymbolDependencies(
             List<AndroidDependency> libraries) {
         List<SymbolFileProvider> list = Lists.newArrayListWithCapacity(libraries.size())
 

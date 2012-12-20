@@ -221,7 +221,7 @@ public class SignedJarBuilder {
                 }
 
                 // if we have a filter, we check the entry against it
-                if (filter != null && filter.checkEntry(name) == false) {
+                if (filter != null && !filter.checkEntry(name)) {
                     continue;
                 }
 

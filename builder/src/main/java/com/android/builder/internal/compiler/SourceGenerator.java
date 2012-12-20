@@ -36,7 +36,7 @@ public class SourceGenerator {
     private final ILogger mLogger;
 
     static enum DisplayType {
-        FOUND, COMPILING, REMOVE_OUTPUT, REMOVE_DEP;
+        FOUND, COMPILING, REMOVE_OUTPUT, REMOVE_DEP
     }
 
     interface Processor {
@@ -119,7 +119,7 @@ public class SourceGenerator {
             processor.displayMessage(mLogger, DisplayType.REMOVE_OUTPUT, toRemove.size());
 
             for (File toRemoveFile : toRemove) {
-                if (toRemoveFile.delete() == false) {
+                if (!toRemoveFile.delete()) {
                     mLogger.warning("Failed to remove " + toRemoveFile.getAbsolutePath());
                 }
             }
@@ -130,7 +130,7 @@ public class SourceGenerator {
             processor.displayMessage(mLogger, DisplayType.REMOVE_DEP, toRemove.size());
 
             for (File file : depsToRemove) {
-                if (file.delete() == false) {
+                if (!file.delete()) {
                     mLogger.warning("Failed to remove " + file.getAbsolutePath());
                 }
             }

@@ -92,7 +92,7 @@ public class DependencyChecker {
         }
     }
 
-    private int getApiLevelFromMavenArtifact(String version) {
+    private static int getApiLevelFromMavenArtifact(String version) {
         switch (version) {
             case "1.5_r3":
             case "1.5_r4":

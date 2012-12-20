@@ -39,9 +39,9 @@ public abstract class BaseTestCase extends TestCase {
      * the same number of items, otherwise it'll only checks that each resource key is present
      * in both maps.
      *
-     * @param resourceMap1
-     * @param resourceMap2
-     * @param fullCompare
+     * @param resourceMap1 the first resource Map
+     * @param resourceMap2 the second resource Map
+     * @param fullCompare whether a full compare is requested.
      */
     protected void compareResourceMaps(ResourceMap resourceMap1, ResourceMap resourceMap2,
                                        boolean fullCompare) {

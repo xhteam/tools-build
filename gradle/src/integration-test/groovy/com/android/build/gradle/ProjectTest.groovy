@@ -179,7 +179,7 @@ class ProjectTest extends BaseTest {
         return (File) localProp.file
     }
 
-    private void checkImageColor(File folder, String fileName, int expectedColor) {
+    private static void checkImageColor(File folder, String fileName, int expectedColor) {
         File f = new File(folder, fileName)
         assertTrue("File '" + f.getAbsolutePath() + "' does not exist.", f.isFile())
 

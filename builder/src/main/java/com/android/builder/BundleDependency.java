@@ -19,6 +19,7 @@ package com.android.builder;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.google.common.base.Objects;
 
 import java.io.File;
 
@@ -115,9 +116,7 @@ public abstract class BundleDependency implements AndroidDependency {
 
         BundleDependency that = (BundleDependency) o;
 
-        if (mName != null ? !mName.equals(that.mName) : that.mName != null) return false;
-
-        return true;
+        return Objects.equal(mName, that.mName);
     }
 
     @Override

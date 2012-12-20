@@ -55,16 +55,8 @@ public class InputPath {
      * @return true if the file must be checked for modification.
      */
     public boolean checksForModification(File file) {
-        if (ignores(file)) {
-            return false;
-        }
-
-        if (mTouchedExtensions != null &&
-                mTouchedExtensions.contains(getExtension(file)) == false) {
-            return false;
-        }
-
-        return true;
+        return !ignores(file) && (mTouchedExtensions == null ||
+                mTouchedExtensions.contains(getExtension(file)));
     }
 
     /**

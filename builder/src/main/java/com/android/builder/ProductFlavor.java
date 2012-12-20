@@ -55,7 +55,7 @@ public class ProductFlavor extends BuildConfig {
      *
      * @see #MAIN
      */
-    public ProductFlavor(String name) {
+    public ProductFlavor(@NonNull String name) {
         mName = name;
     }
 
@@ -233,7 +233,7 @@ public class ProductFlavor extends BuildConfig {
 
         ProductFlavor that = (ProductFlavor) o;
 
-        if (mName != null ? !mName.equals(that.mName) : that.mName != null) return false;
+        if (!mName.equals(that.mName)) return false;
         if (mMinSdkVersion != that.mMinSdkVersion) return false;
         if (mTargetSdkVersion != that.mTargetSdkVersion) return false;
         if (mVersionCode != that.mVersionCode) return false;
@@ -274,7 +274,7 @@ public class ProductFlavor extends BuildConfig {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (mName != null ? mName.hashCode() : 0);
+        result = 31 * result + mName.hashCode();
         result = 31 * result + mMinSdkVersion;
         result = 31 * result + mTargetSdkVersion;
         result = 31 * result + mVersionCode;

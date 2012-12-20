@@ -37,7 +37,7 @@ public class BuildType extends BuildConfig {
     private boolean mZipAlign = true;
 
     public BuildType(@NonNull String name) {
-        this.mName = name;
+        mName = name;
         if (DEBUG.equals(name)) {
             initDebug();
         } else if (RELEASE.equals(name)) {
@@ -133,7 +133,7 @@ public class BuildType extends BuildConfig {
 
         BuildType buildType = (BuildType) o;
 
-        if (mName != null ? !mName.equals(buildType.mName) : buildType.mName != null) return false;
+        if (!mName.equals(buildType.mName)) return false;
         if (mDebugJniBuild != buildType.mDebugJniBuild) return false;
         if (mDebugSigned != buildType.mDebugSigned) return false;
         if (mDebuggable != buildType.mDebuggable) return false;
@@ -154,7 +154,7 @@ public class BuildType extends BuildConfig {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (mName != null ? mName.hashCode() : 0);
+        result = 31 * result + (mName.hashCode());
         result = 31 * result + (mDebuggable ? 1 : 0);
         result = 31 * result + (mDebugJniBuild ? 1 : 0);
         result = 31 * result + (mDebugSigned ? 1 : 0);

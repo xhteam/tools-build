@@ -63,6 +63,7 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
         hasConfigs = true;
         renderer = new GraphRenderer(getTextOutput());
         renderer.visit(new Action<StyledTextOutput>() {
+            @Override
             public void execute(StyledTextOutput styledTextOutput) {
                 getTextOutput().withStyle(Identifier).text(variant.getName());
                 getTextOutput().withStyle(Description).text("");
@@ -93,6 +94,7 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
         renderChildren(libraries);
     }
 
+    @Override
     public void complete() throws IOException {
         if (hasCyclicDependencies) {
             getTextOutput().withStyle(Info).println(
@@ -104,6 +106,7 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
 
     private void render(final AndroidDependency lib, boolean lastChild) {
         renderer.visit(new Action<StyledTextOutput>() {
+            @Override
             public void execute(StyledTextOutput styledTextOutput) {
                 getTextOutput().text(((BundleDependency)lib).getName());
             }
