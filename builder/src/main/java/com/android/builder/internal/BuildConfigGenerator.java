@@ -90,7 +90,7 @@ public class BuildConfigGenerator {
         }
 
         File pkgFolder = getFolderPath();
-        if (pkgFolder.isDirectory() == false) {
+        if (!pkgFolder.isDirectory()) {
             pkgFolder.mkdirs();
         }
 

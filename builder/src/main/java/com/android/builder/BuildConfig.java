@@ -50,10 +50,8 @@ public class BuildConfig implements Serializable {
 
         BuildConfig that = (BuildConfig) o;
 
-        if (!mBuildConfigLines.equals(that.mBuildConfigLines))
-            return false;
+        return mBuildConfigLines.equals(that.mBuildConfigLines);
 
-        return true;
     }
 
     @Override

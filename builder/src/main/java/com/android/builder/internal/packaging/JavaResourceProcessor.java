@@ -135,11 +135,11 @@ public class JavaResourceProcessor {
      * @param folderName the name of the folder.
      */
     public static boolean checkFolderForPackaging(String folderName) {
-        return folderName.equalsIgnoreCase("CVS") == false &&
-            folderName.equalsIgnoreCase(".svn") == false &&
-            folderName.equalsIgnoreCase("SCCS") == false &&
-            folderName.equalsIgnoreCase("META-INF") == false &&
-            folderName.startsWith("_") == false;
+        return !folderName.equalsIgnoreCase("CVS") &&
+                !folderName.equalsIgnoreCase(".svn") &&
+                !folderName.equalsIgnoreCase("SCCS") &&
+                !folderName.equalsIgnoreCase("META-INF") &&
+                !folderName.startsWith("_");
     }
 
     /**
@@ -165,24 +165,20 @@ public class JavaResourceProcessor {
      */
     public static boolean checkFileForPackaging(String fileName, String extension) {
         // ignore hidden files and backup files
-        if (fileName.charAt(0) == '.' || fileName.charAt(fileName.length()-1) == '~') {
-            return false;
-        }
+        return !(fileName.charAt(0) == '.' || fileName.charAt(fileName.length() - 1) == '~') &&
+                !"aidl".equalsIgnoreCase(extension) &&        // Aidl files
+                !"rs".equalsIgnoreCase(extension) &&          // RenderScript files
+                !"rsh".equalsIgnoreCase(extension) &&         // RenderScript header files
+                !"d".equalsIgnoreCase(extension) &&           // Dependency files
+                !"java".equalsIgnoreCase(extension) &&        // Java files
+                !"scala".equalsIgnoreCase(extension) &&       // Scala files
+                !"class".equalsIgnoreCase(extension) &&       // Java class files
+                !"scc".equalsIgnoreCase(extension) &&         // VisualSourceSafe
+                !"swp".equalsIgnoreCase(extension) &&         // vi swap file
+                !"thumbs.db".equalsIgnoreCase(fileName) &&    // image index file
+                !"picasa.ini".equalsIgnoreCase(fileName) &&   // image index file
+                !"package.html".equalsIgnoreCase(fileName) && // Javadoc
+                !"overview.html".equalsIgnoreCase(fileName);  // Javadoc
 
-        return "aidl".equalsIgnoreCase(extension) == false &&       // Aidl files
-            "rs".equalsIgnoreCase(extension) == false &&            // RenderScript files
-            "rsh".equalsIgnoreCase(extension) == false &&           // RenderScript header files
-            "d".equalsIgnoreCase(extension) == false &&             // Dependency files
-            "java".equalsIgnoreCase(extension) == false &&          // Java files
-            "scala".equalsIgnoreCase(extension) == false &&         // Scala files
-            "class".equalsIgnoreCase(extension) == false &&         // Java class files
-            "scc".equalsIgnoreCase(extension) == false &&           // VisualSourceSafe
-            "swp".equalsIgnoreCase(extension) == false &&           // vi swap file
-            "thumbs.db".equalsIgnoreCase(fileName) == false &&      // image index file
-            "picasa.ini".equalsIgnoreCase(fileName) == false &&     // image index file
-            "package.html".equalsIgnoreCase(fileName) == false &&   // Javadoc
-            "overview.html".equalsIgnoreCase(fileName) == false;    // Javadoc
     }
-
-
 }

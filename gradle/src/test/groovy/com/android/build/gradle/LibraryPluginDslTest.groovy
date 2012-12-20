@@ -67,7 +67,7 @@ public class LibraryPluginDslTest extends BaseTest {
         checkLibraryTasks(variant)
     }
 
-    private void checkTestTasks(BuildVariant variant) {
+    private static void checkTestTasks(BuildVariant variant) {
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
         assertNotNull(variant.mergeResources)
@@ -92,7 +92,7 @@ public class LibraryPluginDslTest extends BaseTest {
         assertNotNull(variant.runTests)
     }
 
-    private void checkLibraryTasks(BuildVariant variant) {
+    private static void checkLibraryTasks(BuildVariant variant) {
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
         assertNotNull(variant.processResources)
@@ -110,7 +110,7 @@ public class LibraryPluginDslTest extends BaseTest {
         assertNull(variant.runTests)
     }
 
-    private BuildVariant findVariant(Collection<BuildVariant> variants, String name) {
+    private static BuildVariant findVariant(Collection<BuildVariant> variants, String name) {
         for (BuildVariant variant : variants) {
             if (name.equals(variant.name)) {
                 return variant

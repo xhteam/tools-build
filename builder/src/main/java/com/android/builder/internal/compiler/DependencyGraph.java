@@ -38,7 +38,7 @@ public class DependencyGraph {
     private final ILogger mLogger;
 
     private static enum DependencyStatus {
-        NONE, NEW_FILE, UPDATED_FILE, MISSING_FILE, ERROR;
+        NONE, NEW_FILE, UPDATED_FILE, MISSING_FILE, ERROR
     }
 
     // Files that we know about from the dependency file
@@ -136,7 +136,7 @@ public class DependencyGraph {
      */
     private void parseDependencyFile(File dependencyFile) {
         // first check if the dependency file is here.
-        if (dependencyFile.isFile() == false) {
+        if (!dependencyFile.isFile()) {
             mMissingDepFile = true;
             return;
         }
@@ -291,7 +291,7 @@ public class DependencyGraph {
         // if it's a file, remove it from the list of prereqs.
         // This way if files in this folder don't trigger a build we'll have less
         // files to go through manually
-        if (mPrereqs.remove(file) == false) {
+        if (!mPrereqs.remove(file)) {
             // turns out this is a new file!
 
             if (DEBUG) {
@@ -328,7 +328,7 @@ public class DependencyGraph {
 
         // Loop through our prereq files and make sure they still exist
         for (File prereq : mPrereqs) {
-            if (prereq.exists() == false) {
+            if (!prereq.exists()) {
                 if (DEBUG) {
                     mLogger.info("MISSING FILE: " + prereq.getAbsolutePath());
                 }
@@ -394,7 +394,7 @@ public class DependencyGraph {
     private boolean missingTargetFile() {
         // Loop through our target files and make sure they still exist
         for (File target : mTargets) {
-            if (target.exists() == false) {
+            if (!target.exists()) {
                 return true;
             }
         }

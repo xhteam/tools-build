@@ -234,7 +234,8 @@ public class AppPluginInternalTest extends BaseTest {
         assertNotNull(findVariant(variants, "F2FcTest"))
     }
 
-    private ApplicationVariant findVariant(Collection<ApplicationVariant> variants, String name) {
+    private static ApplicationVariant findVariant(Collection<ApplicationVariant> variants,
+                                                  String name) {
         for (ApplicationVariant variant : variants) {
             if (name.equals(variant.name)) {
                 return variant

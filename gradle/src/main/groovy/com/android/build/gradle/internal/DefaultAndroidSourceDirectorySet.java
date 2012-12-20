@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.gradle.api.internal.file.FileResolver;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -51,9 +52,7 @@ public class DefaultAndroidSourceDirectorySet implements AndroidSourceDirectoryS
 
     @Override
     public AndroidSourceDirectorySet srcDirs(Object... srcDirs) {
-        for (Object srcDir : srcDirs) {
-            source.add(srcDir);
-        }
+        Collections.addAll(source, srcDirs);
         return this;
     }
 

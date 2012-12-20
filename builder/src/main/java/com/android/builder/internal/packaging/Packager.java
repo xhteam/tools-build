@@ -105,7 +105,7 @@ public final class Packager implements IArchiveBuilder {
             // jar file, but we need to exclude some other folder (like /META-INF) so
             // we check anyway.
             for (int i = 0 ; i < segments.length - 1; i++) {
-                if (JavaResourceProcessor.checkFolderForPackaging(segments[i]) == false) {
+                if (!JavaResourceProcessor.checkFolderForPackaging(segments[i])) {
                     return false;
                 }
             }
@@ -412,7 +412,7 @@ public final class Packager implements IArchiveBuilder {
 
         File nativeFolder = new File(jniLibLocation);
 
-        if (nativeFolder.isDirectory() == false) {
+        if (!nativeFolder.isDirectory()) {
             // not a directory? check if it's a file or doesn't exist
             if (nativeFolder.exists()) {
                 throw new PackagerException("%s is not a folder", nativeFolder);
@@ -518,12 +518,12 @@ public final class Packager implements IArchiveBuilder {
         }
 
         if (file.exists()) { // will be a file in this case.
-            if (file.canWrite() == false) {
+            if (!file.canWrite()) {
                 throw new PackagerException("Cannot write %s", file);
             }
         } else {
             try {
-                if (file.createNewFile() == false) {
+                if (!file.createNewFile()) {
                     throw new PackagerException("Failed to create %s", file);
                 }
             } catch (IOException e) {
@@ -549,7 +549,7 @@ public final class Packager implements IArchiveBuilder {
         }
 
         if (file.exists()) {
-            if (file.canRead() == false) {
+            if (!file.canRead()) {
                 throw new PackagerException("Cannot read %s", file);
             }
         } else {

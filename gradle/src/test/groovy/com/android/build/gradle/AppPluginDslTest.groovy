@@ -204,7 +204,7 @@ public class AppPluginDslTest extends BaseTest {
         checkTasks(variant, false)
     }
 
-    private void checkTasks(BuildVariant variant, boolean testVariant) {
+    private static void checkTasks(BuildVariant variant, boolean testVariant) {
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
         assertNotNull(variant.mergeResources)
@@ -238,7 +238,7 @@ public class AppPluginDslTest extends BaseTest {
         }
     }
 
-    private BuildVariant findVariant(Collection<BuildVariant> variants, String name) {
+    private static BuildVariant findVariant(Collection<BuildVariant> variants, String name) {
         for (BuildVariant variant : variants) {
             if (name.equals(variant.name)) {
                 return variant

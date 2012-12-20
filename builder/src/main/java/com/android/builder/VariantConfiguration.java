@@ -68,7 +68,7 @@ public class VariantConfiguration {
     private final List<AndroidDependency> mFlatLibraries = Lists.newArrayList();
 
     public static enum Type {
-        DEFAULT, LIBRARY, TEST;
+        DEFAULT, LIBRARY, TEST
     }
 
     /**
@@ -318,7 +318,7 @@ public class VariantConfiguration {
             resolveIndirectLibraryDependencies(dependencies, outFlatDependencies);
 
             // and add the current one (if needed) in front (higher priority)
-            if (outFlatDependencies.contains(library) == false) {
+            if (!outFlatDependencies.contains(library)) {
                 outFlatDependencies.add(0, library);
             }
         }

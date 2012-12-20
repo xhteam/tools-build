@@ -134,7 +134,7 @@ public final class KeystoreHelper {
             for (String arg : commandArray) {
                 boolean hasSpace = arg.indexOf(' ') != -1;
 
-                if (firstArg == true) {
+                if (firstArg) {
                     firstArg = false;
                 } else {
                     builder.append(' ');
@@ -155,11 +155,7 @@ public final class KeystoreHelper {
                     javaHome, builder.toString());
         }
 
-        if (result != 0) {
-            return false;
-        }
-
-        return true;
+        return result == 0;
     }
 
     public static SigningInfo getSigningInfo(
