@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
+
 import com.android.build.gradle.internal.AaptOptionsImpl
 import com.android.build.gradle.tasks.ProcessResources
 import com.android.builder.SymbolFileProvider
 import com.android.builder.VariantConfiguration
-import com.android.builder.resources.FileStatus
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.Nested

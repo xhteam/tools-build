@@ -19,6 +19,7 @@ package com.android.builder.resources;
 import com.android.annotations.NonNull;
 import com.android.resources.ResourceType;
 import com.google.common.collect.Lists;
+import com.google.common.io.Closeables;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -36,7 +37,9 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.android.SdkConstants.*;
+import static com.android.SdkConstants.ATTR_NAME;
+import static com.android.SdkConstants.ATTR_TYPE;
+import static com.android.SdkConstants.TAG_ITEM;
 
 /**
  * Parser for "values" files.
@@ -168,11 +171,7 @@ class ValueResourceParser {
         } catch (SAXException e) {
             throw new IOException(e);
         } finally {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                // ignore
-            }
+            Closeables.closeQuietly(stream);
         }
     }
 }

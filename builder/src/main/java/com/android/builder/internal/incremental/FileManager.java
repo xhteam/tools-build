@@ -18,9 +18,19 @@ package com.android.builder.internal.incremental;
 
 import com.android.annotations.NonNull;
 import com.android.builder.resources.FileStatus;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Maps;
+import com.google.common.io.Closeables;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -36,7 +46,8 @@ import java.util.regex.Pattern;
  */
 class FileManager {
 
-    private static final Pattern READ_PATTERN = Pattern.compile("^(\\d+) (\\d+) ([0-9a-f]+) (.+)$");
+    private static final Pattern READ_PATTERN = Pattern.compile(
+            "^(\\d+)\\s+(\\d+)\\s+([0-9a-f]+)\\s+(.+)$");
 
     private Map<File, FileEntity> mLoadedFiles = Maps.newHashMap();
     private Map<File, FileEntity> mProcessedFiles = Maps.newHashMap();
@@ -62,7 +73,7 @@ class FileManager {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(stateFile), "UTF-8"));
+                    new FileInputStream(stateFile), Charsets.UTF_8));
 
             String line = null;
             while ((line = reader.readLine()) != null) {
@@ -95,13 +106,7 @@ class FileManager {
         } catch (IOException ignored) {
             // shouldn't happen, but if it does, we just won't have a cache.
         } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException ignored) {
-                    // ignore
-                }
-            }
+            Closeables.closeQuietly(reader);
         }
 
         return false;
@@ -121,7 +126,7 @@ class FileManager {
             parentFolder.mkdirs();
 
             // then write the file.
-            writer = new OutputStreamWriter(new FileOutputStream(stateFile), "UTF-8");
+            writer = new OutputStreamWriter(new FileOutputStream(stateFile), Charsets.UTF_8);
 
             writer.write("# incremental data. DO NOT EDIT.\n");
             writer.write("# format is <lastModified> <length> <SHA-1> <path>\n");
@@ -141,12 +146,7 @@ class FileManager {
             }
         } catch (IOException ignored) {
         } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException ignored) {
-                }
-            }
+            Closeables.closeQuietly(writer);
         }
     }
 
