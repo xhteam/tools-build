@@ -16,6 +16,7 @@
 
 package com.android.builder.resources;
 
+import com.android.builder.TestUtils;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
 import com.google.common.base.Charsets;
@@ -149,7 +150,7 @@ public class ResourceMergerTest extends BaseTestCase {
      * @throws Exception
      */
     public void testLoadingTestPathReplacement() throws Exception {
-        File root = getRoot("baseMerge");
+        File root = TestUtils.getRoot("baseMerge");
         File fakeRoot = getMergedBlobFolder(root);
 
         ResourceMerger resourceMerger = new ResourceMerger();
@@ -643,7 +644,7 @@ public class ResourceMergerTest extends BaseTestCase {
     private static ResourceMerger getResourceMerger()
             throws DuplicateResourceException, IOException {
         if (sResourceMerger == null) {
-            File root = getRoot("baseMerge");
+            File root = TestUtils.getRoot("baseMerge");
 
             ResourceSet res = ResourceSetTest.getBaseResourceSet();
 
@@ -687,7 +688,7 @@ public class ResourceMergerTest extends BaseTestCase {
 
         String content = Files.toString(originalMerger, Charsets.UTF_8);
 
-        // search and replace $TOP$ with the root
+        // search and replace $TOP$ with the root and $SEP$ with the platform separator.
         content = content.replaceAll(
                 "\\$TOP\\$", folder.getAbsolutePath()).replaceAll("\\$SEP\\$", File.separator);
 
@@ -698,7 +699,7 @@ public class ResourceMergerTest extends BaseTestCase {
     }
 
     private File getIncMergeRoot(String name) throws IOException {
-        File root = getCanonicalRoot("incMergeData");
+        File root = TestUtils.getCanonicalRoot("incMergeData");
         return new File(root, name);
     }
 

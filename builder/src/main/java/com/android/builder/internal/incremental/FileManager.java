@@ -22,6 +22,7 @@ import com.google.common.collect.Maps;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,6 +41,7 @@ class FileManager {
     private Map<File, FileEntity> mLoadedFiles = Maps.newHashMap();
     private Map<File, FileEntity> mProcessedFiles = Maps.newHashMap();
     private Map<File, FileStatus> mResults = Maps.newHashMap();
+    private Map<File, FileStatus> mReturnedMap = null;
 
     public FileManager() {
     }
@@ -163,13 +165,21 @@ class FileManager {
      */
     @NonNull
     public Map<File, FileStatus> getChangedFiles() {
-        // at this point, all the files that needed processing have been processed,
-        // but there may be removed files remaining in the loaded file map.
-        for (File f : mLoadedFiles.keySet()) {
-            mResults.put(f, FileStatus.REMOVED);
+        if (mReturnedMap == null) {
+            // create a map with the content of the result map.
+            mReturnedMap = Maps.newHashMap(mResults);
+
+            // at this point, all the files that needed processing have been processed,
+            // but there may be removed files remaining in the loaded file map.
+            for (File f : mLoadedFiles.keySet()) {
+                mReturnedMap.put(f, FileStatus.REMOVED);
+            }
+
+            // wrap this
+            mReturnedMap = Collections.unmodifiableMap(mReturnedMap);
         }
 
-        return mResults;
+        return mReturnedMap;
     }
 
     private void processFile(File file) {

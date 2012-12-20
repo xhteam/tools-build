@@ -16,6 +16,7 @@
 
 package com.android.builder.resources;
 
+import com.android.builder.TestUtils;
 import com.google.common.collect.Maps;
 
 import java.io.File;
@@ -69,7 +70,7 @@ public class ValueResourceParserTest extends BaseTestCase {
 
     private static List<Resource> getParsedResources() throws IOException {
         if (sResources == null) {
-            File root = getRoot("baseResourceSet");
+            File root = TestUtils.getRoot("baseResourceSet");
             File values = new File(root, "values");
             File valuesXml = new File(values, "values.xml");
 

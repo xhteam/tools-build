@@ -19,24 +19,9 @@ package com.android.builder.resources;
 import com.google.common.collect.ListMultimap;
 import junit.framework.TestCase;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 public abstract class BaseTestCase extends TestCase {
-
-    protected static File getRoot(String name) {
-        File root = new File("src/test/resources/testData/" + name);
-        assertTrue("Test folder '" + name + "' does not exist!",
-                root.isDirectory());
-
-        return root;
-    }
-
-    protected static File getCanonicalRoot(String name) throws IOException {
-        File root = getRoot(name);
-        return root.getCanonicalFile();
-    }
 
     protected void verifyResourceExists(ResourceMap resourceMap, String... resourceKeys) {
         ListMultimap<String, Resource> map = resourceMap.getResourceMap();
