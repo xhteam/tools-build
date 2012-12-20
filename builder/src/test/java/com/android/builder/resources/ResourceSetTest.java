@@ -16,6 +16,8 @@
 
 package com.android.builder.resources;
 
+import com.android.builder.TestUtils;
+
 import java.io.File;
 import java.io.IOException;
 
@@ -59,7 +61,7 @@ public class ResourceSetTest extends BaseTestCase {
     }
 
     public void testDupResourceSet() throws Exception {
-        File root = getRoot("dupResourceSet");
+        File root = TestUtils.getRoot("dupResourceSet");
 
         ResourceSet set = new ResourceSet("main");
         set.addSource(new File(root, "res1"));
@@ -76,7 +78,7 @@ public class ResourceSetTest extends BaseTestCase {
 
     static ResourceSet getBaseResourceSet() throws DuplicateResourceException, IOException {
         if (sBaseResourceSet == null) {
-            File root = getRoot("baseResourceSet");
+            File root = TestUtils.getRoot("baseResourceSet");
 
             sBaseResourceSet = new ResourceSet("main");
             sBaseResourceSet.addSource(root);

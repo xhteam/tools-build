@@ -227,4 +227,14 @@ class FileEntity {
             formatter.close();
         }
     }
+
+    @Override
+    public String toString() {
+        return "FileEntity{" +
+                "file=" + file +
+                ", lastModified=" + lastModified +
+                ", length=" + length +
+                ", sha1='" + sha1 + '\'' +
+                '}';
+    }
 }
