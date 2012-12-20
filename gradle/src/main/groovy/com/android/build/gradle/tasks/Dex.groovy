@@ -18,7 +18,7 @@ package com.android.build.gradle.tasks
 import com.android.build.gradle.internal.tasks.BaseTask
 import org.gradle.api.tasks.OutputFile
 
-public class Dex extends BaseTask {
+public abstract class Dex extends BaseTask {
 
     @OutputFile
     File outputFile

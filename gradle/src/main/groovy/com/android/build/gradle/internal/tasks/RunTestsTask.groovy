@@ -16,8 +16,6 @@
 package com.android.build.gradle.internal.tasks
 
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.TaskAction
-
 /**
  * Run tests for a given variant
  */
@@ -26,8 +24,8 @@ public class RunTestsTask extends BaseTask {
     @Input
     File sdkDir
 
-    @TaskAction
-    void generate() {
+    @Override
+    protected void doFullTaskAction() {
         List<String> command = variant.runCommand
 
         logger.info("Running tests with command: " + command)

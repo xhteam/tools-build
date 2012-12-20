@@ -18,7 +18,7 @@ package com.android.build.gradle.tasks
 import com.android.build.gradle.internal.tasks.BaseTask
 import org.gradle.api.tasks.OutputDirectory
 
-public class GenerateBuildConfig extends BaseTask {
+public abstract class GenerateBuildConfig extends BaseTask {
 
     @OutputDirectory
     File sourceOutputDir

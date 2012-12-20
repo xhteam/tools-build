@@ -21,7 +21,7 @@ import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 
-public class PackageApplication extends BaseTask {
+public abstract class PackageApplication extends BaseTask {
     @InputFile
     File resourceFile
 

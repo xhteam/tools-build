@@ -19,7 +19,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 
-public class ZipAlign extends DefaultTask {
+public abstract class ZipAlign extends DefaultTask {
     @OutputFile
     File outputFile
 

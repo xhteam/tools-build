@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.tasks.MergeResources
-import com.google.common.collect.Lists
+import com.android.builder.resources.FileStatus
+import com.android.builder.resources.ResourceMerger
+import com.android.builder.resources.ResourceSet
+import com.android.utils.Pair
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.TaskAction
 
 class MergeResourcesTask extends MergeResources {
 
@@ -27,29 +28,92 @@ class MergeResourcesTask extends MergeResources {
     Iterable<File> rawInputFolders
 
     // actual inputs
-    List<List<File>> inputResourceSets
+    List<ResourceSet> inputResourceSets
 
-    @TaskAction
-    void generate() {
-        // this is not yet incremental. Need to clean up the previous merge result.
-        File destinationDir = getOutputDir()
-
-        deleteFolder(destinationDir)
-        destinationDir.mkdir()
-
-        getBuilder().mergeResources(destinationDir.absolutePath, getInputResourceSets())
+    @Override
+    protected boolean isIncremental() {
+        return true
     }
 
-    static Iterable<File> inlineInputs(List<List<File>> inputs) {
-        List<File> list = Lists.newArrayList();
+    @Override
+    protected Collection<File> getOutputForIncrementalBuild() {
+        return Collections.singletonList(getOutputDir())
+    }
 
-        for (List<File> folders : inputs) {
-            for (File folder : folders) {
-                list.add(folder);
+    @Override
+    protected void doFullTaskAction() {
+        // this is full run, clean the previous output
+        File destinationDir = getOutputDir()
+        deleteFolder(destinationDir)
+        destinationDir.mkdirs()
+
+        List<ResourceSet> resourceSets = getInputResourceSets()
+
+        // create a new merger and populate it with the sets.
+        ResourceMerger merger = new ResourceMerger()
+
+        for (ResourceSet resourceSet : resourceSets) {
+            // set needs to be loaded.
+            resourceSet.loadFromFiles()
+            merger.addResourceSet(resourceSet)
+        }
+
+        // get the merged set and write it down.
+        merger.writeResourceFolder(destinationDir)
+
+        // No exception? Write the known state.
+        merger.writeBlobTo(getIncrementalFolder())
+    }
+
+    @Override
+    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs,
+                                           Map<File, FileStatus> changedOutputs) {
+        // create a merger and load the known state.
+        ResourceMerger merger = new ResourceMerger()
+        if (!merger.loadFromBlob(getIncrementalFolder())) {
+            doFullTaskAction()
+            return
+        }
+
+        // compare the known state to the current sets to detect incompatibility.
+        // This is in case there's a change that's too hard to do incrementally. In this case
+        // we'll simply revert to full build.
+        List<ResourceSet> resourceSets = getInputResourceSets()
+
+        if (!merger.checkValidUpdate(resourceSets)) {
+            project.logger.info("Changed Resource sets: full task run!")
+            doFullTaskAction()
+            return
+        }
+
+        // The incremental process is the following:
+        // Loop on all the changed files, find which ResourceSet it belongs to, then ask
+        // the resource set to update itself with the new file.
+        for (Map.Entry<File, FileStatus> entry : changedInputs.entrySet()) {
+            File changedFile = entry.getKey()
+
+            Pair<ResourceSet, File> matchSet = merger.getResourceSetContaining(changedFile)
+            assert matchSet != null
+            if (matchSet == null) {
+                doFullTaskAction()
+                return
+            }
+
+            // do something?
+            if (!matchSet.getFirst().updateWith(
+                    matchSet.getSecond(), changedFile, entry.getValue())) {
+                project.logger.info(
+                        String.format("Failed to process %s event! Full task run",
+                                entry.getValue()))
+                doFullTaskAction()
+                return
             }
         }
 
-        return list;
+        merger.writeResourceFolder(getOutputDir())
+
+        // No exception? Write the known state.
+        merger.writeBlobTo(getIncrementalFolder())
     }
 
     private static void deleteFolder(File folder) {
@@ -59,7 +123,7 @@ class MergeResourcesTask extends MergeResources {
                 if (file.isDirectory()) {
                     deleteFolder(file)
                 }
-                file.delete();
+                file.delete()
             }
         }
 

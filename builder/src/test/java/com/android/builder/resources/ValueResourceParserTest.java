@@ -19,7 +19,7 @@ package com.android.builder.resources;
 import com.google.common.collect.Maps;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -37,11 +37,9 @@ public class ValueResourceParserTest extends BaseTestCase {
 
     public void testParsedResourcesByName() throws Exception {
         List<Resource> resources = getParsedResources();
-
-        // convert to a map
-        Map<String, Resource> map = Maps.newHashMapWithExpectedSize(resources.size());
-        for (Resource r : resources) {
-            map.put(r.getKey(), r);
+        Map<String, Resource> resourceMap = Maps.newHashMapWithExpectedSize(resources.size());
+        for (Resource item : resources) {
+            resourceMap.put(item.getKey(), item);
         }
 
         String[] resourceNames = new String[] {
@@ -65,11 +63,11 @@ public class ValueResourceParserTest extends BaseTestCase {
         };
 
         for (String name : resourceNames) {
-            assertNotNull(name, map.get(name));
+            assertNotNull(name, resourceMap.get(name));
         }
     }
 
-    private static List<Resource> getParsedResources() throws FileNotFoundException {
+    private static List<Resource> getParsedResources() throws IOException {
         if (sResources == null) {
             File root = getRoot("baseResourceSet");
             File values = new File(root, "values");
@@ -77,6 +75,9 @@ public class ValueResourceParserTest extends BaseTestCase {
 
             ValueResourceParser parser = new ValueResourceParser(valuesXml);
             sResources = parser.parseFile();
+
+            // create a fake resource file to allow calling Resource.getKey()
+            new ResourceFile(valuesXml, sResources, "");
         }
 
         return sResources;

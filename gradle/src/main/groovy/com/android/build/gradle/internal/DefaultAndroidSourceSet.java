@@ -65,6 +65,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
         String javaResourcesDisplayName = String.format("%s Java resources", displayName);
         javaResources = new DefaultSourceDirectorySet(javaResourcesDisplayName, fileResolver);
         javaResources.getFilter().exclude(new Spec<FileTreeElement>() {
+            @Override
             public boolean isSatisfiedBy(FileTreeElement element) {
                 return javaSource.contains(element.getFile());
             }

@@ -19,12 +19,12 @@ package com.android.builder;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
+import com.android.builder.resources.ResourceSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -151,7 +151,7 @@ public class VariantConfiguration {
      * @return the config object
      */
     public VariantConfiguration addProductFlavor(@NonNull ProductFlavor productFlavor,
-                                 @NonNull SourceProvider sourceProvider) {
+                                                 @NonNull SourceProvider sourceProvider) {
         mFlavorConfigs.add(productFlavor);
         mFlavorSourceProviders.add(sourceProvider);
         mMergedFlavor = productFlavor.mergeOver(mMergedFlavor);
@@ -506,53 +506,53 @@ public class VariantConfiguration {
     }
 
     /**
-     * Returns the dynamic list of resource sets based on the configuration, its dependencies,
+     * Returns the dynamic list of {@link ResourceSet} based on the configuration, its dependencies,
      * as well as tested config if applicable (test of a library).
-     *
-     * The list is a list of folders. Each list of folder represents a
-     * {@link com.android.builder.resources.ResourceSet}.
      *
      * The list is ordered in ascending order of importance, meaning the first set is meant to be
      * overridden by the 2nd one and so on. This is meant to facilitate usage of the list in a
      * {@link com.android.builder.resources.ResourceMerger}.
      *
-     * @return a list of list of resource folders.
+     * @return a list ResourceSet.
      */
-    @NonNull public List<List<File>> getResourceSets() {
-        List<List<File>> inputs = Lists.newArrayList();
+    @NonNull public List<ResourceSet> getResourceSets() {
+        List<ResourceSet> resourceSets = Lists.newArrayList();
 
         // the list of dependency must be reversed to use the right overlay order.
         for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
             AndroidDependency dependency = mFlatLibraries.get(n);
             File resFolder = dependency.getResFolder();
             if (resFolder != null) {
-                inputs.add(Collections.singletonList(resFolder));
+                ResourceSet resourceSet = new ResourceSet(dependency.getFolder().getName());
+                resourceSet.addSource(resFolder);
+                resourceSets.add(resourceSet);
             }
         }
 
         Set<File> mainResDirs = mDefaultSourceProvider.getResourcesDirectories();
-        List<File> mainSet = Lists.newArrayList();
-        mainSet.addAll(mainResDirs);
-        inputs.add(mainSet);
+
+        ResourceSet resourceSet = new ResourceSet("main");
+        resourceSet.addSources(mainResDirs);
+        resourceSets.add(resourceSet);
 
         // the list of flavor must be reversed to use the right overlay order.
         for (int n = mFlavorSourceProviders.size() - 1; n >= 0 ; n--) {
             SourceProvider sourceProvider = mFlavorSourceProviders.get(n);
 
             Set<File> flavorResDirs = sourceProvider.getResourcesDirectories();
-            List<File> flavorSet = Lists.newArrayList();
-            flavorSet.addAll(flavorResDirs);
-            inputs.add(flavorSet);
+            resourceSet = new ResourceSet(mFlavorConfigs.get(n).getName());
+            resourceSet.addSources(flavorResDirs);
+            resourceSets.add(resourceSet);
         }
 
         if (mBuildTypeSourceProvider != null) {
             Set<File> typeResDirs = mBuildTypeSourceProvider.getResourcesDirectories();
-            List<File> typeSet = Lists.newArrayList();
-            typeSet.addAll(typeResDirs);
-            inputs.add(typeSet);
+            resourceSet = new ResourceSet(mBuildType.getName());
+            resourceSet.addSources(typeResDirs);
+            resourceSets.add(resourceSet);
         }
 
-        return inputs;
+        return resourceSets;
     }
 
     public List<File> getAidlSourceList() {

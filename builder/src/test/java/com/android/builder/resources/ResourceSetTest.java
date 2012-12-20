@@ -17,6 +17,7 @@
 package com.android.builder.resources;
 
 import java.io.File;
+import java.io.IOException;
 
 public class ResourceSetTest extends BaseTestCase {
 
@@ -24,13 +25,13 @@ public class ResourceSetTest extends BaseTestCase {
 
     public void testBaseResourceSetByCount() throws Exception {
         ResourceSet resourceSet = getBaseResourceSet();
-        assertEquals(23, resourceSet.getSize());
+        assertEquals(23, resourceSet.size());
     }
 
     public void testBaseResourceSetByName() throws Exception {
         ResourceSet resourceSet = getBaseResourceSet();
 
-        verifyResources(resourceSet,
+        verifyResourceExists(resourceSet,
                 "drawable/icon",
                 "drawable/patch",
                 "raw/foo",
@@ -60,11 +61,12 @@ public class ResourceSetTest extends BaseTestCase {
     public void testDupResourceSet() throws Exception {
         File root = getRoot("dupResourceSet");
 
-        ResourceSet set = new ResourceSet();
+        ResourceSet set = new ResourceSet("main");
         set.addSource(new File(root, "res1"));
+        set.addSource(new File(root, "res2"));
         boolean gotException = false;
         try {
-            set.addSource(new File(root, "res2"));
+            set.loadFromFiles();
         } catch (DuplicateResourceException e) {
             gotException = true;
         }
@@ -72,12 +74,13 @@ public class ResourceSetTest extends BaseTestCase {
         assertTrue(gotException);
     }
 
-    static ResourceSet getBaseResourceSet() throws DuplicateResourceException {
+    static ResourceSet getBaseResourceSet() throws DuplicateResourceException, IOException {
         if (sBaseResourceSet == null) {
             File root = getRoot("baseResourceSet");
 
-            sBaseResourceSet = new ResourceSet();
+            sBaseResourceSet = new ResourceSet("main");
             sBaseResourceSet.addSource(root);
+            sBaseResourceSet.loadFromFiles();
         }
 
         return sBaseResourceSet;

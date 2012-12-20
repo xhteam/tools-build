@@ -15,11 +15,8 @@
  */
 
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.tasks.AidlCompile
 import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.TaskAction
-
 /**
  */
 public class AidlCompileTask extends AidlCompile {
@@ -30,8 +27,8 @@ public class AidlCompileTask extends AidlCompile {
     @InputFiles
     List<File> importDirs
 
-    @TaskAction
-    void generate() {
+    @Override
+    protected void doFullTaskAction() {
         getBuilder().compileAidl(getSourceDirs(), getSourceOutputDir(), getImportDirs())
     }
 }

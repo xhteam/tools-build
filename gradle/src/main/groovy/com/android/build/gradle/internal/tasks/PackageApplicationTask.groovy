@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.builder.packaging.DuplicateFileException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.TaskAction
 
 public class PackageApplicationTask extends PackageApplication {
 
@@ -45,9 +43,8 @@ public class PackageApplicationTask extends PackageApplication {
     @Input @Optional
     String signingKeyPassword
 
-    @TaskAction
-    void generate() {
-
+    @Override
+    protected void doFullTaskAction() {
         try {
             getBuilder().packageApk(
                     getResourceFile().absolutePath,

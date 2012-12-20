@@ -14,13 +14,10 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.tasks.ProcessManifest
 import com.android.builder.ManifestDependency
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
-import org.gradle.api.tasks.TaskAction
-
 /**
  */
 class ProcessTestManifestTask extends ProcessManifest {
@@ -40,8 +37,8 @@ class ProcessTestManifestTask extends ProcessManifest {
     @Nested
     List<ManifestDependency> libraries
 
-    @TaskAction
-    void generate() {
+    @Override
+    protected void doFullTaskAction() {
         getBuilder().processTestManifest(
                 getTestPackageName(),
                 getMinSdkVersion(),

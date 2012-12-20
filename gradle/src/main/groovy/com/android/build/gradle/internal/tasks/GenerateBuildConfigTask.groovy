@@ -14,10 +14,8 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.tasks.GenerateBuildConfig
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.TaskAction
 
 public class GenerateBuildConfigTask extends GenerateBuildConfig {
 
@@ -30,8 +28,8 @@ public class GenerateBuildConfigTask extends GenerateBuildConfig {
     @Input
     List<String> javaLines;
 
-    @TaskAction
-    void generate() {
+    @Override
+    protected void doFullTaskAction() {
         getBuilder().generateBuildConfig(
                 getPackageName(),
                 isDebuggable(),

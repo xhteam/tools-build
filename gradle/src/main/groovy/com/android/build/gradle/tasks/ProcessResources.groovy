@@ -22,7 +22,7 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
 
-public class ProcessResources extends BaseTask {
+public abstract class ProcessResources extends BaseTask {
 
     @InputFile
     File manifestFile

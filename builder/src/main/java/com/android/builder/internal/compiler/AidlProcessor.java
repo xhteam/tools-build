@@ -63,14 +63,14 @@ public class AidlProcessor implements SourceGenerator.Processor {
         command.add("-p" + mFrameworkLocation);
         command.add("-o" + sourceOutputDir.getAbsolutePath());
         // add all the source folders as import in case an aidl file in a source folder
-        // imports a parcelable from another source folder.
+        // imports a parceleable from another source folder.
         for (File sourceFolder : sourceFolders) {
             if (sourceFolder.isDirectory()) {
                 command.add("-I" + sourceFolder.getAbsolutePath());
             }
         }
 
-        // add all the library aidl folders to access parcelables that are in libraries
+        // add all the library aidl folders to access parceleables that are in libraries
         for (File f : mImportFolders) {
             command.add("-I" + f.getAbsolutePath());
         }

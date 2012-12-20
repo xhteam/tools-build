@@ -15,15 +15,15 @@
  */
 package com.android.build.gradle.internal.tasks
 
+import com.android.builder.resources.FileStatus
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.TaskAction
 
 public class UninstallTask extends BaseTask {
     @Input
     File sdkDir
 
-    @TaskAction
-    void generate() {
+    @Override
+    protected void doFullTaskAction() {
         String packageName = variant.package
         logger.info("Uninstalling app: " + packageName)
         project.exec {
