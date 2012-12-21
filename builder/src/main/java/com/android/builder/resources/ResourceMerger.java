@@ -42,6 +42,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.ArrayStoreException;
+import java.lang.Override;
+import java.lang.String;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -603,5 +607,11 @@ public class ResourceMerger implements ResourceMap {
         if (!folder.isDirectory() && !folder.mkdirs()) {
             throw new IOException("Failed to create directory: " + folder);
         }
+    }
+
+
+    @Override
+    public String toString() {
+        return Arrays.toString(mResourceSets.toArray());
     }
 }

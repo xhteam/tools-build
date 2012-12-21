@@ -32,6 +32,9 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.Override;
+import java.lang.String;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -635,5 +638,10 @@ public class ResourceSet implements SourceSet, ResourceMap {
         }
 
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(mSourceFiles.toArray());
     }
 }

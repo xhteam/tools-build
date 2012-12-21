@@ -16,6 +16,7 @@
 
 package com.android.builder.resources;
 
+import com.android.SdkConstants;
 import com.android.builder.TestUtils;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
@@ -31,9 +32,12 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.String;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ResourceMergerTest extends BaseTestCase {
 
@@ -75,6 +79,10 @@ public class ResourceMergerTest extends BaseTestCase {
                 "integer/integer"
         );
     }
+    
+    private String getPlatformPath(String path) {
+        return path.replaceAll("/", Matcher.quoteReplacement(File.separator));
+    }
 
     public void testReplacedLayout() throws Exception {
         ResourceMerger merger = getResourceMerger();
@@ -87,7 +95,8 @@ public class ResourceMergerTest extends BaseTestCase {
         Resource mainLayout = values.get(1);
 
         ResourceFile sourceFile = mainLayout.getSource();
-        assertTrue(sourceFile.getFile().getAbsolutePath().endsWith("overlay/layout/main.xml"));
+        assertTrue(sourceFile.getFile().getAbsolutePath()
+            .endsWith(getPlatformPath("overlay/layout/main.xml")));
     }
 
     public void testReplacedAlias() throws Exception {
@@ -548,14 +557,14 @@ public class ResourceMergerTest extends BaseTestCase {
     public void testCheckValidUpdate() throws Exception {
         // first merger
         ResourceMerger merger1 = createMerger(new String[][] {
-                new String[] { "main",    "/main/res1", "/main/res2" },
-                new String[] { "overlay", "/overlay/res1", "/overlay/res2" },
+                new String[] { "main",    ("/main/res1"), ("/main/res2") },
+                new String[] { "overlay", ("/overlay/res1"), ("/overlay/res2") },
         });
 
         // 2nd merger with different order source files in sets.
         ResourceMerger merger2 = createMerger(new String[][] {
-                new String[] { "main",    "/main/res2", "/main/res1" },
-                new String[] { "overlay", "/overlay/res1", "/overlay/res2" },
+                new String[] { "main",    ("/main/res2"), ("/main/res1") },
+                new String[] { "overlay", ("/overlay/res1"), ("/overlay/res2") },
         });
 
         assertTrue(merger1.checkValidUpdate(merger2.getResourceSets()));
@@ -568,7 +577,18 @@ public class ResourceMergerTest extends BaseTestCase {
         ResourceMerger loadedMerger = new ResourceMerger();
         loadedMerger.loadFromBlob(folder);
 
-        assertTrue(loadedMerger.checkValidUpdate(merger1.getResourceSets()));
+        String expected = merger1.toString();
+        String actual = loadedMerger.toString();
+        if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_WINDOWS) {
+            expected = expected.replaceAll(Pattern.quote(File.separator), "/").
+                                replaceAll("[A-Z]:/", "/");
+            actual = actual.replaceAll(Pattern.quote(File.separator), "/").
+                            replaceAll("[A-Z]:/", "/");
+            assertEquals("Actual: " + actual + "\nExpected: " + expected, expected, actual);
+        } else {
+            assertTrue("Actual: " + actual + "\nExpected: " + expected,
+                       loadedMerger.checkValidUpdate(merger1.getResourceSets()));
+        }
     }
 
     public void testCheckValidUpdateFail() throws Exception {
@@ -690,7 +710,8 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // search and replace $TOP$ with the root and $SEP$ with the platform separator.
         content = content.replaceAll(
-                "\\$TOP\\$", folder.getAbsolutePath()).replaceAll("\\$SEP\\$", File.separator);
+                "\\$TOP\\$", Matcher.quoteReplacement(folder.getAbsolutePath())).
+                replaceAll("\\$SEP\\$", Matcher.quoteReplacement(File.separator));
 
         File tempFolder = Files.createTempDir();
         Files.write(content, new File(tempFolder, ResourceMerger.FN_MERGER_XML), Charsets.UTF_8);
