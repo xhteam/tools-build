@@ -116,14 +116,18 @@ class FileManager {
      * Writes the state to a file
      * @param stateFile the file to write the state to.
      *
+     * @throws IOException
+     *
      * @see #load(java.io.File)
      */
-    public void write(File stateFile) {
+    public void write(File stateFile) throws IOException {
         OutputStreamWriter writer = null;
         try {
             // first make sure the folders exist!
             File parentFolder = stateFile.getParentFile();
-            parentFolder.mkdirs();
+            if (!parentFolder.isDirectory() && !parentFolder.mkdirs()) {
+                throw new IOException("Failed to create directory " + parentFolder);
+            }
 
             // then write the file.
             writer = new OutputStreamWriter(new FileOutputStream(stateFile), Charsets.UTF_8);
@@ -144,7 +148,6 @@ class FileManager {
                         sha1,
                         entity.getFile().getAbsolutePath()));
             }
-        } catch (IOException ignored) {
         } finally {
             Closeables.closeQuietly(writer);
         }

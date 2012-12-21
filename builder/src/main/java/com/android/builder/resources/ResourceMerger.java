@@ -288,7 +288,7 @@ public class ResourceMerger implements ResourceMap {
                         ResourceFolderType.VALUES.getName();
 
                 File valuesFolder = new File(rootFolder, folderName);
-                valuesFolder.mkdirs();
+                createDir(valuesFolder);
                 File outFile = new File(valuesFolder, FN_VALUES_XML);
 
                 DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -332,7 +332,7 @@ public class ResourceMerger implements ResourceMap {
      * Removes a file that already exists in the out res folder.
      * @param outFolder the out res folder
      * @param sourceFile the source file that created the file to remove.
-     * @return true if sucess.
+     * @return true if success.
      */
     private static boolean removeOutFile(File outFolder, ResourceFile sourceFile) {
         if (sourceFile.getType() == ResourceFile.FileType.MULTI) {
@@ -401,9 +401,7 @@ public class ResourceMerger implements ResourceMap {
                 }
 
                 File typeFolder = new File(rootFolder, folderName);
-                if (!typeFolder.isDirectory()) {
-                    typeFolder.mkdirs();
-                }
+                createDir(typeFolder);
 
                 File outFile = new File(typeFolder, filename);
                 Files.copy(file, outFile);
@@ -443,7 +441,7 @@ public class ResourceMerger implements ResourceMap {
 
             String content = XmlPrettyPrinter.prettyPrint(document);
 
-            blobRootFolder.mkdirs();
+            createDir(blobRootFolder);
             Files.write(content, new File(blobRootFolder, FN_MERGER_XML), Charsets.UTF_8);
         } catch (ParserConfigurationException e) {
             throw new IOException(e);
@@ -454,7 +452,7 @@ public class ResourceMerger implements ResourceMap {
      * Loads the merger state from a blob file.
      *
      * @param blobRootFolder the folder containing the blob.
-     * @return
+     * @return true if the blob was loaded.
      * @throws IOException
      *
      * @see #writeBlobTo(java.io.File)
@@ -599,5 +597,11 @@ public class ResourceMerger implements ResourceMap {
         }
 
         return null;
+    }
+
+    private static void createDir(File folder) throws IOException {
+        if (!folder.isDirectory() && !folder.mkdirs()) {
+            throw new IOException("Failed to create directory: " + folder);
+        }
     }
 }

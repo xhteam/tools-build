@@ -20,6 +20,7 @@ import com.android.annotations.NonNull;
 import com.android.builder.resources.FileStatus;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -62,9 +63,13 @@ public class ChangeManager {
     /**
      * Writes the incremental data to a given folder.
      * @param incrementalFolder the name of the folder to write to.
+     *
+     * @throws IOException
      */
-    public void write(File incrementalFolder) {
-        incrementalFolder.mkdirs();
+    public void write(File incrementalFolder) throws IOException {
+        if (!incrementalFolder.isDirectory() && !incrementalFolder.mkdirs()) {
+            throw new IOException("Failed to create directory " + incrementalFolder);
+        }
 
         mInputs.write(new File(incrementalFolder, FN_INPUTS_DATA));
         mOutputs.write(new File(incrementalFolder, FN_OUTPUTS_DATA));
@@ -76,8 +81,10 @@ public class ChangeManager {
      */
     public static void delete(File incrementalFolder) {
         File file = new File(incrementalFolder, FN_INPUTS_DATA);
+        //noinspection ResultOfMethodCallIgnored
         file.delete();
         file = new File(incrementalFolder, FN_OUTPUTS_DATA);
+        //noinspection ResultOfMethodCallIgnored
         file.delete();
     }
 
