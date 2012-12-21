@@ -634,16 +634,19 @@ public abstract class BasePlugin {
             getOptionalDir(variant.processJavaResources.destinationDir)
         }
 
-        packageApp.conventionMapping.debugSigned = { config.buildType.debugSigned }
         packageApp.conventionMapping.debugJni = { config.buildType.debugJniBuild }
-        packageApp.conventionMapping.signingStoreLocation = {
-            config.mergedFlavor.signingStoreLocation
+
+
+        if (config.keystore) {
+            packageApp.conventionMapping.signingStoreLocation = {
+                project.file(config.keystore.storeLocation)
+            }
+            packageApp.conventionMapping.signingStorePassword = {
+                config.keystore.storePassword
+            }
+            packageApp.conventionMapping.signingKeyAlias = { config.keystore.keyAlias }
+            packageApp.conventionMapping.signingKeyPassword = { config.keystore.keyPassword }
         }
-        packageApp.conventionMapping.signingStorePassword = {
-            config.mergedFlavor.signingStorePassword
-        }
-        packageApp.conventionMapping.signingKeyAlias = { config.mergedFlavor.signingKeyAlias }
-        packageApp.conventionMapping.signingKeyPassword = { config.mergedFlavor.signingKeyPassword }
 
         def signedApk = variant.isSigned()
         def apkName = signedApk ?

@@ -19,6 +19,8 @@ import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.BaseTest
 import com.android.build.gradle.internal.PluginHolder
 import com.android.builder.BuildType
+import com.android.builder.Keystore
+import com.android.builder.internal.signing.DebugKeyHelper
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 
@@ -74,16 +76,22 @@ public class AppPluginInternalTest extends BaseTest {
         project.android {
             target "android-15"
 
+            keystores {
+                fakeKeystore {
+                    storeLocation "aa"
+                    storePassword "bb"
+                    keyAlias "cc"
+                    keyPassword "dd"
+                }
+            }
+
             defaultConfig {
                 versionCode 1
                 versionName "2.0"
                 minSdkVersion 2
                 targetSdkVersion 3
 
-                signingStoreLocation "aa"
-                signingStorePassword "bb"
-                signingKeyAlias "cc"
-                signingKeyPassword "dd"
+                keystore keystores.fakeKeystore
             }
         }
 
@@ -95,10 +103,10 @@ public class AppPluginInternalTest extends BaseTest {
         assertEquals(3, plugin.extension.defaultConfig.targetSdkVersion)
         assertEquals("2.0", plugin.extension.defaultConfig.versionName)
 
-        assertEquals("aa", plugin.extension.defaultConfig.signingStoreLocation)
-        assertEquals("bb", plugin.extension.defaultConfig.signingStorePassword)
-        assertEquals("cc", plugin.extension.defaultConfig.signingKeyAlias)
-        assertEquals("dd", plugin.extension.defaultConfig.signingKeyPassword)
+        assertEquals("aa", plugin.extension.defaultConfig.keystore.storeLocation)
+        assertEquals("bb", plugin.extension.defaultConfig.keystore.storePassword)
+        assertEquals("cc", plugin.extension.defaultConfig.keystore.keyAlias)
+        assertEquals("dd", plugin.extension.defaultConfig.keystore.keyPassword)
     }
 
     public void testBuildTypes() {
@@ -113,7 +121,7 @@ public class AppPluginInternalTest extends BaseTest {
 
             buildTypes {
                 staging {
-                    debugSigned true
+                    keystore owner.keystores.debug
                 }
             }
         }
@@ -233,6 +241,110 @@ public class AppPluginInternalTest extends BaseTest {
         assertNotNull(findVariant(variants, "F2FbTest"))
         assertNotNull(findVariant(variants, "F2FcTest"))
     }
+
+    public void testKeystores() {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
+
+        project.apply plugin: 'android'
+
+        project.android {
+            target "android-15"
+
+            keystores {
+                one {
+                    storeLocation "a1"
+                    storePassword "b1"
+                    keyAlias "c1"
+                    keyPassword "d1"
+                }
+                two {
+                    storeLocation "a2"
+                    storePassword "b2"
+                    keyAlias "c2"
+                    keyPassword "d2"
+                }
+                three {
+                    storeLocation "a3"
+                    storePassword "b3"
+                    keyAlias "c3"
+                    keyPassword "d3"
+                }
+            }
+
+            defaultConfig {
+                versionCode 1
+                versionName "2.0"
+                minSdkVersion 2
+                targetSdkVersion 3
+            }
+
+            buildTypes {
+                debug {
+                }
+                staging {
+                }
+                release {
+                    keystore owner.keystores.three
+                }
+            }
+
+            productFlavors {
+                flavor1 {
+                }
+                flavor2 {
+                    keystore owner.keystores.one
+                }
+            }
+
+        }
+
+        AppPlugin plugin = AppPlugin.pluginHolder.plugin
+        plugin.createAndroidTasks()
+
+        List<ApplicationVariant> variants = plugin.variants
+        assertEquals(8, variants.size())   // includes the test variant(s)
+
+        ApplicationVariant variant
+        Keystore keystore
+
+        variant = findVariant(variants, "Flavor1Debug")
+        assertNotNull(variant)
+        keystore = variant.config.keystore
+        assertNotNull(keystore)
+        assertEquals(DebugKeyHelper.defaultDebugKeyStoreLocation(), keystore.storeLocation)
+
+        variant = findVariant(variants, "Flavor1Staging")
+        assertNotNull(variant)
+        keystore = variant.config.keystore
+        assertNull(keystore)
+
+        variant = findVariant(variants, "Flavor1Release")
+        assertNotNull(variant)
+        keystore = variant.config.keystore
+        assertNotNull(keystore)
+        assertEquals("a3", keystore.storeLocation)
+
+        variant = findVariant(variants, "Flavor2Debug")
+        assertNotNull(variant)
+        keystore = variant.config.keystore
+        assertNotNull(keystore)
+        assertEquals(DebugKeyHelper.defaultDebugKeyStoreLocation(), keystore.storeLocation)
+
+        variant = findVariant(variants, "Flavor2Staging")
+        assertNotNull(variant)
+        keystore = variant.config.keystore
+        assertNotNull(keystore)
+        assertEquals("a1", keystore.storeLocation)
+
+        variant = findVariant(variants, "Flavor2Release")
+        assertNotNull(variant)
+        keystore = variant.config.keystore
+        assertNotNull(keystore)
+        assertEquals("a3", keystore.storeLocation)
+    }
+
+
 
     private static ApplicationVariant findVariant(Collection<ApplicationVariant> variants,
                                                   String name) {

@@ -82,7 +82,7 @@ public class AppPluginDslTest extends BaseTest {
 
             buildTypes {
                 staging {
-                    debugSigned true
+                    keystore owner.keystores.debug
                 }
             }
         }
@@ -218,7 +218,7 @@ public class AppPluginDslTest extends BaseTest {
         assertNotNull(variant.assemble)
         assertNotNull(variant.uninstall)
 
-        if (variant.buildType.debugSigned || variant.mergedConfig.isSigningReady()) {
+        if (variant.isSigningReady()) {
             assertNotNull(variant.install)
 
             // tested variant are never zipAligned.

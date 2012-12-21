@@ -17,6 +17,7 @@ package com.android.build.gradle
 
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
+import com.android.builder.Keystore
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.internal.project.ProjectInternal
@@ -29,16 +30,19 @@ public class AppExtension extends BaseExtension {
 
     final NamedDomainObjectContainer<ProductFlavor> productFlavors
     final NamedDomainObjectContainer<BuildType> buildTypes
+    final NamedDomainObjectContainer<Keystore> keystores
 
     List<String> flavorGroupList
     String testBuildType = "debug"
 
     AppExtension(AppPlugin plugin, ProjectInternal project, Instantiator instantiator,
                  NamedDomainObjectContainer<BuildType> buildTypes,
-                 NamedDomainObjectContainer<ProductFlavor> productFlavors) {
+                 NamedDomainObjectContainer<ProductFlavor> productFlavors,
+                 NamedDomainObjectContainer<Keystore> keystores) {
         super(plugin, project, instantiator)
         this.buildTypes = buildTypes
         this.productFlavors = productFlavors
+        this.keystores = keystores
     }
 
     void buildTypes(Action<? super NamedDomainObjectContainer<BuildType>> action) {
@@ -47,6 +51,10 @@ public class AppExtension extends BaseExtension {
 
     void productFlavors(Action<? super NamedDomainObjectContainer<ProductFlavor>> action) {
         action.execute(productFlavors)
+    }
+
+    void keystores(Action<? super NamedDomainObjectContainer<Keystore>> action) {
+        action.execute(keystores)
     }
 
     public void flavorGroups(String... groups) {

@@ -29,10 +29,10 @@ public class BuildType extends BuildConfig {
     private final String mName;
     private boolean mDebuggable;
     private boolean mDebugJniBuild;
-    private boolean mDebugSigned;
     private String mPackageNameSuffix = null;
     private String mVersionNameSuffix = null;
     private boolean mRunProguard = false;
+    private Keystore mKeystore = null;
 
     private boolean mZipAlign = true;
 
@@ -48,14 +48,13 @@ public class BuildType extends BuildConfig {
     private void initDebug() {
         mDebuggable = true;
         mDebugJniBuild = true;
-        mDebugSigned = true;
         mZipAlign = false;
+        mKeystore = new Keystore(Keystore.DEBUG);
     }
 
     private void initRelease() {
         mDebuggable = false;
         mDebugJniBuild = false;
-        mDebugSigned = false;
     }
 
     public String getName() {
@@ -78,15 +77,6 @@ public class BuildType extends BuildConfig {
 
     public boolean isDebugJniBuild() {
         return mDebugJniBuild;
-    }
-
-    public BuildType setDebugSigned(boolean debugSigned) {
-        mDebugSigned = debugSigned;
-        return this;
-    }
-
-    public boolean isDebugSigned() {
-        return mDebugSigned;
     }
 
     public BuildType setPackageNameSuffix(@Nullable String packageNameSuffix) {
@@ -125,6 +115,16 @@ public class BuildType extends BuildConfig {
         return mZipAlign;
     }
 
+    public BuildType setKeystore(@Nullable Keystore keystore) {
+        mKeystore = keystore;
+        return this;
+    }
+
+    @Nullable
+    Keystore getKeystore() {
+        return mKeystore;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -135,7 +135,6 @@ public class BuildType extends BuildConfig {
 
         if (!mName.equals(buildType.mName)) return false;
         if (mDebugJniBuild != buildType.mDebugJniBuild) return false;
-        if (mDebugSigned != buildType.mDebugSigned) return false;
         if (mDebuggable != buildType.mDebuggable) return false;
         if (mRunProguard != buildType.mRunProguard) return false;
         if (mZipAlign != buildType.mZipAlign) return false;
@@ -147,6 +146,10 @@ public class BuildType extends BuildConfig {
                 !mVersionNameSuffix.equals(buildType.mVersionNameSuffix) :
                 buildType.mVersionNameSuffix != null)
             return false;
+        if (mKeystore != null ?
+                !mKeystore.equals(buildType.mKeystore) :
+                buildType.mKeystore != null)
+            return false;
 
         return true;
     }
@@ -157,11 +160,11 @@ public class BuildType extends BuildConfig {
         result = 31 * result + (mName.hashCode());
         result = 31 * result + (mDebuggable ? 1 : 0);
         result = 31 * result + (mDebugJniBuild ? 1 : 0);
-        result = 31 * result + (mDebugSigned ? 1 : 0);
         result = 31 * result + (mPackageNameSuffix != null ? mPackageNameSuffix.hashCode() : 0);
         result = 31 * result + (mVersionNameSuffix != null ? mVersionNameSuffix.hashCode() : 0);
         result = 31 * result + (mRunProguard ? 1 : 0);
         result = 31 * result + (mZipAlign ? 1 : 0);
+        result = 31 * result + (mKeystore != null ? mKeystore.hashCode() : 0);
         return result;
     }
 
@@ -171,12 +174,11 @@ public class BuildType extends BuildConfig {
                 .add("name", mName)
                 .add("debuggable", mDebuggable)
                 .add("debugJniBuild", mDebugJniBuild)
-                .add("debugSigned", mDebugSigned)
                 .add("packageNameSuffix", mPackageNameSuffix)
                 .add("versionNameSuffix", mVersionNameSuffix)
                 .add("runProguard", mRunProguard)
                 .add("zipAlign", mZipAlign)
-                .omitNullValues()
+                .add("keystore", mKeystore)
                 .toString();
     }
 }

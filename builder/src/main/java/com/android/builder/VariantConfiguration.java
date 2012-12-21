@@ -633,6 +633,19 @@ public class VariantConfiguration {
         return fullList;
     }
 
+    public Keystore getKeystore() {
+        Keystore keystore = mBuildType.getKeystore();
+        if (keystore != null) {
+            return keystore;
+        }
+        return mMergedFlavor.getKeystore();
+    }
+
+    public boolean isSigningReady() {
+        Keystore keystore = getKeystore();
+        return keystore != null && keystore.isSigningReady();
+    }
+
     protected void validate() {
         if (mType != Type.TEST) {
             File manifest = mDefaultSourceProvider.getManifestFile();

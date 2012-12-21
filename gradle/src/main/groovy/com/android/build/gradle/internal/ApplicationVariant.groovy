@@ -86,8 +86,7 @@ public abstract class ApplicationVariant {
     abstract boolean getZipAlign()
 
     boolean isSigned() {
-        return config.buildType.debugSigned ||
-                config.mergedFlavor.isSigningReady()
+        return config.isSigningReady()
     }
 
     abstract boolean getRunProguard()

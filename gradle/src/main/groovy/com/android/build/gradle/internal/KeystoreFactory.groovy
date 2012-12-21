@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package com.android.builder;
+package com.android.build.gradle.internal
 
-import junit.framework.TestCase;
+import com.android.builder.Keystore
+import org.gradle.api.NamedDomainObjectFactory
+import org.gradle.internal.reflect.Instantiator
 
-public class BuildTypeTest extends TestCase {
+/**
+ * Factory to create Keystore object using an {@ling Instantiator} to add the DSL methods.
+ */
+class KeystoreFactory implements NamedDomainObjectFactory<Keystore> {
 
-    public void testDebug() {
-        BuildType type = new BuildType("debug");
+    final Instantiator instantiator
 
-        assertTrue(type.isDebuggable());
-        assertTrue(type.isDebugJniBuild());
-        assertNotNull(type.getKeystore());
-        assertTrue(type.getKeystore().isSigningReady());
+    public KeystoreFactory(Instantiator instantiator) {
+        this.instantiator = instantiator
     }
 
-    public void testRelease() {
-        BuildType type = new BuildType("release");
-
-        assertFalse(type.isDebuggable());
-        assertFalse(type.isDebugJniBuild());
+    @Override
+    Keystore create(String name) {
+        return instantiator.newInstance(Keystore.class, name)
     }
 }

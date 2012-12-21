@@ -25,16 +25,13 @@ android {
     target "android-15"
     testBuildType "blah"
 
-	defaultConfig {
-		signingStoreLocation "$rootDir/debug.keystore"
-		signingStorePassword "android"
-		signingKeyAlias "androiddebugkey"
-		signingKeyPassword "android"
-	}
+    defaultConfig {
+    }
 
-	buildTypes {
-		blah {
-			packageNameSuffix ".blah"
-		}
-	}
+    buildTypes {
+        blah {
+            packageNameSuffix ".blah"
+            keystore this.android.keystores.debug
+        }
+    }
 }
