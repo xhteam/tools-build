@@ -16,7 +16,12 @@
 
 package com.android.build.gradle.internal
 
+import com.android.build.gradle.BasePlugin
+import com.android.sdklib.internal.project.ProjectProperties
+import com.android.sdklib.internal.project.ProjectPropertiesWorkingCopy
 import junit.framework.TestCase
+import org.gradle.tooling.GradleConnector
+import org.gradle.tooling.ProjectConnection
 
 import java.security.CodeSource
 
@@ -95,4 +100,32 @@ public abstract class BaseTest extends TestCase {
                 outFolder))
         return null
     }
+
+    protected static File createLocalProp(File project, File sdkDir) {
+        ProjectPropertiesWorkingCopy localProp = ProjectProperties.create(
+                project.absolutePath, ProjectProperties.PropertyType.LOCAL)
+        localProp.setProperty(ProjectProperties.PROPERTY_SDK, sdkDir.absolutePath)
+        localProp.save()
+
+        return (File) localProp.file
+    }
+
+    protected static void runGradleTasks(File sdkDir, File project, String... tasks) {
+        File localProp = createLocalProp(project, sdkDir)
+
+        try {
+
+            GradleConnector connector = GradleConnector.newConnector()
+
+            ProjectConnection connection = connector
+                    .useGradleVersion(BasePlugin.GRADLE_VERSION)
+                    .forProjectDirectory(project)
+                    .connect()
+
+            connection.newBuild().forTasks(tasks).run()
+        } finally {
+            localProp.delete()
+        }
+    }
+
 }

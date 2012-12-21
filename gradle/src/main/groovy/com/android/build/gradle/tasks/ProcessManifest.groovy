@@ -15,13 +15,12 @@
  */
 package com.android.build.gradle.tasks
 
-import com.android.build.gradle.internal.tasks.BaseTask
+import com.android.build.gradle.internal.tasks.IncrementalTask
 import org.gradle.api.tasks.OutputFile
-
 /**
  * A task that processes the manifest
  */
-public abstract class ProcessManifest extends BaseTask {
+public abstract class ProcessManifest extends IncrementalTask {
 
     /**
      * The processed Manifest.

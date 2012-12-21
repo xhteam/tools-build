@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
-
 /**
  * Task installing an app.
  */
 public class InstallTask extends DefaultTask {
-    @Input
     File sdkDir
 
     @InputFile
