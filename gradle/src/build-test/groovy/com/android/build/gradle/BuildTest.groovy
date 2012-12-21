@@ -27,8 +27,12 @@ import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
 
 /**
+ * Build tests.
+ *
+ * This requires an SDK, found through the ANDROID_HOME environment variable or present in the
+ * Android Source tree under out/host/<platform>/sdk/... (result of 'make sdk')
  */
-class ProjectTest extends BaseTest {
+class BuildTest extends BaseTest {
 
     private File testDir
     private File sdkDir

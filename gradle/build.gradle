@@ -9,9 +9,13 @@ configurations {
 }
 
 sourceSets {
-    integrationTest {
-        groovy.srcDir file('src/integration-test/groovy')
-        resources.srcDir file('src/integration-test/resources')
+    buildTest {
+        groovy.srcDir file('src/build-test/groovy')
+        resources.srcDir file('src/build-test/resources')
+    }
+    deviceTest {
+        groovy.srcDir file('src/device-test/groovy')
+        resources.srcDir file('src/device-test/resources')
     }
 }
 
@@ -22,15 +26,20 @@ dependencies {
 
     testCompile 'junit:junit:3.8.1'
 
-    integrationTestCompile sourceSets.main.output
-    integrationTestCompile configurations.testCompile
-    integrationTestCompile sourceSets.test.output
-    integrationTestRuntime configurations.testRuntime
+    buildTestCompile sourceSets.main.output
+    buildTestCompile configurations.testCompile
+    buildTestCompile sourceSets.test.output
+    buildTestCompile configurations.testRuntime
+
+    deviceTestCompile sourceSets.main.output
+    deviceTestCompile configurations.testCompile
+    deviceTestCompile sourceSets.test.output
+    deviceTestCompile configurations.testRuntime
 }
 
 idea {
     module {
-        testSourceDirs += file('src/integration-test/groovy')
+        testSourceDirs += files('src/build-test/groovy', 'src/device-test/groovy')
     }
 }
 
@@ -55,13 +64,24 @@ task publishLocal(type: Upload) {
 }
 publishLocal.dependsOn ':builder:publishLocal'
 
-task integrationTest(type: Test, dependsOn: publishLocal) {
-    testClassesDir = sourceSets.integrationTest.output.classesDir
-    classpath = sourceSets.integrationTest.runtimeClasspath
+task buildTest(type: Test, dependsOn: publishLocal) {
+    testClassesDir = sourceSets.buildTest.output.classesDir
+    classpath = sourceSets.buildTest.runtimeClasspath
+    description = "Runs the project build tests. This requires an SDK either from the Android source tree, under out/..., or an env var ANDROID_HOME."
+    group = "verification"
     systemProperties['jar.path'] = jar.archivePath
 }
 
-check.dependsOn integrationTest
+task deviceTest(type: Test, dependsOn: publishLocal) {
+    testClassesDir = sourceSets.deviceTest.output.classesDir
+    classpath = sourceSets.deviceTest.runtimeClasspath
+    description = "Runs the device tests. This requires a device."
+    group = "verification"
+    systemProperties['jar.path'] = jar.archivePath
+}
+
+deviceTest.dependsOn buildTest
+check.dependsOn buildTest, deviceTest
 
 
 project.ext.sonatypeUsername = project.hasProperty('sonatypeUsername') ? sonatypeUsername : ""
