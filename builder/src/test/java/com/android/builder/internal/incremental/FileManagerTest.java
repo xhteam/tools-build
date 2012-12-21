@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Matcher;
 import java.util.Map;
 
 public class FileManagerTest extends TestCase {
@@ -130,12 +131,12 @@ public class FileManagerTest extends TestCase {
         String content = Files.toString(file, Charsets.UTF_8);
 
         // search and replace $TOP$ with the root and $SEP$ with the platform separator.
-        content = content.replaceAll("\\$TOP\\$", targetFolder.getAbsolutePath())
-                .replaceAll("\\$SEP\\$", File.separator);
+        content = content.replaceAll("\\$TOP\\$",  Matcher.quoteReplacement(targetFolder.getAbsolutePath()))
+                .replaceAll("\\$SEP\\$", Matcher.quoteReplacement(File.separator));
 
         // now replace the additional placeholders
         for (Map.Entry<String, String> entry : placeholders.entrySet()) {
-            content = content.replaceAll(entry.getKey(), entry.getValue());
+            content = content.replaceAll(entry.getKey(), Matcher.quoteReplacement(entry.getValue()));
         }
 
         File tmp = File.createTempFile("android", "getDataFile");

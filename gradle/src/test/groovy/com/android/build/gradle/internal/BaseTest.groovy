@@ -63,6 +63,8 @@ public abstract class BaseTest extends TestCase {
             File f = new File(androidHome);
             if (f.isDirectory()) {
                 return f;
+            } else {
+                System.out.println("Failed to find SDK in ANDROID_HOME=" + androidHome)
             }
         }
 
