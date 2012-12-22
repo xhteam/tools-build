@@ -19,6 +19,7 @@ import com.android.builder.resources.FileStatus
 import com.android.builder.resources.ResourceMerger
 import com.android.builder.resources.ResourceSet
 import com.android.utils.Pair
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 
 class MergeResourcesTask extends MergeResources {
@@ -26,6 +27,9 @@ class MergeResourcesTask extends MergeResources {
     // fake input to detect changes. Not actually used by the task
     @InputFiles
     Iterable<File> rawInputFolders
+
+    @Input
+    boolean process9Patch
 
     // actual inputs
     List<ResourceSet> inputResourceSets
@@ -59,7 +63,7 @@ class MergeResourcesTask extends MergeResources {
         }
 
         // get the merged set and write it down.
-        merger.writeResourceFolder(destinationDir)
+        merger.writeResourceFolder(destinationDir, getProcess9Patch() ? builder.aaptRunner : null)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
@@ -110,7 +114,7 @@ class MergeResourcesTask extends MergeResources {
             }
         }
 
-        merger.writeResourceFolder(getOutputDir())
+        merger.writeResourceFolder(getOutputDir(), getProcess9Patch() ? builder.aaptRunner : null)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())

@@ -154,7 +154,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         createProcessManifestTask(variant, DIR_BUNDLES)
 
         // Add a task to merge the resource folders
-        createMergeResourcesTask(variant, "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/res")
+        createMergeResourcesTask(variant, "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/res",
+                false /*process9Patch*/)
 
         // Add a task to create the BuildConfig class
         createBuildConfigTask(variant)

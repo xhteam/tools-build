@@ -316,11 +316,12 @@ public abstract class BasePlugin {
         }
     }
 
-    protected void createMergeResourcesTask(ApplicationVariant variant) {
-        createMergeResourcesTask(variant, "$project.buildDir/res/$variant.dirName")
+    protected void createMergeResourcesTask(ApplicationVariant variant, boolean process9Patch) {
+        createMergeResourcesTask(variant, "$project.buildDir/res/$variant.dirName", process9Patch)
     }
 
-    protected void createMergeResourcesTask(ApplicationVariant variant, String location) {
+    protected void createMergeResourcesTask(ApplicationVariant variant, String location,
+                                            boolean process9Patch) {
         def mergeResourcesTask = project.tasks.add("merge${variant.name}Resources",
                 MergeResourcesTask)
         variant.mergeResourcesTask = mergeResourcesTask
@@ -328,6 +329,8 @@ public abstract class BasePlugin {
         mergeResourcesTask.plugin = this
         mergeResourcesTask.variant = variant
         mergeResourcesTask.incrementalFolder = project.file("$project.buildDir/incremental/$variant.dirName")
+
+        mergeResourcesTask.process9Patch = process9Patch
 
         mergeResourcesTask.conventionMapping.inputResourceSets = { variant.config.resourceSets }
         mergeResourcesTask.conventionMapping.rawInputFolders = {
@@ -337,6 +340,7 @@ public abstract class BasePlugin {
         mergeResourcesTask.conventionMapping.outputDir = {
             project.file(location)
         }
+
     }
 
     protected void createBuildConfigTask(ApplicationVariant variant) {
@@ -536,7 +540,7 @@ public abstract class BasePlugin {
         createProcessTestManifestTask(variant, "manifests")
 
         // Add a task to merge the resource folders
-        createMergeResourcesTask(variant)
+        createMergeResourcesTask(variant, true /*process9Patch*/)
 
         if (testedVariant.config.type == VariantConfiguration.Type.LIBRARY) {
             // in this case the tested library must be fully built before test can be built!
