@@ -1,18 +1,16 @@
 ## What is this?
 
-A prototype Gradle plugin to build Android applications. This is intended to be used to explore how such a plugin
-would look and to develop some ideas about how such a plugin would be implemented.
-
-The plugin is functional, if a bit rough, and can generate packaged applications ready to install.
+The official Gradle plugin to build Android applications.
 
 ## DSL
 
-The plugin adds 2 concepts to the Gradle DSL:
+The plugin adds several concepts to the Gradle DSL, all in the android extension:
 
-* A _build type_. There are 2 predefined build types, called `release` and `debug`. You can add additional build types.
+* A _default config_. This lets you configure default values for your application.
 * A _product flavor_. For example, a free or a paid-for flavour.
+* A _build type_. There are 2 predefined build types, called `release` and `debug`. You can add additional build types.
 
-If you do not define any flavors for your product, a default flavor called `main` is added.
+If you do not define any flavors for your product, only the values from the default config are used. Flavor settings override the default config.
 
 From this, the plugin will add the appropriate tasks to build each combination of build type and product flavor. The
 plugin will also define the following source directories:
@@ -27,45 +25,44 @@ plugin will also define the following source directories:
 * `src/test/java` - Test source to be included in all test applications.
 * `src/test$ProductFlavor/java` - Test source to be include for the test application for the given product flavor.
 
-You can configure these locations by configuring the associated source set.
+You can configure these locations by configuring the associated source set provided by the android extension.
 
 Compile time dependencies are declared in the usual way.
 
-Have a look at the `basic/build.gradle` and `customized/build.gradle` build files to see the DSL in action.
+Have a look at the `tests/basic/build.gradle` build file and other projects in tests `customized/build.gradle` to see the DSL in action.
 
 ### Configuration options
 
-* `android.packageName` - defaults to that specified in `src/main/AndroidManifest.xml`
-* `android.versionCode` - defaults to that specified in `src/main/AndroidManifest.xml`
-* `android.versionName` - defaults to that specified in `src/main/AndroidManifest.xml`
-* `android.target` - defaults to `android-16`.
-* `android.productFlavors.$flavor.packageName` - defaults to `${android.packageName}`
-* `android.productFlavors.$flavor.versionCode` - defaults to `${android.versionCode}`
-* `android.productFlavors.$flavor.versionName` - defaults to `${android.versionName}`
+* `android.target` - required.
+* `android.defaultConfig.versionCode` - defaults to that specified in `src/main/AndroidManifest.xml`
+* `android.defaultConfig.versionName` - defaults to that specified in `src/main/AndroidManifest.xml`
+* `android.productFlavors.$flavor.packageName` - defaults to that specified in `src/main/AndroidManifest.xml`
+* `android.productFlavors.$flavor.versionCode` - defaults to `${android.defaultConfig.versionCode}`
+* `android.productFlavors.$flavor.versionName` - defaults to `${android.defaultConfig.versionName}`
 * `android.buildTypes.$type.zipAlign` - defaults to `true` for `release` and `false` for `debug`
-* `sourceSets.main.java.srcDirs` - defaults to `src/main/java`
-* `sourceSets.main.resources.srcDirs` - defaults to `src/main/res`
-* `sourceSets.$flavor.java.srcDirs` - defaults to `src/$flavor/java`
-* `sourceSets.$flavor.resources.srcDirs` - defaults to `src/$flavor/res`
-* `sourceSets.$buildType.java.srcDirs` - defaults to `src/$buildType/java`
-* `sourceSets.$buildType.resources.srcDirs` - defaults to `src/$buildType/res`
-* `sourceSets.test.java.srcDirs` - defaults to `src/test/java`
-* `sourceSets.test$Flavor.java.srcDirs` - defaults to `src/test$Flavor/java`
+* `android.sourceSets.main.java.srcDirs` - defaults to `src/main/java`
+* `android.sourceSets.main.resources.srcDirs` - defaults to `src/main/res`
+* `android.sourceSets.$flavor.java.srcDirs` - defaults to `src/$flavor/java`
+* `android.sourceSets.$flavor.resources.srcDirs` - defaults to `src/$flavor/res`
+* `android.sourceSets.$buildType.java.srcDirs` - defaults to `src/$buildType/java`
+* `android.sourceSets.$buildType.resources.srcDirs` - defaults to `src/$buildType/res`
+* `android.sourceSets.test.java.srcDirs` - defaults to `src/test/java`
+* `android.sourceSets.test$Flavor.java.srcDirs` - defaults to `src/test$Flavor/java`
 * `dependencies.compile` - compile time dependencies for all applications.
 
 ## Contents
 
 The source tree contains the following:
 
+* The `builder` directory contains the builder library.
 * The `gradle` directory contains the plugin implementation.
-* The `testapps/basic` directory contains a simple application that follows the conventions
-* The `testapps/customized` directory contains an application with some custom build types, product flavors and other
-customizations.
-* The `testapps/multiproject` directory contains an application composed from several Gradle projects.
+* The `tests` directory contains various test applications used both as samples and tests by the plugin build system.
 
 ## Usage
 
 To build the plugin, run `./gradlew uploadArchives`
+
+To build the plugin for release, removing the SNAPSHOT from the version, run `./gradlew --init-script release.gradle <tasks>`
 
 To import the plugin into the IDE, run `./gradlew idea` or `./gradlew eclipse`.
 
@@ -95,9 +92,4 @@ For each variant (product-flavor, build-type):
 * Assembles the application package into `build/libs`.
 
 Some other notes:
-* Uses `sourceSets.main.compileClasspath` as the compile classpath for each variant. Could potentially also include
-`sourceSets.$BuildType.compileClasspath` and `sourceSets.$ProductFlavor.compileClasspath` as well.
-* Currently, the plugin signs all applications using the debug key.
-* No support for building test applications.
-* No support for building library projects.
 * No support for running ProGuard.

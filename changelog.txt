@@ -3,6 +3,7 @@
 * API to manipulate Build Variants
 * Support for multi resource folders (see multires sample)
 * versionName suffix in build type.
+* Improved DSL to setup signing info.
 
 0.2
 
