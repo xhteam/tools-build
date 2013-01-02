@@ -18,6 +18,7 @@ package com.android.builder;
 
 import com.android.annotations.NonNull;
 import com.android.sdklib.IAndroidTarget;
+import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.utils.ILogger;
 
 /**
@@ -38,6 +39,15 @@ public interface SdkParser {
      */
     IAndroidTarget resolveTarget(@NonNull String target, @NonNull ILogger logger);
 
+    /**
+     * Returns the location of the annotations jar for compilation targets that are <= 15.
+     */
     String getAnnotationsJar();
 
+    /**
+     * Returns the revision of the installed platform tools component.
+     *
+     * @return the FullRevision or null if the revision couldn't not be found
+     */
+    FullRevision getPlatformToolsRevision();
 }

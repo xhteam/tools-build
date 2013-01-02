@@ -40,6 +40,7 @@ import com.android.manifmerger.MergerLog;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.IAndroidTarget.IOptionalLibrary;
+import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.utils.ILogger;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -79,6 +80,8 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public class AndroidBuilder {
 
+    private static final FullRevision MIN_PLATFORM_TOOLS_REV = new FullRevision(16, 0, 2);
+
     private final SdkParser mSdkParser;
     private final ILogger mLogger;
     private final CommandLineRunner mCmdLineRunner;
@@ -107,6 +110,18 @@ public class AndroidBuilder {
         mLogger = checkNotNull(logger);
         mVerboseExec = verboseExec;
         mCmdLineRunner = new CommandLineRunner(mLogger);
+
+        FullRevision platformToolsRevision = mSdkParser.getPlatformToolsRevision();
+        if (platformToolsRevision == null) {
+            throw new IllegalArgumentException(
+                    "The SDK Platform Tools revision could not be found. Make sure the component is installed.");
+        }
+        if (platformToolsRevision.compareTo(MIN_PLATFORM_TOOLS_REV) < 0) {
+            throw new IllegalArgumentException(String.format(
+                    "The SDK Platform Tools revision (%1$s) is too low. Minimum required is %2$s",
+                    platformToolsRevision, MIN_PLATFORM_TOOLS_REV));
+
+        }
     }
 
     @VisibleForTesting
