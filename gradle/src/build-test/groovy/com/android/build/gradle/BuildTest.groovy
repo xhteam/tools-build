@@ -15,17 +15,11 @@
  */
 
 package com.android.build.gradle
-
 import com.android.build.gradle.internal.BaseTest
-import com.android.sdklib.internal.project.ProjectProperties
-import com.android.sdklib.internal.project.ProjectPropertiesWorkingCopy
 import com.google.common.collect.Sets
-import org.gradle.tooling.GradleConnector
-import org.gradle.tooling.ProjectConnection
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
-
 /**
  * Build tests.
  *
@@ -118,10 +112,10 @@ class BuildTest extends BaseTest {
         File repo = new File(testDir, "repo")
 
         try {
-            buildProject(new File(repo, "util"), "clean", "uploadArchives")
-            buildProject(new File(repo, "baseLibrary"), "clean", "uploadArchives")
-            buildProject(new File(repo, "library"), "clean", "uploadArchives")
-            buildProject(new File(repo, "app"), "clean", "assemble")
+            runGradleTasks(sdkDir, new File(repo, "util"), "clean", "uploadArchives")
+            runGradleTasks(sdkDir, new File(repo, "baseLibrary"), "clean", "uploadArchives")
+            runGradleTasks(sdkDir, new File(repo, "library"), "clean", "uploadArchives")
+            runGradleTasks(sdkDir, new File(repo, "app"), "clean", "assemble")
         } finally {
             // clean up the test repository.
             File testRepo = new File(repo, "testrepo")
@@ -150,37 +144,9 @@ class BuildTest extends BaseTest {
         File project = new File(testDir, name)
         builtProjects.add(name)
 
-        buildProject(project, "clean", "assembleDebug")
+        runGradleTasks(sdkDir, project, "clean", "assembleDebug")
 
         return project;
-    }
-
-    private void buildProject(File project, String... tasks) {
-        File localProp = createLocalProp(project)
-
-        try {
-
-            GradleConnector connector = GradleConnector.newConnector()
-
-            ProjectConnection connection = connector
-                    .useGradleVersion(BasePlugin.GRADLE_VERSION)
-                    .forProjectDirectory(project)
-                    .connect()
-
-            connection.newBuild().forTasks(tasks).run()
-        } finally {
-            localProp.delete()
-        }
-    }
-
-
-    private File createLocalProp(File project) {
-        ProjectPropertiesWorkingCopy localProp = ProjectProperties.create(
-                project.absolutePath, ProjectProperties.PropertyType.LOCAL)
-        localProp.setProperty(ProjectProperties.PROPERTY_SDK, sdkDir.absolutePath)
-        localProp.save()
-
-        return (File) localProp.file
     }
 
     private static void checkImageColor(File folder, String fileName, int expectedColor) {

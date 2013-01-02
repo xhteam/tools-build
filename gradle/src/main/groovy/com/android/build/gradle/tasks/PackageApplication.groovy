@@ -15,13 +15,13 @@
  */
 package com.android.build.gradle.tasks
 
-import com.android.build.gradle.internal.tasks.BaseTask
+import com.android.build.gradle.internal.tasks.IncrementalTask
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 
-public abstract class PackageApplication extends BaseTask {
+public abstract class PackageApplication extends IncrementalTask {
     @InputFile
     File resourceFile
 

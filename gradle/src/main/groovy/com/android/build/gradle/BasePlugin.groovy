@@ -28,9 +28,9 @@ import com.android.build.gradle.internal.SymbolFileProviderImpl
 import com.android.build.gradle.internal.TestAppVariant
 import com.android.build.gradle.internal.tasks.AidlCompileTask
 import com.android.build.gradle.internal.tasks.AndroidDependencyTask
-import com.android.build.gradle.internal.tasks.BaseTask
 import com.android.build.gradle.internal.tasks.DexTask
 import com.android.build.gradle.internal.tasks.GenerateBuildConfigTask
+import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.build.gradle.internal.tasks.InstallTask
 import com.android.build.gradle.internal.tasks.MergeResourcesTask
 import com.android.build.gradle.internal.tasks.PackageApplicationTask
@@ -331,7 +331,7 @@ public abstract class BasePlugin {
 
         mergeResourcesTask.conventionMapping.inputResourceSets = { variant.config.resourceSets }
         mergeResourcesTask.conventionMapping.rawInputFolders = {
-            BaseTask.flattenSourceSets(variant.config.resourceSets)
+            IncrementalTask.flattenSourceSets(variant.config.resourceSets)
         }
 
         mergeResourcesTask.conventionMapping.outputDir = {

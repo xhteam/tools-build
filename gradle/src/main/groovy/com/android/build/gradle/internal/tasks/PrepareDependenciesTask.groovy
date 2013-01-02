@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
+
 import com.android.build.gradle.internal.DependencyChecker
 import com.android.utils.Pair
+import org.gradle.api.tasks.TaskAction
 
 public class PrepareDependenciesTask extends BaseTask {
     final List<DependencyChecker> checkers = []
@@ -25,8 +27,8 @@ public class PrepareDependenciesTask extends BaseTask {
         androidDependencies.add(api)
     }
 
-    @Override
-    protected void doFullTaskAction() {
+    @TaskAction
+    protected void prepare() {
         def minSdkVersion = variant.config.minSdkVersion
 
         for (DependencyChecker checker : checkers) {

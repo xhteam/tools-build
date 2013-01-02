@@ -72,16 +72,18 @@ task buildTest(type: Test, dependsOn: publishLocal) {
     systemProperties['jar.path'] = jar.archivePath
 }
 
-task deviceTest(type: Test, dependsOn: publishLocal) {
+task deviceTest(dependsOn: publishLocal) {
     testClassesDir = sourceSets.deviceTest.output.classesDir
     classpath = sourceSets.deviceTest.runtimeClasspath
     description = "Runs the device tests. This requires a device."
     group = "verification"
-    systemProperties['jar.path'] = jar.archivePath
+    //systemProperties['jar.path'] = jar.archivePath
 }
 
 deviceTest.dependsOn buildTest
-check.dependsOn buildTest, deviceTest
+check.dependsOn buildTest
+// uncomment when device tests are ready.
+//check.dependsOn deviceTest
 
 
 project.ext.sonatypeUsername = project.hasProperty('sonatypeUsername') ? sonatypeUsername : ""
