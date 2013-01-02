@@ -3,6 +3,7 @@ subprojects {
 
     repositories {
         mavenCentral()
+        maven { url = uri("$rootDir/../base/repo") }
     }
 
     project.ext {

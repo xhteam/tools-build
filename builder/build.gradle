@@ -2,11 +2,12 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-dependencies {
-    // this is temporary
-    compile fileTree(dir: 'prebuilts', include: '*.jar')
+project.ext.baseAndroidVersion = "22.0-SNAPSHOT"
 
-    compile 'com.google.guava:guava:13.0.1'
+dependencies {
+    compile "com.android.tools.sdk:sdklib:$project.ext.baseAndroidVersion"
+    compile "com.android.tools:sdk-common:$project.ext.baseAndroidVersion"
+    compile "com.android.tools.build:manifest-merger:$project.ext.baseAndroidVersion"
 
     testCompile 'junit:junit:3.8.1'
 }
