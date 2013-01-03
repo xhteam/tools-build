@@ -67,19 +67,6 @@ class TestAppVariant extends ApplicationVariant {
     }
 
     @Override
-    List<String> getRunCommand() {
-        String[] args = [ "shell", "am", "instrument", "-w",
-                config.getPackageName() + "/" + config.instrumentationRunner]
-
-        return Arrays.asList(args)
-    }
-
-    @Override
-    String getPackage() {
-        return config.getPackageName()
-    }
-
-    @Override
     AndroidBuilder createBuilder(BasePlugin androidBasePlugin) {
         AndroidBuilder androidBuilder = new AndroidBuilder(
                 androidBasePlugin.sdkParser,

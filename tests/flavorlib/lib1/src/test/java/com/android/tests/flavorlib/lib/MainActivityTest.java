@@ -18,6 +18,7 @@ package com.android.tests.flavorlib.lib;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.MediumTest;
+import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.TextView;
 
 import com.android.tests.flavorlib.lib.R;
@@ -83,4 +84,10 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
     public void testJavaStrings() {
         assertEquals("SUCCESS-LIB1", mTextView2.getText());
     }
+
+    @SmallTest
+    public void testFailureOk() {
+        assertTrue("Testing failing test", false);
+    }
+
 }

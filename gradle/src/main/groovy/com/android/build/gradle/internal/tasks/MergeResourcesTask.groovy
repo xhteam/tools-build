@@ -48,8 +48,7 @@ class MergeResourcesTask extends MergeResources {
     protected void doFullTaskAction() {
         // this is full run, clean the previous output
         File destinationDir = getOutputDir()
-        deleteFolder(destinationDir)
-        destinationDir.mkdirs()
+        emptyFolder(destinationDir)
 
         List<ResourceSet> resourceSets = getInputResourceSets()
 
@@ -118,19 +117,5 @@ class MergeResourcesTask extends MergeResources {
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
-    }
-
-    private static void deleteFolder(File folder) {
-        File[] files = folder.listFiles()
-        if (files != null && files.length > 0) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    deleteFolder(file)
-                }
-                file.delete()
-            }
-        }
-
-        folder.delete()
     }
 }

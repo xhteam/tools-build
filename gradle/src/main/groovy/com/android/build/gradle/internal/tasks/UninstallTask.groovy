@@ -22,7 +22,7 @@ public class UninstallTask extends BaseTask {
 
     @TaskAction
     public void uninstall() {
-        String packageName = variant.package
+        String packageName = variant.packageName
         logger.info("Uninstalling app: " + packageName)
         project.exec {
             executable = new File(getSdkDir(), "platform-tools${File.separator}adb")
