@@ -24,7 +24,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-public class NoteUtilsTest extends TestCase {
+public class NodeUtilsTest extends TestCase {
 
     public void testBasicAttributes() throws Exception {
         Document document = createDocument();
