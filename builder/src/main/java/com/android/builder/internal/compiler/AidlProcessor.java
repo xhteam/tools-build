@@ -80,8 +80,6 @@ public class AidlProcessor implements SourceGenerator.Processor {
 
         command.add(filePath.getAbsolutePath());
 
-        logger.info("aidl command: %s", command.toString());
-
         mRunner.runCmdLine(command);
     }
 

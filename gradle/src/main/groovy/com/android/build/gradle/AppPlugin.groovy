@@ -434,7 +434,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         createProcessManifestTask(variant, "manifests")
 
         // Add a task to merge the resource folders
-        createMergeResourcesTask(variant)
+        createMergeResourcesTask(variant, true /*process9Patch*/)
 
         // Add a task to create the BuildConfig class
         createBuildConfigTask(variant)

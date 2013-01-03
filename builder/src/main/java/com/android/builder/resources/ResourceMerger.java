@@ -18,7 +18,10 @@ package com.android.builder.resources;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
+import com.android.builder.AaptRunner;
+import com.android.builder.internal.util.concurrent.WaitableExecutor;
 import com.android.ide.common.xml.XmlPrettyPrinter;
 import com.android.resources.ResourceFolderType;
 import com.android.utils.Pair;
@@ -42,15 +45,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.ArrayStoreException;
-import java.lang.Override;
-import java.lang.String;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Merges {@link ResourceSet}s and writes a resource folder that can be fed to aapt.
@@ -145,11 +147,17 @@ public class ResourceMerger implements ResourceMap {
      * The output is an Android style resource folder than can be fed to aapt.
      *
      * @param rootFolder the folder to write the resources in.
+     * @param aaptRunner an aapt runner.
      * @throws IOException
      * @throws DuplicateResourceException
+     * @throws ExecutionException
+     * @throws InterruptedException
      */
-    public void writeResourceFolder(File rootFolder)
-            throws IOException, DuplicateResourceException {
+    public void writeResourceFolder(@NonNull File rootFolder, @Nullable AaptRunner aaptRunner)
+            throws IOException, DuplicateResourceException, ExecutionException,
+            InterruptedException {
+        WaitableExecutor executor = new WaitableExecutor();
+
         // get all the resource keys.
         Set<String> resourceKeys = Sets.newHashSet();
 
@@ -232,7 +240,7 @@ public class ResourceMerger implements ResourceMap {
             } else if (previouslyWritten == null || previouslyWritten == toWrite) {
                 // easy one: new or updated res
 
-                writeResource(rootFolder, valuesResMap, toWrite);
+                writeResource(rootFolder, valuesResMap, toWrite, executor, aaptRunner);
             } else {
                 // replacement of a resource by another.
 
@@ -240,7 +248,7 @@ public class ResourceMerger implements ResourceMap {
                 toWrite.setTouched();
 
                 // write the new value
-                writeResource(rootFolder, valuesResMap, toWrite);
+                writeResource(rootFolder, valuesResMap, toWrite, executor, aaptRunner);
 
                 ResourceFile.FileType previousType = previouslyWritten.getSource().getType();
                 ResourceFile.FileType newType = toWrite.getSource().getType();
@@ -330,6 +338,8 @@ public class ResourceMerger implements ResourceMap {
 
             removeOutFile(rootFolder, folderName, FN_VALUES_XML);
         }
+
+        executor.waitForTasks();
     }
 
     /**
@@ -372,10 +382,15 @@ public class ResourceMerger implements ResourceMap {
      * @param valuesResMap a map of existing values-type resources where the key is the qualifiers
      *                     of the values folder.
      * @param resource the resource to add.
+     * @param executor an executor
+     * @param aaptRunner an aapt runner.
      * @throws IOException
      */
-    private void writeResource(File rootFolder, ListMultimap<String, Resource> valuesResMap,
-                               Resource resource) throws IOException {
+    private void writeResource(@NonNull final File rootFolder,
+                               @NonNull ListMultimap<String, Resource> valuesResMap,
+                               @NonNull final Resource resource,
+                               @NonNull WaitableExecutor executor,
+                               @Nullable final AaptRunner aaptRunner) throws IOException {
         ResourceFile.FileType type = resource.getSource().getType();
 
         if (type == ResourceFile.FileType.MULTI) {
@@ -394,21 +409,34 @@ public class ResourceMerger implements ResourceMap {
             // This is a single value file.
             // Only write it if the state is TOUCHED.
             if (resource.isTouched()) {
-                ResourceFile resourceFile = resource.getSource();
-                File file = resourceFile.getFile();
+                executor.execute(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        ResourceFile resourceFile = resource.getSource();
+                        File file = resourceFile.getFile();
 
-                String filename = file.getName();
-                String folderName = resource.getType().getName();
-                String qualifiers = resourceFile.getQualifiers();
-                if (qualifiers != null && qualifiers.length() > 0) {
-                    folderName = folderName + SdkConstants.RES_QUALIFIER_SEP + qualifiers;
-                }
+                        String filename = file.getName();
+                        String folderName = resource.getType().getName();
+                        String qualifiers = resourceFile.getQualifiers();
+                        if (qualifiers != null && qualifiers.length() > 0) {
+                            folderName = folderName + SdkConstants.RES_QUALIFIER_SEP + qualifiers;
+                        }
 
-                File typeFolder = new File(rootFolder, folderName);
-                createDir(typeFolder);
+                        File typeFolder = new File(rootFolder, folderName);
+                        createDir(typeFolder);
 
-                File outFile = new File(typeFolder, filename);
-                Files.copy(file, outFile);
+                        File outFile = new File(typeFolder, filename);
+
+                        if (aaptRunner != null && filename.endsWith(".9.png")) {
+                            // run aapt in single crunch mode on the original file to write the
+                            // destination file.
+                            aaptRunner.crunchPng(file, outFile);
+                        } else {
+                            Files.copy(file, outFile);
+                        }
+                        return null;
+                    }
+                });
             }
         }
     }
@@ -603,7 +631,7 @@ public class ResourceMerger implements ResourceMap {
         return null;
     }
 
-    private static void createDir(File folder) throws IOException {
+    private synchronized void createDir(File folder) throws IOException {
         if (!folder.isDirectory() && !folder.mkdirs()) {
             throw new IOException("Failed to create directory: " + folder);
         }

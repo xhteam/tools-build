@@ -32,10 +32,10 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.String;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -268,7 +268,7 @@ public class ResourceMergerTest extends BaseTestCase {
         File resFolder = getFolderCopy(new File(root, "resOut"));
 
         // write the content of the resource merger.
-        resourceMerger.writeResourceFolder(resFolder);
+        resourceMerger.writeResourceFolder(resFolder, null /*aaptRunner*/);
 
         // Check the content.
         checkImageColor(new File(resFolder, "drawable" + File.separator + "touched.png"),
@@ -371,7 +371,7 @@ public class ResourceMergerTest extends BaseTestCase {
         File resFolder = getFolderCopy(new File(root, "resOut"));
 
         // write the content of the resource merger.
-        resourceMerger.writeResourceFolder(resFolder);
+        resourceMerger.writeResourceFolder(resFolder, null /*aaptRunner*/);
 
         // Check the content.
         // values/values.xml
@@ -445,7 +445,7 @@ public class ResourceMergerTest extends BaseTestCase {
         File resFolder = getFolderCopy(new File(root, "resOut"));
 
         // write the content of the resource merger.
-        resourceMerger.writeResourceFolder(resFolder);
+        resourceMerger.writeResourceFolder(resFolder, null /*aaptRunner*/);
 
         // Check the content.
         // values/values.xml
@@ -537,7 +537,7 @@ public class ResourceMergerTest extends BaseTestCase {
         File resFolder = getFolderCopy(new File(root, "resOut"));
 
         // write the content of the resource merger.
-        resourceMerger.writeResourceFolder(resFolder);
+        resourceMerger.writeResourceFolder(resFolder, null /*aaptRunner*/);
 
         // deleted layout/file_replaced_by_alias.xml
         assertFalse(new File(resFolder, "layout" + File.separator + "file_replaced_by_alias.xml")
@@ -680,12 +680,13 @@ public class ResourceMergerTest extends BaseTestCase {
         return sResourceMerger;
     }
 
-    private static File getWrittenResources() throws DuplicateResourceException, IOException {
+    private static File getWrittenResources() throws DuplicateResourceException, IOException,
+            ExecutionException, InterruptedException {
         ResourceMerger resourceMerger = getResourceMerger();
 
         File folder = Files.createTempDir();
 
-        resourceMerger.writeResourceFolder(folder);
+        resourceMerger.writeResourceFolder(folder, null /*aaptRunner*/);
 
         return folder;
     }

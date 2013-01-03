@@ -18,8 +18,6 @@ package com.android.builder.internal;
 
 import com.android.annotations.Nullable;
 import com.android.sdklib.util.GrabProcessOutput;
-import com.android.sdklib.util.GrabProcessOutput.IProcessOutput;
-import com.android.sdklib.util.GrabProcessOutput.Wait;
 import com.android.utils.ILogger;
 
 import java.io.IOException;
@@ -28,6 +26,30 @@ import java.util.List;
 public class CommandLineRunner {
 
     private final ILogger mLogger;
+
+    private class OutputGrabber implements GrabProcessOutput.IProcessOutput {
+
+        private boolean mFoundError = false;
+
+        @Override
+        public void out(@Nullable String line) {
+            if (line != null) {
+                mLogger.info(line);
+            }
+        }
+
+        @Override
+        public void err(@Nullable String line) {
+            if (line != null) {
+                mLogger.error(null /*throwable*/, line);
+                mFoundError = true;
+            }
+        }
+
+        private boolean foundError() {
+            return mFoundError;
+        }
+    }
 
     public CommandLineRunner(ILogger logger) {
         mLogger = logger;
@@ -39,6 +61,8 @@ public class CommandLineRunner {
     }
 
     public void runCmdLine(String[] command) throws IOException, InterruptedException {
+        printCommand(command);
+
         // launch the command line process
         Process process = Runtime.getRuntime().exec(command);
 
@@ -54,28 +78,29 @@ public class CommandLineRunner {
      * @return the process return code.
      * @throws InterruptedException
      */
-    private int grabProcessOutput(
-            final Process process)
-            throws InterruptedException {
+    private int grabProcessOutput(final Process process) throws InterruptedException {
 
-        return GrabProcessOutput.grabProcessOutput(
+        OutputGrabber grabber = new OutputGrabber();
+
+        int exitCode = GrabProcessOutput.grabProcessOutput(
                 process,
-                Wait.WAIT_FOR_READERS, // we really want to make sure we get all the output!
-                new IProcessOutput() {
+                GrabProcessOutput.Wait.WAIT_FOR_READERS, // we really want to make sure we get all the output!
+                grabber);
 
-                    @Override
-                    public void out(@Nullable String line) {
-                        if (line != null) {
-                            mLogger.info(line);
-                        }
-                    }
+        if (exitCode == 0 && grabber.foundError()) {
+            mLogger.error(null, "Process output to error stream but exitCode is " + exitCode);
+            exitCode = -42;
+        }
 
-                    @Override
-                    public void err(@Nullable String line) {
-                        if (line != null) {
-                            mLogger.error(null /*throwable*/, line);
-                        }
-                    }
-                });
+        return exitCode;
+    }
+
+    private void printCommand(String[] command) {
+        StringBuilder sb = new StringBuilder("command: ");
+        for (String arg : command) {
+            sb.append(arg).append(' ');
+        }
+
+        mLogger.info(sb.toString());
     }
 }

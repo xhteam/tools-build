@@ -72,7 +72,7 @@ import static com.google.common.base.Preconditions.checkState;
  * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
  * {@link #compileAidl(java.util.List, java.io.File, java.util.List)}
  * {@link #convertByteCode(Iterable, Iterable, String, DexOptions)}
- * {@link #packageApk(String, String, java.util.List, String, String, boolean, boolean, String, String, String, String, String)}
+ * {@link #packageApk(String, String, java.util.List, String, String, boolean, java.io.File, String, String, String, String)}
  *
  * Java compilation is not handled but the builder provides the runtime classpath with
  * {@link #getRuntimeClasspath()}.
@@ -168,6 +168,14 @@ public class AndroidBuilder {
         }
 
         return classpath;
+    }
+
+    /**
+     * Returns an {@link AaptRunner} able to run aapt commands.
+     * @return
+     */
+    public AaptRunner getAaptRunner() {
+        return new AaptRunner(mTarget.getPath(IAndroidTarget.AAPT), mCmdLineRunner);
     }
 
     /**
@@ -497,8 +505,7 @@ public class AndroidBuilder {
 
         command.add("-f");
 
-        //TODO: reenable when we can crunch per-file in the ResourceMerger
-        // command.add("--no-crunch");
+        command.add("--no-crunch");
 
         // inputs
         command.add("-I");
@@ -574,8 +581,6 @@ public class AndroidBuilder {
             command.add("--output-text-symbols");
             command.add(symbolOutputDir);
         }
-
-        mLogger.info("aapt command: %s", command.toString());
 
         mCmdLineRunner.runCmdLine(command);
 
