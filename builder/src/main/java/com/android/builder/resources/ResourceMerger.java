@@ -16,7 +16,6 @@
 
 package com.android.builder.resources;
 
-import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
@@ -53,6 +52,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+
+import static com.android.SdkConstants.DOT_9PNG;
+import static com.android.SdkConstants.RES_QUALIFIER_SEP;
+import static com.android.SdkConstants.TAG_RESOURCES;
 
 /**
  * Merges {@link ResourceSet}s and writes a resource folder that can be fed to aapt.
@@ -296,7 +299,7 @@ public class ResourceMerger implements ResourceMap {
 
             if (mustWriteFile) {
                 String folderName = key.length() > 0 ?
-                        ResourceFolderType.VALUES.getName() + SdkConstants.RES_QUALIFIER_SEP + key :
+                        ResourceFolderType.VALUES.getName() + RES_QUALIFIER_SEP + key :
                         ResourceFolderType.VALUES.getName();
 
                 File valuesFolder = new File(rootFolder, folderName);
@@ -313,7 +316,7 @@ public class ResourceMerger implements ResourceMap {
                     builder = factory.newDocumentBuilder();
                     Document document = builder.newDocument();
 
-                    Node rootNode = document.createElement(SdkConstants.TAG_RESOURCES);
+                    Node rootNode = document.createElement(TAG_RESOURCES);
                     document.appendChild(rootNode);
 
                     for (Resource item : items) {
@@ -333,7 +336,7 @@ public class ResourceMerger implements ResourceMap {
         // now remove empty values files.
         for (String key : qualifierWithDeletedValues) {
             String folderName = key != null && key.length() > 0 ?
-                    ResourceFolderType.VALUES.getName() + SdkConstants.RES_QUALIFIER_SEP + key :
+                    ResourceFolderType.VALUES.getName() + RES_QUALIFIER_SEP + key :
                     ResourceFolderType.VALUES.getName();
 
             removeOutFile(rootFolder, folderName, FN_VALUES_XML);
@@ -419,7 +422,7 @@ public class ResourceMerger implements ResourceMap {
                         String folderName = resource.getType().getName();
                         String qualifiers = resourceFile.getQualifiers();
                         if (qualifiers != null && qualifiers.length() > 0) {
-                            folderName = folderName + SdkConstants.RES_QUALIFIER_SEP + qualifiers;
+                            folderName = folderName + RES_QUALIFIER_SEP + qualifiers;
                         }
 
                         File typeFolder = new File(rootFolder, folderName);
@@ -427,7 +430,7 @@ public class ResourceMerger implements ResourceMap {
 
                         File outFile = new File(typeFolder, filename);
 
-                        if (aaptRunner != null && filename.endsWith(".9.png")) {
+                        if (aaptRunner != null && filename.endsWith(DOT_9PNG)) {
                             // run aapt in single crunch mode on the original file to write the
                             // destination file.
                             aaptRunner.crunchPng(file, outFile);

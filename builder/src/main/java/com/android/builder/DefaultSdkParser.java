@@ -16,7 +16,6 @@
 
 package com.android.builder;
 
-import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.SdkManager;
@@ -31,6 +30,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Properties;
+
+import static com.android.SdkConstants.FD_PLATFORM_TOOLS;
+import static com.android.SdkConstants.FD_SUPPORT;
+import static com.android.SdkConstants.FD_TOOLS;
+import static com.android.SdkConstants.FN_ANNOTATIONS_JAR;
+import static com.android.SdkConstants.FN_SOURCE_PROP;
 
 /**
  * Default implementation of {@link SdkParser} for a normal Android SDK distribution.
@@ -49,7 +54,7 @@ public class DefaultSdkParser implements SdkParser {
     }
 
     @Override
-    public IAndroidTarget resolveTarget(String target, ILogger logger) {
+    public IAndroidTarget resolveTarget(@NonNull String target, @NonNull ILogger logger) {
         if (mManager == null) {
             mManager = SdkManager.createManager(mSdkLocation, logger);
             if (mManager == null) {
@@ -62,14 +67,14 @@ public class DefaultSdkParser implements SdkParser {
 
     @Override
     public String getAnnotationsJar() {
-        return mSdkLocation + SdkConstants.FD_TOOLS +
-                '/' + SdkConstants.FD_SUPPORT +
-                '/' + SdkConstants.FN_ANNOTATIONS_JAR;
+        return mSdkLocation + FD_TOOLS +
+                '/' + FD_SUPPORT +
+                '/' + FN_ANNOTATIONS_JAR;
     }
 
     @Override
     public FullRevision getPlatformToolsRevision() {
-        File platformTools = new File(mSdkLocation, SdkConstants.FD_PLATFORM_TOOLS);
+        File platformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
         if (!platformTools.isDirectory()) {
             return null;
         }
@@ -77,7 +82,7 @@ public class DefaultSdkParser implements SdkParser {
 
         Reader reader = null;
         try {
-            reader = new FileReader(new File(platformTools, SdkConstants.FN_SOURCE_PROP));
+            reader = new FileReader(new File(platformTools, FN_SOURCE_PROP));
             Properties props = new Properties();
             props.load(reader);
 
