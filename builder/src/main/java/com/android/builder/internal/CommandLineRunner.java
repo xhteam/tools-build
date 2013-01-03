@@ -19,6 +19,7 @@ package com.android.builder.internal;
 import com.android.annotations.Nullable;
 import com.android.sdklib.util.GrabProcessOutput;
 import com.android.utils.ILogger;
+import com.google.common.base.Joiner;
 
 import java.io.IOException;
 import java.util.List;
@@ -96,11 +97,6 @@ public class CommandLineRunner {
     }
 
     private void printCommand(String[] command) {
-        StringBuilder sb = new StringBuilder("command: ");
-        for (String arg : command) {
-            sb.append(arg).append(' ');
-        }
-
-        mLogger.info(sb.toString());
+        mLogger.info("command: " + Joiner.on(' ').join(command));
     }
 }
