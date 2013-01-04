@@ -130,7 +130,7 @@ public class RunTestsTask extends BaseTask {
             if (emulator) {
                 name = mDevice.avdName != null ? mDevice.avdName + "(AVD)" : mDevice.serialNumber
             } else {
-                String model = device.getProperty(IDevice.DEVICE_MODEL_PROPERTY)
+                String model = device.getProperty(IDevice.PROP_DEVICE_MODEL)
                 name = model != null ? model : mDevice.serialNumber
             }
 
