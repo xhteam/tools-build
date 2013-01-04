@@ -163,8 +163,8 @@ public class DefaultBuildVariant implements BuildVariant {
     }
 
     @Override
-    Task getRunTests() {
-        return variant.runTestsTask
+    Task getTestFlavor() {
+        return variant.testFlavorTask
     }
 
     @Override

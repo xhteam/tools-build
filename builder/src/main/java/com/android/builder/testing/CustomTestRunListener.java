@@ -23,6 +23,7 @@ import com.android.ddmlib.testrunner.TestResult;
 import com.android.ddmlib.testrunner.XmlTestRunListener;
 import com.android.utils.ILogger;
 import com.google.common.collect.Sets;
+import org.kxml2.io.KXmlSerializer;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,20 +35,29 @@ import java.util.Set;
  */
 public class CustomTestRunListener extends XmlTestRunListener {
 
+    @NonNull
     private final String mDeviceName;
+    @NonNull
+    private final String mProjectName;
+    @NonNull
+    private final String mFlavorName;
     private final ILogger mLogger;
     private final Set<TestIdentifier> mFailedTests = Sets.newHashSet();
 
 
-    public CustomTestRunListener(@NonNull String deviceName, @Nullable ILogger logger) {
+    public CustomTestRunListener(@NonNull String deviceName,
+                                 @NonNull String projectName, @NonNull String flavorName,
+                                 @Nullable ILogger logger) {
         mDeviceName = deviceName;
+        mProjectName = projectName;
+        mFlavorName = flavorName;
         mLogger = logger;
-        setHostName(mDeviceName);
     }
 
     @Override
     protected File getResultFile(File reportDir) throws IOException {
-        return new File(reportDir, "TEST-" + mDeviceName + ".xml");
+        return new File(reportDir,
+                "TEST-" + mDeviceName + "-" + mProjectName + "-" + mFlavorName + ".xml");
     }
 
     @Override
@@ -65,8 +75,13 @@ public class CustomTestRunListener extends XmlTestRunListener {
     }
 
     @Override
-    protected String getTestName(TestIdentifier testId) {
-        return String.format("%1$s[%2$s]", testId.getTestName(), mDeviceName);
+    protected void setPropertiesAttributes(KXmlSerializer serializer, String namespace)
+            throws IOException {
+        super.setPropertiesAttributes(serializer, namespace);
+
+        serializer.attribute(null, "device", mDeviceName);
+        serializer.attribute(null, "flavor", mFlavorName);
+        serializer.attribute(null, "project", mProjectName);
     }
 
     @Override

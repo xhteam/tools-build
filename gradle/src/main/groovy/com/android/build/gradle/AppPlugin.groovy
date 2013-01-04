@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.gradle
 
 import com.android.build.gradle.internal.BuildTypeData
@@ -25,7 +26,10 @@ import com.android.build.gradle.internal.dsl.BuildTypeFactory
 import com.android.build.gradle.internal.dsl.GroupableProductFlavor
 import com.android.build.gradle.internal.dsl.GroupableProductFlavorFactory
 import com.android.build.gradle.internal.dsl.KeystoreFactory
+import com.android.build.gradle.internal.tasks.AndroidReportTask
+import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.test.PluginHolder
+import com.android.build.gradle.internal.test.report.ReportType
 import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
 import com.android.builder.JarDependency
@@ -37,6 +41,7 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.BasePlugin
+import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
@@ -52,6 +57,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     final Map<String, Keystore> keystores = [:]
 
     AppExtension extension
+    AndroidReportTask testTask
 
     @Inject
     public AppPlugin(Instantiator instantiator) {
@@ -158,6 +164,25 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             assembleTest.group = BasePlugin.BUILD_GROUP
             assembleTest.description = "Assembles all the Test applications"
 
+            // same for the test task
+            testTask = project.tasks.add("test", AndroidReportTask)
+            testTask.group = JavaBasePlugin.VERIFICATION_GROUP
+            testTask.description = "Installs and runs tests for all flavors"
+            testTask.reportType = ReportType.MULTI_FLAVOR
+
+            testTask.conventionMapping.resultsDir = {
+                String rootLocation = extension.testOptions.resultsDir != null ?
+                    extension.testOptions.resultsDir : "$project.buildDir/test-results"
+
+                project.file("$rootLocation/all")
+            }
+            testTask.conventionMapping.reportsDir = {
+                String rootLocation = extension.testOptions.reportDir != null ?
+                    extension.testOptions.reportDir : "$project.buildDir/reports/tests"
+
+                project.file("$rootLocation/all")
+            }
+
             // check whether we have multi flavor builds
             if (extension.flavorGroupList == null || extension.flavorGroupList.size() < 2) {
                 productFlavors.values().each { ProductFlavorData productFlavorData ->
@@ -184,6 +209,21 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
                 // now we use the flavor groups to generate an ordered array of flavor to use
                 ProductFlavorData[] array = new ProductFlavorData[extension.flavorGroupList.size()]
                 createTasksForMultiFlavoredBuilds(array, 0, map)
+            }
+        }
+
+        // If gradle is launched with --continue, we want to run all tests and generate an
+        // aggregate report (to help with the fact that we may have several build variants).
+        // To do that, the "test" task (which does the aggregation) must always run even if
+        // one of its dependent task (all the testFlavor tasks) fails, so we make them ignore their
+        // error.
+        // We cannot do that always: in case the test task is not going to run, we do want the
+        // individual testFlavor tasks to fail.
+        if (testTask != null && project.gradle.startParameter.continueOnFailure) {
+            project.gradle.taskGraph.whenReady { taskGraph ->
+                if (taskGraph.hasTask(testTask)) {
+                    testTask.setWillRun()
+                }
             }
         }
     }
@@ -279,7 +319,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
         def testVariant = new TestAppVariant(testVariantConfig)
         variants.add(testVariant)
-        createTestTasks(testVariant, testedVariant, testConfigDependencies)
+        createTestTasks(testVariant, testedVariant, testConfigDependencies, true /*mainTestTask*/)
 
         // add the test and tested variants to the list
         DefaultBuildVariant testedBuildVariant = instantiator.newInstance(
@@ -394,7 +434,10 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
         def testVariant = new TestAppVariant(testVariantConfig)
         variants.add(testVariant)
-        createTestTasks(testVariant, testedVariant, testConfigDependencies)
+        AndroidTestTask testFlavorTask = createTestTasks(testVariant, testedVariant,
+                testConfigDependencies, false /*mainTestTask*/)
+
+        testTask.addTask(testFlavorTask)
 
         // add the test and tested variants to the list
         DefaultBuildVariant testedBuildVariant = instantiator.newInstance(

@@ -28,6 +28,7 @@ import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
 import com.android.build.gradle.internal.tasks.AidlCompileTask
 import com.android.build.gradle.internal.tasks.AndroidDependencyTask
+import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.tasks.DexTask
 import com.android.build.gradle.internal.tasks.GenerateBuildConfigTask
 import com.android.build.gradle.internal.tasks.IncrementalTask
@@ -39,7 +40,8 @@ import com.android.build.gradle.internal.tasks.PrepareLibraryTask
 import com.android.build.gradle.internal.tasks.ProcessManifestTask
 import com.android.build.gradle.internal.tasks.ProcessResourcesTask
 import com.android.build.gradle.internal.tasks.ProcessTestManifestTask
-import com.android.build.gradle.internal.tasks.RunTestsTask
+import com.android.build.gradle.internal.tasks.TestFlavorTask
+import com.android.build.gradle.internal.tasks.TestLibraryTask
 import com.android.build.gradle.internal.tasks.UninstallTask
 import com.android.build.gradle.internal.tasks.ZipAlignTask
 import com.android.builder.AndroidBuilder
@@ -525,8 +527,23 @@ public abstract class BasePlugin {
         }
     }
 
-    protected void createTestTasks(TestAppVariant variant, ProductionAppVariant testedVariant,
-                                   List<ConfigurationDependencies> configDependencies) {
+    /**
+     * Creates the test tasks, and return the main test[*] entry point.
+     *
+     * The main "test[*]" task can be created two different ways:
+     * mainTask is false: this creates the task for the given variant (with its variant name).
+     * mainTask is true: this creates the main "test" task, and makes check depend on it.
+     *
+     * @param variant the test variant
+     * @param testedVariant the tested variant
+     * @param configDependencies the list of config dependencies
+     * @param mainTestTask whether the main task is a main test task.
+     * @return the test task.
+     */
+    protected AndroidTestTask createTestTasks(TestAppVariant variant,
+                                              ProductionAppVariant testedVariant,
+                                              List<ConfigurationDependencies> configDependencies,
+                                              boolean mainTestTask) {
         // The test app is signed with the same info as the tested app so there's no need
         // to test both.
         if (!testedVariant.isSigned()) {
@@ -570,37 +587,42 @@ public abstract class BasePlugin {
         }
 
         // create the check task for this test
-        def runTestsTask = project.tasks.add("check${testedVariant.name}", RunTestsTask)
-        runTestsTask.description = "Installs and runs the checks for Build ${testedVariant.name}."
-        runTestsTask.group = JavaBasePlugin.VERIFICATION_GROUP
-        runTestsTask.dependsOn testedVariant.assembleTask, variant.assembleTask
-        project.tasks.check.dependsOn runTestsTask
+        def testFlavorTask = project.tasks.add(mainTestTask ? "test" : "test${testedVariant.name}",
+                mainTestTask ? TestLibraryTask : TestFlavorTask)
+        testFlavorTask.description = "Installs and runs the tests for Build ${testedVariant.name}."
+        testFlavorTask.group = JavaBasePlugin.VERIFICATION_GROUP
+        testFlavorTask.dependsOn testedVariant.assembleTask, variant.assembleTask
 
-        runTestsTask.plugin = this
-        runTestsTask.variant = variant
-        runTestsTask.testedVariant = testedVariant
-        runTestsTask.sdkDir = sdkDir
+        if (mainTestTask) {
+            project.tasks.check.dependsOn testFlavorTask
+        }
 
-        runTestsTask.conventionMapping.testApp = { variant.outputFile }
+        testFlavorTask.plugin = this
+        testFlavorTask.variant = variant
+        testFlavorTask.testedVariant = testedVariant
+        testFlavorTask.sdkDir = sdkDir
+        testFlavorTask.flavorName = variant.flavorName
+
+        testFlavorTask.conventionMapping.testApp = { variant.outputFile }
         if (testedVariant.config.type != VariantConfiguration.Type.LIBRARY) {
-            runTestsTask.conventionMapping.testedApp = { testedVariant.outputFile }
+            testFlavorTask.conventionMapping.testedApp = { testedVariant.outputFile }
         }
 
-        runTestsTask.conventionMapping.resultsDir = {
-            String location = extension.testOptions.resultsDir != null ?
-                extension.testOptions.resultsDir :
-                "$project.buildDir/test-results/$variant.flavorDirName"
+        testFlavorTask.conventionMapping.resultsDir = {
+            String rootLocation = extension.testOptions.resultsDir != null ?
+                extension.testOptions.resultsDir : "$project.buildDir/test-results"
 
-            project.file(location)
+            project.file("$rootLocation/flavors/$variant.flavorDirName")
         }
-        runTestsTask.conventionMapping.reportsDir = {
-            String location = extension.testOptions.reportDir != null ?
-                extension.testOptions.reportDir :
-                "$project.buildDir/reports/tests/$variant.flavorDirName"
+        testFlavorTask.conventionMapping.reportsDir = {
+            String rootLocation = extension.testOptions.reportDir != null ?
+                extension.testOptions.reportDir : "$project.buildDir/reports/tests"
 
-            project.file(location)
+            project.file("$rootLocation/flavors/$variant.flavorDirName")
         }
-        variant.runTestsTask = runTestsTask
+        variant.testFlavorTask = testFlavorTask
+
+        return testFlavorTask
     }
 
     /**

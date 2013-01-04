@@ -14,30 +14,33 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import com.android.SdkConstants
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
 import com.android.build.gradle.internal.ApplicationVariant
+import com.android.build.gradle.internal.test.report.ReportType
+import com.android.build.gradle.internal.test.report.TestReport
 import com.android.builder.internal.util.concurrent.WaitableExecutor
 import com.android.builder.testing.CustomTestRunListener
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.testrunner.RemoteAndroidTestRunner
 import com.android.utils.ILogger
-import org.gradle.api.internal.tasks.testing.junit.report.DefaultTestReport
+import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.logging.ConsoleRenderer
 import org.gradle.tooling.BuildException
 
 import java.util.concurrent.Callable
 /**
  * Run tests for a given variant
  */
-public class RunTestsTask extends BaseTask {
+public class TestFlavorTask extends BaseTask implements AndroidTestTask {
 
     @Input
     File sdkDir
@@ -54,7 +57,13 @@ public class RunTestsTask extends BaseTask {
     @OutputDirectory
     File resultsDir
 
+    @Input
+    String flavorName
+
     ApplicationVariant testedVariant
+
+    boolean ignoreFailures
+    boolean testFailed
 
     /**
      * Callable to run tests on a given device.
@@ -63,19 +72,24 @@ public class RunTestsTask extends BaseTask {
 
         private final IDevice mDevice
         private final String mDeviceName
+        private final String mFlavorName
         private final File mResultsDir
         private final File mTestApk
         private final ApplicationVariant mVariant
         private final File mTestedApk
         private final ApplicationVariant mTestedVariant
         private final ILogger mLogger
+        private final Project mProject
 
-        DeviceTestRunner(@NonNull IDevice device,
+        DeviceTestRunner(@NonNull IDevice device, @NonNull Project project,
+                         @NonNull String flavorName,
                          @NonNull File testApk, @NonNull ApplicationVariant variant,
                          @Nullable File testedApk, @NonNull ApplicationVariant testedVariant,
                          @NonNull File resultsDir, @NonNull ILogger logger) {
+            mProject = project
             mDevice = device
             mDeviceName = computeDeviceName(device)
+            mFlavorName = flavorName
             mResultsDir = resultsDir
             mTestApk = testApk
             mVariant = variant
@@ -102,7 +116,7 @@ public class RunTestsTask extends BaseTask {
 
                 runner.setRunName(mDevice.serialNumber)
                 CustomTestRunListener runListener = new CustomTestRunListener(
-                        mDeviceName, mLogger)
+                        mDeviceName, mProject.name, mFlavorName, mLogger)
                 runListener.setReportDir(mResultsDir)
 
                 runner.run(runListener)
@@ -174,8 +188,10 @@ public class RunTestsTask extends BaseTask {
         File testApk = getTestApp()
         File testedApk = getTestedApp()
 
+        String flavor = getFlavorName()
+
         for (IDevice device : devices) {
-            executor.execute(new DeviceTestRunner(device,
+            executor.execute(new DeviceTestRunner(device, project, flavor,
                     testApk, variant,
                     testedApk, testedVariant,
                     resultsOutDir, plugin.logger))
@@ -187,16 +203,26 @@ public class RunTestsTask extends BaseTask {
         File reportOutDir = getReportsDir()
         emptyFolder(reportOutDir)
 
-        DefaultTestReport report = new DefaultTestReport(
-                testReportDir: reportOutDir, testResultsDir: resultsOutDir)
+        TestReport report = new TestReport(ReportType.SINGLE_FLAVOR, resultsOutDir, reportOutDir)
         report.generateReport()
 
         // check if one test failed.
         for (Boolean b : results) {
             if (b.booleanValue()) {
-                throw new BuildException(
-                        "Failed tests\n\tCheck report at ${reportOutDir.absolutePath}", null)
+                testFailed = true
+                String reportUrl = new ConsoleRenderer().asClickableFileUrl(
+                        new File(reportOutDir, "index.html"));
+                String message = "There were failing tests. See the report at: " + reportUrl;
+                if (getIgnoreFailures()) {
+                    getLogger().warn(message)
+
+                    return
+                } else {
+                    throw new GradleException(message)
+                }
             }
         }
+
+        testFailed = false
     }
 }
