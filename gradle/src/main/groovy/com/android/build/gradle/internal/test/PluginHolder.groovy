@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal
+package com.android.build.gradle.internal.test
 
 import com.android.build.gradle.AppPlugin
 

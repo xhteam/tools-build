@@ -16,11 +16,11 @@
 package com.android.build.gradle
 
 import com.android.build.gradle.internal.BuildTypeData
-import com.android.build.gradle.internal.ConfigurationDependencies
 import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
 import com.android.build.gradle.internal.TestAppVariant
+import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
 import com.android.builder.BuilderConstants

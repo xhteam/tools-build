@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 package com.android.build.gradle
+
 import com.android.SdkConstants
-import com.android.build.gradle.internal.AndroidDependencyImpl
 import com.android.build.gradle.internal.ApplicationVariant
-import com.android.build.gradle.internal.ConfigurationDependencies
-import com.android.build.gradle.internal.DependencyChecker
 import com.android.build.gradle.internal.LoggerWrapper
-import com.android.build.gradle.internal.ManifestDependencyImpl
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
-import com.android.build.gradle.internal.SymbolFileProviderImpl
 import com.android.build.gradle.internal.TestAppVariant
+import com.android.build.gradle.internal.dependency.AndroidDependencyImpl
+import com.android.build.gradle.internal.dependency.ConfigurationDependencies
+import com.android.build.gradle.internal.dependency.DependencyChecker
+import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
+import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
 import com.android.build.gradle.internal.tasks.AidlCompileTask
 import com.android.build.gradle.internal.tasks.AndroidDependencyTask
 import com.android.build.gradle.internal.tasks.DexTask
@@ -76,6 +77,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
 import org.gradle.util.GUtil
+
 /**
  * Base class for all Android plugins
  */

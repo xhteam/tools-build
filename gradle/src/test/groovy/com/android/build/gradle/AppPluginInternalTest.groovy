@@ -16,8 +16,8 @@
 package com.android.build.gradle
 
 import com.android.build.gradle.internal.ApplicationVariant
-import com.android.build.gradle.internal.BaseTest
-import com.android.build.gradle.internal.PluginHolder
+import com.android.build.gradle.internal.test.BaseTest
+import com.android.build.gradle.internal.test.PluginHolder
 import com.android.builder.BuildType
 import com.android.builder.Keystore
 import com.android.builder.internal.signing.DebugKeyHelper

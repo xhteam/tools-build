@@ -15,7 +15,7 @@
  */
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.gradle.internal.DependencyChecker
+import com.android.build.gradle.internal.dependency.DependencyChecker
 import com.android.utils.Pair
 import org.gradle.api.tasks.TaskAction
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal;
+package com.android.build.gradle.internal.dependency;
 
 import com.android.builder.SymbolFileProvider;
 import org.gradle.api.tasks.InputFile;

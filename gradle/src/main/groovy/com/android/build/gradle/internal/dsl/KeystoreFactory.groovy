@@ -14,27 +14,25 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal
+package com.android.build.gradle.internal.dsl
 
-import com.android.builder.ProductFlavor
+import com.android.builder.Keystore
+import org.gradle.api.NamedDomainObjectFactory
+import org.gradle.internal.reflect.Instantiator
 
 /**
- * A version of ProductFlavor that can receive a group name
+ * Factory to create Keystore object using an {@ling Instantiator} to add the DSL methods.
  */
-public class GroupableProductFlavor extends ProductFlavor {
-    private static final long serialVersionUID = 1L
+class KeystoreFactory implements NamedDomainObjectFactory<Keystore> {
 
-    private String flavorGroup
+    final Instantiator instantiator
 
-    public GroupableProductFlavor(String name) {
-        super(name)
+    public KeystoreFactory(Instantiator instantiator) {
+        this.instantiator = instantiator
     }
 
-    public void setFlavorGroup(String flavorGroup) {
-        this.flavorGroup = flavorGroup
-    }
-
-    public String getFlavorGroup() {
-        return flavorGroup
+    @Override
+    Keystore create(String name) {
+        return instantiator.newInstance(Keystore.class, name)
     }
 }
