@@ -112,18 +112,14 @@ public final class KeystoreHelper {
                         @Override
                         public void out(@Nullable String line) {
                             if (line != null) {
-                                if (logger != null) {
-                                    logger.info(line);
-                                }
+                                logger.info(line);
                             }
                         }
 
                         @Override
                         public void err(@Nullable String line) {
                             if (line != null) {
-                                if (logger != null) {
-                                    logger.error(null /*throwable*/, line);
-                                }
+                                logger.error(null /*throwable*/, line);
                             }
                         }
                     });

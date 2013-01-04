@@ -19,13 +19,13 @@ package com.android.builder.internal.packaging;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.builder.internal.packaging.JavaResourceProcessor.IArchiveBuilder;
+import com.android.builder.internal.signing.DebugKeyProvider;
 import com.android.builder.internal.signing.SignedJarBuilder;
 import com.android.builder.internal.signing.SignedJarBuilder.IZipEntryFilter;
 import com.android.builder.internal.signing.SigningInfo;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
-import com.android.sdklib.internal.build.DebugKeyProvider;
 import com.android.utils.ILogger;
 
 import java.io.File;
