@@ -12,6 +12,7 @@ tests/multiproject/*/build
 tests/tictactoe/*/build
 tests/applibtest/*/build
 tests/flavorlib/*/build
+tests/flavorlibWithFailedTests/*/build
 tests/libsTest/*/build
 tests/repo/*/build
 /repo

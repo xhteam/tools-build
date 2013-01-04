@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.build.gradle.internal.dsl.AaptOptionsImpl
 import com.android.build.gradle.internal.dsl.AndroidSourceSetFactory
 import com.android.build.gradle.internal.dsl.DexOptionsImpl
 import com.android.build.gradle.internal.dsl.GroupableProductFlavor
 import com.android.build.gradle.internal.dsl.ProductFlavorDsl
+import com.android.build.gradle.internal.test.TestOptions
 import com.android.builder.ProductFlavor
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
@@ -28,7 +28,6 @@ import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.internal.reflect.Instantiator
-
 /**
  * Base android extension for all android plugins.
  */
@@ -39,6 +38,7 @@ public abstract class BaseExtension {
     final ProductFlavor defaultConfig
     final AaptOptionsImpl aaptOptions
     final DexOptionsImpl dexOptions
+    final TestOptions testOptions
 
     private final BasePlugin plugin
     private final DefaultDomainObjectSet<BuildVariant> buildVariants =
@@ -58,6 +58,7 @@ public abstract class BaseExtension {
 
         aaptOptions = instantiator.newInstance(AaptOptionsImpl.class)
         dexOptions = instantiator.newInstance(DexOptionsImpl.class)
+        testOptions = instantiator.newInstance(TestOptions.class)
 
         sourceSetsContainer = project.container(AndroidSourceSet,
                 new AndroidSourceSetFactory(instantiator, project.fileResolver))
@@ -111,6 +112,10 @@ public abstract class BaseExtension {
 
     void dexOptions(Action<DexOptionsImpl> action) {
         action.execute(dexOptions)
+    }
+
+    void test(Action<TestOptions> action) {
+        action.execute(testOptions)
     }
 
     public DefaultDomainObjectSet<BuildVariant> getBuildVariants() {

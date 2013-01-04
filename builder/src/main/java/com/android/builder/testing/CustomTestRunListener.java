@@ -66,7 +66,7 @@ public class CustomTestRunListener extends XmlTestRunListener {
 
     @Override
     protected String getTestName(TestIdentifier testId) {
-        return String.format("%s-%s", testId.getTestName(), mDeviceName);
+        return String.format("%1$s[%2$s]", testId.getTestName(), mDeviceName);
     }
 
     @Override
@@ -82,8 +82,8 @@ public class CustomTestRunListener extends XmlTestRunListener {
     public void testFailed(TestFailure status, TestIdentifier test, String trace) {
         if (mLogger != null) {
             mLogger.warning(
-                    String.format("\n%1$s: %2$s > %3$s \033[31mFAILED \033[0m", mDeviceName,
-                            test.getClassName(), test.getTestName()));
+                    String.format("\n%1$s > %2$s[%3$s] \033[31mFAILED \033[0m",
+                            test.getClassName(), test.getTestName(), mDeviceName));
             mLogger.warning(getModifiedTrace(trace));
         }
 
@@ -98,15 +98,14 @@ public class CustomTestRunListener extends XmlTestRunListener {
             // if wasn't present in the list, then the test succeeded.
             if (mLogger != null) {
                 mLogger.info(
-                        String.format("\n%1$s: %2$s > %3$s \033[32mSUCCESS \033[0m", mDeviceName,
-                                test.getClassName(), test.getTestName()));
+                        String.format("\n%1$s > %2$s[%3$s] \033[32mSUCCESS \033[0m",
+                                test.getClassName(), test.getTestName(), mDeviceName));
             }
 
         }
 
         super.testEnded(test, testMetrics);
     }
-
 
     @Override
     public void testRunFailed(String errorMessage) {

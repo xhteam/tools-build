@@ -11,6 +11,11 @@ android {
             packageName = "com.android.tests.flavorlib.app.flavor2"
         }
     }
+
+    test {
+        resultsDir = "$project.buildDir/foo/results"
+        reportDir = "$project.buildDir/foo/report"
+    }
 }
 
 dependencies {

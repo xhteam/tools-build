@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
+
 import com.android.SdkConstants
+import com.android.annotations.NonNull
+import com.android.annotations.Nullable
 import com.android.build.gradle.internal.ApplicationVariant
 import com.android.builder.internal.util.concurrent.WaitableExecutor
 import com.android.builder.testing.CustomTestRunListener
@@ -59,6 +62,7 @@ public class RunTestsTask extends BaseTask {
     private static class DeviceTestRunner implements Callable<Boolean> {
 
         private final IDevice mDevice
+        private final String mDeviceName
         private final File mResultsDir
         private final File mTestApk
         private final ApplicationVariant mVariant
@@ -66,9 +70,12 @@ public class RunTestsTask extends BaseTask {
         private final ApplicationVariant mTestedVariant
         private final ILogger mLogger
 
-        DeviceTestRunner(IDevice device, File testApk, ApplicationVariant variant, File testedApk,
-                     ApplicationVariant testedVariant, File resultsDir, ILogger logger) {
+        DeviceTestRunner(@NonNull IDevice device,
+                         @NonNull File testApk, @NonNull ApplicationVariant variant,
+                         @Nullable File testedApk, @NonNull ApplicationVariant testedVariant,
+                         @NonNull File resultsDir, @NonNull ILogger logger) {
             mDevice = device
+            mDeviceName = computeDeviceName(device)
             mResultsDir = resultsDir
             mTestApk = testApk
             mVariant = variant
@@ -81,13 +88,11 @@ public class RunTestsTask extends BaseTask {
         Boolean call() throws Exception {
             try {
                 if (mTestedApk != null) {
-                    mLogger.info("Device '%s': installing %s", mDevice.serialNumber,
-                            mTestedApk.absolutePath)
+                    mLogger.info("Device '%s': installing %s", mDeviceName, mTestedApk.absolutePath)
                     mDevice.installPackage(mTestedApk.absolutePath, true /*reinstall*/)
                 }
 
-                mLogger.info("Device '%s': installing %s", mDevice.serialNumber,
-                        mTestApk.absolutePath)
+                mLogger.info("Device '%s': installing %s", mDeviceName, mTestApk.absolutePath)
                 mDevice.installPackage(mTestApk.absolutePath, true /*reinstall*/)
 
 
@@ -97,7 +102,7 @@ public class RunTestsTask extends BaseTask {
 
                 runner.setRunName(mDevice.serialNumber)
                 CustomTestRunListener runListener = new CustomTestRunListener(
-                        mDevice.serialNumber, mLogger)
+                        mDeviceName, mLogger)
                 runListener.setReportDir(mResultsDir)
 
                 runner.run(runListener)
@@ -106,15 +111,30 @@ public class RunTestsTask extends BaseTask {
             } finally {
                 // uninstall the apps
                 String packageName = mVariant.packageName
-                mLogger.info("Device '%s': uninstalling %s", mDevice.serialNumber, packageName)
+                mLogger.info("Device '%s': uninstalling %s", mDeviceName, packageName)
                 mDevice.uninstallPackage(packageName)
 
                 if (mTestedApk != null) {
                     packageName = mTestedVariant.packageName
-                    mLogger.info("Device '%s': uninstalling %s", mDevice.serialNumber, packageName)
+                    mLogger.info("Device '%s': uninstalling %s", mDeviceName, packageName)
                     mDevice.uninstallPackage(packageName)
                 }
             }
+        }
+
+        private String computeDeviceName(@NonNull IDevice device) {
+            String version = device.getProperty(IDevice.PROP_BUILD_VERSION);
+            boolean emulator = device.isEmulator()
+
+            String name;
+            if (emulator) {
+                name = mDevice.avdName != null ? mDevice.avdName + "(AVD)" : mDevice.serialNumber
+            } else {
+                String model = device.getProperty(IDevice.DEVICE_MODEL_PROPERTY)
+                name = model != null ? model : mDevice.serialNumber
+            }
+
+            return version != null ? name + " - " + version : name
         }
     }
 
@@ -134,7 +154,7 @@ public class RunTestsTask extends BaseTask {
             timeOut -= sleepTime
         }
 
-        if (timeOut == 0) {
+        if (timeOut <= 0 && !bridge.hasInitialDeviceList()) {
             throw new BuildException("Timeout getting device list.", null)
         }
 
