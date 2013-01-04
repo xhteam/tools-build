@@ -121,7 +121,7 @@ public class AppPluginInternalTest extends BaseTest {
 
             buildTypes {
                 staging {
-                    keystore owner.keystores.debug
+                    keystore keystores.debug
                 }
             }
         }

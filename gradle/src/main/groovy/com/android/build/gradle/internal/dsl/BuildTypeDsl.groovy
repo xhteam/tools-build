@@ -17,22 +17,24 @@
 package com.android.build.gradle.internal.dsl
 
 import com.android.builder.BuildType
-import org.gradle.api.NamedDomainObjectFactory
-import org.gradle.internal.reflect.Instantiator
 
 /**
- * Factory to create BuildType object using an {@ling Instantiator} to add the DSL methods.
+ * DSL overlay to make methods that accept String... work.
  */
-class BuildTypeFactory implements NamedDomainObjectFactory<BuildType> {
+public class BuildTypeDsl extends BuildType {
+    private static final long serialVersionUID = 1L
 
-    final Instantiator instantiator
-
-    public BuildTypeFactory(Instantiator instantiator) {
-        this.instantiator = instantiator
+    BuildTypeDsl(String name) {
+        super(name)
     }
 
-    @Override
-    BuildType create(String name) {
-        return instantiator.newInstance(BuildTypeDsl.class, name)
+    // -- DSL Methods. TODO remove once the instantiator does what I expect it to do.
+
+    public void buildConfig(String... lines) {
+        setBuildConfig(lines)
+    }
+
+    public void buildConfig(String line) {
+        setBuildConfig(line)
     }
 }

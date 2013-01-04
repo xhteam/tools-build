@@ -31,7 +31,7 @@ android {
     buildTypes {
         blah {
             packageNameSuffix ".blah"
-            keystore this.android.keystores.debug
+            keystore keystores.debug
         }
     }
 }
