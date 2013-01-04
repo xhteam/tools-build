@@ -66,15 +66,6 @@ class ProductionAppVariant extends ApplicationVariant {
     }
 
     @Override
-    List<String> getRunCommand() {
-        throw new UnsupportedOperationException()
-    }
-
-    String getPackage() {
-        return config.getPackageName()
-    }
-
-    @Override
     AndroidBuilder createBuilder(BasePlugin androidBasePlugin) {
         AndroidBuilder androidBuilder = new AndroidBuilder(
                 androidBasePlugin.sdkParser,

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.SdkConstants
 import com.android.build.gradle.internal.AndroidDependencyImpl
 import com.android.build.gradle.internal.ApplicationVariant
@@ -57,7 +56,6 @@ import com.android.utils.ILogger
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Multimap
-import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
@@ -78,7 +76,6 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
 import org.gradle.util.GUtil
-
 /**
  * Base class for all Android plugins
  */
@@ -571,28 +568,29 @@ public abstract class BasePlugin {
         }
 
         // create the check task for this test
-        def checkTask = project.tasks.add("check${testedVariant.name}", DefaultTask)
-        checkTask.description = "Installs and runs the checks for Build ${testedVariant.name}."
-        checkTask.group = JavaBasePlugin.VERIFICATION_GROUP
-
-        checkTask.dependsOn testedVariant.assembleTask, variant.assembleTask
-        project.tasks.check.dependsOn checkTask
-
-        // now run the test.
-        def runTestsTask = project.tasks.add("run${testedVariant.name}Tests", RunTestsTask)
-        variant.runTestsTask = runTestsTask
-        runTestsTask.description = "Runs the checks for Build ${testedVariant.name}. Must be installed on device."
+        def runTestsTask = project.tasks.add("check${testedVariant.name}", RunTestsTask)
+        runTestsTask.description = "Installs and runs the checks for Build ${testedVariant.name}."
         runTestsTask.group = JavaBasePlugin.VERIFICATION_GROUP
-        runTestsTask.sdkDir = sdkDir
-        runTestsTask.variant = variant
-        checkTask.doLast { runTestsTask }
+        runTestsTask.dependsOn testedVariant.assembleTask, variant.assembleTask
+        project.tasks.check.dependsOn runTestsTask
 
-        // TODO: don't rely on dependsOn which isn't reliable for execution order.
-        if (testedVariant.config.type == VariantConfiguration.Type.DEFAULT) {
-            checkTask.dependsOn testedVariant.installTask, variant.installTask, runTestsTask, testedVariant.uninstallTask, variant.uninstallTask
-        } else {
-            checkTask.dependsOn variant.installTask, runTestsTask, variant.uninstallTask
+        runTestsTask.plugin = this
+        runTestsTask.variant = variant
+        runTestsTask.testedVariant = testedVariant
+        runTestsTask.sdkDir = sdkDir
+
+        runTestsTask.conventionMapping.testApp = { variant.outputFile }
+        if (testedVariant.config.type != VariantConfiguration.Type.LIBRARY) {
+            runTestsTask.conventionMapping.testedApp = { testedVariant.outputFile }
         }
+
+        runTestsTask.conventionMapping.resultsDir = {
+            project.file("$project.buildDir/test-results/$variant.flavorDirName")
+        }
+        runTestsTask.conventionMapping.reportsDir = {
+            project.file("$project.buildDir/reports/tests/$variant.flavorDirName")
+        }
+        variant.runTestsTask = runTestsTask
     }
 
     /**

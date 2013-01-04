@@ -14,10 +14,23 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
+import com.android.SdkConstants
+import com.android.build.gradle.internal.ApplicationVariant
+import com.android.builder.internal.util.concurrent.WaitableExecutor
+import com.android.builder.testing.CustomTestRunListener
+import com.android.ddmlib.AndroidDebugBridge
+import com.android.ddmlib.IDevice
+import com.android.ddmlib.testrunner.RemoteAndroidTestRunner
+import com.android.utils.ILogger
+import org.gradle.api.internal.tasks.testing.junit.report.DefaultTestReport
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
+import org.gradle.tooling.BuildException
 
+import java.util.concurrent.Callable
 /**
  * Run tests for a given variant
  */
@@ -26,14 +39,144 @@ public class RunTestsTask extends BaseTask {
     @Input
     File sdkDir
 
+    @InputFile
+    File testApp
+
+    @InputFile @Optional
+    File testedApp
+
+    @OutputDirectory
+    File reportsDir
+
+    @OutputDirectory
+    File resultsDir
+
+    ApplicationVariant testedVariant
+
+    /**
+     * Callable to run tests on a given device.
+     */
+    private static class DeviceTestRunner implements Callable<Boolean> {
+
+        private final IDevice mDevice
+        private final File mResultsDir
+        private final File mTestApk
+        private final ApplicationVariant mVariant
+        private final File mTestedApk
+        private final ApplicationVariant mTestedVariant
+        private final ILogger mLogger
+
+        DeviceTestRunner(IDevice device, File testApk, ApplicationVariant variant, File testedApk,
+                     ApplicationVariant testedVariant, File resultsDir, ILogger logger) {
+            mDevice = device
+            mResultsDir = resultsDir
+            mTestApk = testApk
+            mVariant = variant
+            mTestedApk = testedApk
+            mTestedVariant = testedVariant
+            mLogger = logger
+        }
+
+        @Override
+        Boolean call() throws Exception {
+            try {
+                if (mTestedApk != null) {
+                    mLogger.info("Device '%s': installing %s", mDevice.serialNumber,
+                            mTestedApk.absolutePath)
+                    mDevice.installPackage(mTestedApk.absolutePath, true /*reinstall*/)
+                }
+
+                mLogger.info("Device '%s': installing %s", mDevice.serialNumber,
+                        mTestApk.absolutePath)
+                mDevice.installPackage(mTestApk.absolutePath, true /*reinstall*/)
+
+
+                RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(
+                        mVariant.config.packageName, mVariant.config.instrumentationRunner,
+                        mDevice)
+
+                runner.setRunName(mDevice.serialNumber)
+                CustomTestRunListener runListener = new CustomTestRunListener(
+                        mDevice.serialNumber, mLogger)
+                runListener.setReportDir(mResultsDir)
+
+                runner.run(runListener)
+
+                return runListener.runResult.hasFailedTests()
+            } finally {
+                // uninstall the apps
+                String packageName = mVariant.packageName
+                mLogger.info("Device '%s': uninstalling %s", mDevice.serialNumber, packageName)
+                mDevice.uninstallPackage(packageName)
+
+                if (mTestedApk != null) {
+                    packageName = mTestedVariant.packageName
+                    mLogger.info("Device '%s': uninstalling %s", mDevice.serialNumber, packageName)
+                    mDevice.uninstallPackage(packageName)
+                }
+            }
+        }
+    }
+
     @TaskAction
     protected void runTests() {
-        List<String> command = variant.runCommand
+        AndroidDebugBridge.initIfNeeded(false /*clientSupport*/)
 
-        logger.info("Running tests with command: " + command)
-        project.exec {
-            executable = new File(getSdkDir(), "platform-tools${File.separator}adb")
-            args command
+        File platformTools = new File(getSdkDir(), SdkConstants.FD_PLATFORM_TOOLS)
+
+        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(
+                new File(platformTools, SdkConstants.FN_ADB).absolutePath, false /*forceNewBridge*/)
+
+        long timeOut = 30000 // 30 sec
+        int sleepTime = 1000
+        while (!bridge.hasInitialDeviceList() && timeOut > 0) {
+            sleep(sleepTime)
+            timeOut -= sleepTime
+        }
+
+        if (timeOut == 0) {
+            throw new BuildException("Timeout getting device list.", null)
+        }
+
+        IDevice[] devices = bridge.devices
+
+        if (devices.length == 0) {
+            throw new BuildException("No connected devices!", null)
+        }
+
+        File resultsOutDir = getResultsDir()
+
+        // empty the folder.
+        emptyFolder(resultsOutDir)
+
+        WaitableExecutor<Boolean> executor = new WaitableExecutor<Boolean>();
+
+        File testApk = getTestApp()
+        File testedApk = getTestedApp()
+
+        for (IDevice device : devices) {
+            executor.execute(new DeviceTestRunner(device,
+                    testApk, variant,
+                    testedApk, testedVariant,
+                    resultsOutDir, plugin.logger))
+        }
+
+        List<Boolean> results = executor.waitForTasks()
+
+        // run the report from the results.
+        File reportOutDir = getReportsDir()
+        emptyFolder(reportOutDir)
+
+        DefaultTestReport report = new DefaultTestReport(
+                testReportDir: reportOutDir, testResultsDir: resultsOutDir)
+        report.generateReport()
+
+        // check if one test failed.
+        for (Boolean b : results) {
+            if (b.booleanValue()) {
+                throw new BuildException(
+                        "Failed tests\n\tCheck report at ${reportOutDir.absolutePath}", null)
+            }
         }
     }
 }

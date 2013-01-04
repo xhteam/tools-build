@@ -15,6 +15,9 @@
  */
 package com.android.builder.internal.util.concurrent;
 
+import com.google.common.collect.Lists;
+
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
 import java.util.concurrent.ExecutionException;
@@ -30,13 +33,13 @@ import java.util.concurrent.Future;
  *
  * After executing all tasks, it is possible to wait on them with {@link #waitForTasks()}.
  */
-public class WaitableExecutor {
+public class WaitableExecutor<T> {
 
-    private final CompletionService mCompletionService;
+    private final CompletionService<T> mCompletionService;
     private int mCount = 0;
 
     public WaitableExecutor() {
-        mCompletionService = new ExecutorCompletionService<Object>(Executors.newCachedThreadPool());
+        mCompletionService = new ExecutorCompletionService<T>(Executors.newCachedThreadPool());
     }
 
     /**
@@ -44,20 +47,26 @@ public class WaitableExecutor {
      *
      * @param runnable the callable to run.
      */
-    public void execute(Callable runnable) {
+    public void execute(Callable<T> runnable) {
         mCompletionService.submit(runnable);
         mCount++;
     }
 
     /**
      * Waits for all tasks to be executed. If a tasks through an exception, it will be thrown here.
+     *
+     * @return a list of all the return values from the tasks.
+     *
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    public void waitForTasks() throws InterruptedException, ExecutionException {
+    public List<T> waitForTasks() throws InterruptedException, ExecutionException {
+        List<T> results = Lists.newArrayListWithCapacity(mCount);
         for (int i = 0 ; i < mCount ; i++) {
-            Future result = mCompletionService.take();
-            Object r = result.get();
+            Future<T> result = mCompletionService.take();
+            results.add(result.get());
         }
+
+        return results;
     }
 }

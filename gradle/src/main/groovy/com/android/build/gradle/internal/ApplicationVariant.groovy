@@ -81,6 +81,14 @@ public abstract class ApplicationVariant {
 
     abstract String getDirName()
 
+    String getFlavorDirName() {
+        if (config.hasFlavors()) {
+            return "${getFlavoredName(false)}"
+        } else {
+            return ""
+        }
+    }
+
     abstract String getBaseName()
 
     abstract boolean getZipAlign()
@@ -91,9 +99,9 @@ public abstract class ApplicationVariant {
 
     abstract boolean getRunProguard()
 
-    abstract List<String> getRunCommand()
-
-    abstract String getPackage()
+    String getPackageName() {
+        return config.getPackageName()
+    }
 
     abstract AndroidBuilder createBuilder(BasePlugin androidBasePlugin)
 
