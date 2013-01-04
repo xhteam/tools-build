@@ -132,10 +132,15 @@ class BuildTest extends BaseTest {
     void testOtherProjects() {
         File[] projects = testDir.listFiles()
         for (File project : projects) {
+            if (!project.isDirectory()) {
+                continue
+            }
+
             String name = project.name
             if (name.startsWith(".")) {
                 continue
             }
+
             if (!builtProjects.contains(name)) {
                 buildProject(name)
             }

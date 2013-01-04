@@ -587,10 +587,18 @@ public abstract class BasePlugin {
         }
 
         runTestsTask.conventionMapping.resultsDir = {
-            project.file("$project.buildDir/test-results/$variant.flavorDirName")
+            String location = extension.testOptions.resultsDir != null ?
+                extension.testOptions.resultsDir :
+                "$project.buildDir/test-results/$variant.flavorDirName"
+
+            project.file(location)
         }
         runTestsTask.conventionMapping.reportsDir = {
-            project.file("$project.buildDir/reports/tests/$variant.flavorDirName")
+            String location = extension.testOptions.reportDir != null ?
+                extension.testOptions.reportDir :
+                "$project.buildDir/reports/tests/$variant.flavorDirName"
+
+            project.file(location)
         }
         variant.runTestsTask = runTestsTask
     }

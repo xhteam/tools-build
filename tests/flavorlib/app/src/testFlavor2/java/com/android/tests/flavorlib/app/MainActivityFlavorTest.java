@@ -18,7 +18,6 @@ package com.android.tests.flavorlib.app;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.widget.TextView;
 
 /**
@@ -81,10 +80,5 @@ public class MainActivityFlavorTest extends ActivityInstrumentationTestCase2<Mai
     @MediumTest
     public void testJavaStrings() {
         assertEquals(mLibTextView2.getText(), "SUCCESS-LIB2");
-    }
-
-    @SmallTest
-    public void testIsApi17() {
-        assertEquals(17, android.os.Build.VERSION.SDK_INT);
     }
 }
