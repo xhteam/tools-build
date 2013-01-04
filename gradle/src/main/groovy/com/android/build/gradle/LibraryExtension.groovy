@@ -15,7 +15,7 @@
  */
 package com.android.build.gradle
 
-import com.android.build.gradle.internal.dsl.BuildTypeFactory.BuildTypeDsl
+import com.android.build.gradle.internal.dsl.BuildTypeDsl
 import com.android.builder.BuildType
 import org.gradle.api.Action
 import org.gradle.api.internal.project.ProjectInternal
