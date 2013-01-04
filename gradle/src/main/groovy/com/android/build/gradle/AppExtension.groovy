@@ -16,8 +16,8 @@
 package com.android.build.gradle
 
 import com.android.builder.BuildType
-import com.android.builder.ProductFlavor
 import com.android.builder.Keystore
+import com.android.builder.ProductFlavor
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.internal.project.ProjectInternal

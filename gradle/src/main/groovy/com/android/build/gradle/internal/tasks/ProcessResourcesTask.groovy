@@ -15,7 +15,7 @@
  */
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.gradle.internal.AaptOptionsImpl
+import com.android.build.gradle.internal.dsl.AaptOptionsImpl
 import com.android.build.gradle.tasks.ProcessResources
 import com.android.builder.SymbolFileProvider
 import com.android.builder.VariantConfiguration

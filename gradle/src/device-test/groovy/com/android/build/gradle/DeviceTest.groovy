@@ -15,7 +15,9 @@
  */
 
 package com.android.build.gradle
-import com.android.build.gradle.internal.BaseTest
+
+import com.android.build.gradle.internal.test.BaseTest
+
 /**
  * Device tests.
  *

@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal
+package com.android.build.gradle.internal.dsl
 
 import com.android.build.gradle.AndroidSourceSet
+import com.android.build.gradle.internal.DefaultAndroidSourceSet
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.reflect.Instantiator

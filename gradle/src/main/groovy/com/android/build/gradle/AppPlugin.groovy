@@ -16,17 +16,16 @@
 package com.android.build.gradle
 
 import com.android.build.gradle.internal.BuildTypeData
-import com.android.build.gradle.internal.BuildTypeFactory
-import com.android.build.gradle.internal.ConfigurationDependencies
 import com.android.build.gradle.internal.DefaultBuildVariant
-import com.android.build.gradle.internal.GroupableProductFlavor
-import com.android.build.gradle.internal.GroupableProductFlavorFactory
-import com.android.build.gradle.internal.PluginHolder
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
-
-import com.android.build.gradle.internal.KeystoreFactory
 import com.android.build.gradle.internal.TestAppVariant
+import com.android.build.gradle.internal.dependency.ConfigurationDependencies
+import com.android.build.gradle.internal.dsl.BuildTypeFactory
+import com.android.build.gradle.internal.dsl.GroupableProductFlavor
+import com.android.build.gradle.internal.dsl.GroupableProductFlavorFactory
+import com.android.build.gradle.internal.dsl.KeystoreFactory
+import com.android.build.gradle.internal.test.PluginHolder
 import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
 import com.android.builder.JarDependency

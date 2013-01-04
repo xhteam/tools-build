@@ -15,11 +15,11 @@
  */
 package com.android.build.gradle
 
-import com.android.build.gradle.internal.AaptOptionsImpl
-import com.android.build.gradle.internal.AndroidSourceSetFactory
-import com.android.build.gradle.internal.DexOptionsImpl
-import com.android.build.gradle.internal.GroupableProductFlavor
-import com.android.build.gradle.internal.ProductFlavorDsl
+import com.android.build.gradle.internal.dsl.AaptOptionsImpl
+import com.android.build.gradle.internal.dsl.AndroidSourceSetFactory
+import com.android.build.gradle.internal.dsl.DexOptionsImpl
+import com.android.build.gradle.internal.dsl.GroupableProductFlavor
+import com.android.build.gradle.internal.dsl.ProductFlavorDsl
 import com.android.builder.ProductFlavor
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer

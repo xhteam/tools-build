@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal
+package com.android.build.gradle.internal.dsl
 
 import com.android.builder.ProductFlavor
 
 /**
- * DSL overlay to make methods that accept String... work.
+ * A version of ProductFlavor that can receive a group name
  */
-class ProductFlavorDsl extends ProductFlavor {
+public class GroupableProductFlavor extends ProductFlavor {
     private static final long serialVersionUID = 1L
 
-    ProductFlavorDsl(String name) {
+    private String flavorGroup
+
+    public GroupableProductFlavor(String name) {
         super(name)
     }
 
-    // -- DSL Methods. TODO remove once the instantiator does what I expect it to do.
-
-    public void buildConfig(String... lines) {
-        setBuildConfig(lines)
+    public void setFlavorGroup(String flavorGroup) {
+        this.flavorGroup = flavorGroup
     }
 
-    public void buildConfig(String line) {
-        setBuildConfig(line)
+    public String getFlavorGroup() {
+        return flavorGroup
     }
-
 }

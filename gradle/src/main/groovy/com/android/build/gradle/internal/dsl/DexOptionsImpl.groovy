@@ -13,25 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.build.gradle.internal
 
-import com.android.builder.AndroidDependency
-import com.android.builder.BundleDependency
-import com.android.builder.ManifestDependency
+package com.android.build.gradle.internal.dsl
 
-class AndroidDependencyImpl extends BundleDependency {
-    final List<AndroidDependency> dependencies;
-    final File bundle
+import com.android.builder.DexOptions
+import org.gradle.api.tasks.Input;
 
-    AndroidDependencyImpl(String name, File explodedBundle, List<AndroidDependency> dependencies,
-                          File bundle) {
-        super(explodedBundle, name)
-        this.dependencies = dependencies
-        this.bundle = bundle
+public class DexOptionsImpl implements DexOptions {
+
+    @Input
+    private boolean coreLibraryFlag;
+
+    public void setCoreLibrary(boolean coreLibrary) {
+        coreLibraryFlag = coreLibrary
     }
 
     @Override
-    List<ManifestDependency> getManifestDependencies() {
-        return dependencies
+    boolean isCoreLibrary() {
+        return coreLibraryFlag
     }
 }

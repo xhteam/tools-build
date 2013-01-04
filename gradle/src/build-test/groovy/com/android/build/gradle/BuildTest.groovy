@@ -15,11 +15,13 @@
  */
 
 package com.android.build.gradle
-import com.android.build.gradle.internal.BaseTest
+
+import com.android.build.gradle.internal.test.BaseTest
 import com.google.common.collect.Sets
 
 import javax.imageio.ImageIO
 import java.awt.image.BufferedImage
+
 /**
  * Build tests.
  *

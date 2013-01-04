@@ -15,7 +15,7 @@
  */
 package com.android.build.gradle
 
-import com.android.build.gradle.internal.BaseTest
+import com.android.build.gradle.internal.test.BaseTest
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 
