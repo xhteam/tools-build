@@ -25,6 +25,9 @@ public class DuplicateResourceException extends Exception {
     private Resource mTwo;
 
     DuplicateResourceException(Resource one, Resource two) {
+        super(String.format("Duplicate resources: %1s:%2s, %3s:%4s",
+                one.getSource().getFile().getAbsolutePath(), one.getKey(),
+                two.getSource().getFile().getAbsolutePath(), two.getKey()));
         mOne = one;
         mTwo = two;
     }
