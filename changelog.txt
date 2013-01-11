@@ -1,9 +1,15 @@
 0.3
 
+* Requires Gradle 1.3. Runtime check will ensure this.
+* Requires Android Platform Tools 16.0.2+. Runtime check will ensure this.
 * API to manipulate Build Variants
-* Support for multi resource folders (see multires sample)
+* Support for multi resource folders. See 'multires' sample
 * versionName suffix in build type.
 * Improved DSL to setup signing info.
+* new API to relocate full sourceSet. See 'migrated' sample.
+* Running tests on device now breaks the build if any test fails, and create a nice report, for each flavor/project, but also aggregated.
+* New plugin 'android-reporting' to aggregate android test results accross projects. See 'flavorlib' sample.
+* Tests now runs on all connected devices in parallel.
 
 0.2
 
