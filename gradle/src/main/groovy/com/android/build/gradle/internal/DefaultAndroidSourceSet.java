@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal;
 
+import com.android.SdkConstants;
 import com.android.build.gradle.AndroidSourceDirectorySet;
 import com.android.build.gradle.AndroidSourceFile;
 import com.android.build.gradle.AndroidSourceSet;
@@ -31,6 +32,7 @@ import org.gradle.util.ConfigureUtil;
 import org.gradle.util.GUtil;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -223,6 +225,19 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     @Override
     public SourceDirectorySet getAllSource() {
         return allSource;
+    }
+
+    @Override
+    public AndroidSourceSet setRoot(String path) {
+        javaSource.setSrcDirs(Collections.singletonList(path + "/java"));
+        javaResources.setSrcDirs(Collections.singletonList(path + "/resources"));
+        res.setSrcDirs(Collections.singletonList(path + "/" + SdkConstants.FD_RES));
+        assets.setSrcDirs(Collections.singletonList(path + "/" + SdkConstants.FD_ASSETS));
+        manifest.srcFile(path + "/" + SdkConstants.FN_ANDROID_MANIFEST_XML);
+        aidl.setSrcDirs(Collections.singletonList(path + "/aidl"));
+        renderscript.setSrcDirs(Collections.singletonList(path + "/rs"));
+        jni.setSrcDirs(Collections.singletonList(path + "jni"));
+        return this;
     }
 
     // --- SourceProvider
