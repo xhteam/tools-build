@@ -23,7 +23,7 @@ import com.android.build.gradle.internal.tasks.MergeResourcesTask
 import com.android.build.gradle.internal.tasks.PackageApplicationTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.ProcessResourcesTask
-import com.android.build.gradle.internal.tasks.RunTestsTask
+import com.android.build.gradle.internal.tasks.TestFlavorTask
 import com.android.build.gradle.internal.tasks.ZipAlignTask
 import com.android.build.gradle.tasks.ProcessManifest
 import com.android.builder.AndroidBuilder
@@ -65,7 +65,7 @@ public abstract class ApplicationVariant {
     Task installTask
     Task uninstallTask
 
-    RunTestsTask runTestsTask
+    TestFlavorTask testFlavorTask
 
     ApplicationVariant(VariantConfiguration config) {
         this.config = config
@@ -86,6 +86,14 @@ public abstract class ApplicationVariant {
             return "${getFlavoredName(false)}"
         } else {
             return ""
+        }
+    }
+
+    String getFlavorName() {
+        if (config.hasFlavors()) {
+            return "${getFlavoredName(true)}"
+        } else {
+            return "Main"
         }
     }
 

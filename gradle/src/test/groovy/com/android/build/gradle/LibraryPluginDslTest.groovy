@@ -89,7 +89,7 @@ public class LibraryPluginDslTest extends BaseTest {
             assertNull(variant.install)
         }
 
-        assertNotNull(variant.runTests)
+        assertNotNull(variant.testFlavor)
     }
 
     private static void checkLibraryTasks(BuildVariant variant) {
@@ -107,7 +107,7 @@ public class LibraryPluginDslTest extends BaseTest {
         assertNull(variant.zipAlign)
         assertNull(variant.install)
         assertNull(variant.uninstall)
-        assertNull(variant.runTests)
+        assertNull(variant.testFlavor)
     }
 
     private static BuildVariant findVariant(Collection<BuildVariant> variants, String name) {

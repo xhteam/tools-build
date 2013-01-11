@@ -212,5 +212,5 @@ public interface BuildVariant {
      * Only valid for test project.
      */
     @Nullable
-    Task getRunTests()
+    Task getTestFlavor()
 }

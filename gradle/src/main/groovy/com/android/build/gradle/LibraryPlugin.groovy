@@ -258,7 +258,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
 
         def testVariant = new TestAppVariant(testVariantConfig,)
         variants.add(testVariant)
-        createTestTasks(testVariant, testedVariant, configDependencies)
+        createTestTasks(testVariant, testedVariant, configDependencies, true /*mainTestTask*/)
 
         return testVariant
     }

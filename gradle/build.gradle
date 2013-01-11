@@ -9,6 +9,10 @@ configurations {
 }
 
 sourceSets {
+    main {
+        groovy.srcDirs 'src/main/groovy', 'src/fromGradle/groovy'
+        resources.srcDirs 'src/main/resources', 'src/fromGradle/resources'
+    }
     buildTest {
         groovy.srcDir file('src/build-test/groovy')
         resources.srcDir file('src/build-test/resources')
