@@ -57,6 +57,15 @@ public class DefaultAndroidSourceDirectorySet implements AndroidSourceDirectoryS
     }
 
     @Override
+    public AndroidSourceDirectorySet setSrcDirs(Iterable<?> srcDirs) {
+        source.clear();
+        for (Object srcDir : srcDirs) {
+            source.add(srcDir);
+        }
+        return this;
+    }
+
+    @Override
     public Set<File> getDirectories() {
         return fileResolver.resolveFiles(source.toArray()).getFiles();
     }

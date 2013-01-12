@@ -86,15 +86,7 @@ public abstract class BaseExtension {
                     String.format("Classpath packaged with the compiled %s classes.",
                             sourceSet.getName()));
 
-            sourceSet.java.srcDir(String.format("src/%s/java", sourceSet.getName()))
-            sourceSet.resources.srcDir(String.format("src/%s/resources", sourceSet.getName()))
-            sourceSet.res.srcDir(String.format("src/%s/res", sourceSet.getName()))
-            sourceSet.assets.srcDir(String.format("src/%s/assets", sourceSet.getName()))
-            sourceSet.manifest.srcFile(
-                    String.format("src/%s/AndroidManifest.xml", sourceSet.getName()))
-            sourceSet.aidl.srcDir(String.format("src/%s/aidl", sourceSet.getName()))
-            sourceSet.renderscript.srcDir(String.format("src/%s/rs", sourceSet.getName()))
-            sourceSet.jni.srcDir(String.format("src/%s/jni", sourceSet.getName()))
+            sourceSet.setRoot(String.format("src/%s", sourceSet.getName()))
         }
     }
 

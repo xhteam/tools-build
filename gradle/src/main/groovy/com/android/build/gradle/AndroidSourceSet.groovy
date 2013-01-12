@@ -202,4 +202,15 @@ public interface AndroidSourceSet {
      * @return this
      */
     AndroidSourceSet jni(Closure configureClosure);
+
+    /**
+     * Sets the root of the source sets to a given path.
+     *
+     * All entries of the source set are located under this root directory.
+     *
+     * @param path the root directory.
+     * @return this
+     */
+    AndroidSourceSet setRoot(String path);
+
 }

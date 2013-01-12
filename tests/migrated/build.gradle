@@ -17,27 +17,31 @@ android {
     sourceSets {
         main {
             manifest {
+                // there's only ever one file so srcFile replaces it.
                 srcFile 'AndroidManifest.xml'
             }
             java {
-                srcDir 'src'
+                // writing:
+                //    srcDir 'src'
+                // would *add* to the default folder so we use a different syntax
+                srcDirs = ['src']
                 exclude 'some/unwanted/package/**'
             }
             res {
-                srcDir 'res'
+                srcDirs = ['res']
             }
             assets {
-                srcDir 'assets'
+                srcDirs = ['assets']
             }
             resources {
-                srcDir 'src'
+                srcDirs = ['src']
             }
         }
-        test {
-            java {
-                srcDir 'tests/src'
-            }
-        }
+
+        // this moves src/test to tests so all folders follow:
+        // tests/java, tests/res, tests/assets, ...
+        // This is a *reset* so it replaces the default paths
+        test.setRoot('tests')
 
         // Could also be done with:
         //main.manifest.srcFile 'AndroidManifest.xml'

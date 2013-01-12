@@ -30,7 +30,7 @@ public interface AndroidSourceDirectorySet {
     String getName();
 
     /**
-     * Sets the location of the directory.
+     * Adds the given source directory to this set.
      *
      * @param srcDir The source directory. This is evaluated as for
      *                {@link org.gradle.api.Project#file(Object)}
@@ -39,13 +39,22 @@ public interface AndroidSourceDirectorySet {
     AndroidSourceDirectorySet srcDir(Object srcDir);
 
     /**
-     * Sets the location of the directory.
+     * Adds the given source directories to this set.
      *
      * @param srcDirs The source directories. These are evaluated as for
      *                {@link org.gradle.api.Project#files(Object...)}
      * @return the AndroidSourceDirectorySet object
      */
     AndroidSourceDirectorySet srcDirs(Object... srcDirs);
+
+    /**
+     * Sets the source directories for this set.
+     *
+     * @param srcDirs The source directories. These are evaluated as for
+     *                {@link org.gradle.api.Project#files(Object...)}
+     * @return
+     */
+    AndroidSourceDirectorySet setSrcDirs(Iterable<?> srcDirs);
 
     /**
      * Returns the resolved directories.
