@@ -12,7 +12,7 @@ android {
         }
     }
 
-    test {
+    testOptions {
         resultsDir = "$project.buildDir/foo/results"
         reportDir = "$project.buildDir/foo/report"
     }
