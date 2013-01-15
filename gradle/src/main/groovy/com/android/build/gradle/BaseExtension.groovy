@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 package com.android.build.gradle
+
+import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.dsl.AaptOptionsImpl
 import com.android.build.gradle.internal.dsl.AndroidSourceSetFactory
 import com.android.build.gradle.internal.dsl.DexOptionsImpl
@@ -39,6 +41,8 @@ public abstract class BaseExtension {
     final AaptOptionsImpl aaptOptions
     final DexOptionsImpl dexOptions
     final TestOptions testOptions
+    final CompileOptions compileOptions
+
 
     private final BasePlugin plugin
     private final DefaultDomainObjectSet<BuildVariant> buildVariants =
@@ -59,6 +63,7 @@ public abstract class BaseExtension {
         aaptOptions = instantiator.newInstance(AaptOptionsImpl.class)
         dexOptions = instantiator.newInstance(DexOptionsImpl.class)
         testOptions = instantiator.newInstance(TestOptions.class)
+        compileOptions = instantiator.newInstance(CompileOptions.class)
 
         sourceSetsContainer = project.container(AndroidSourceSet,
                 new AndroidSourceSetFactory(instantiator, project.fileResolver))
@@ -106,7 +111,11 @@ public abstract class BaseExtension {
         action.execute(dexOptions)
     }
 
-    void test(Action<TestOptions> action) {
+    void testOptions(Action<TestOptions> action) {
+        action.execute(testOptions)
+    }
+
+    void compileOptions(Action<CompileOptions> action) {
         action.execute(testOptions)
     }
 

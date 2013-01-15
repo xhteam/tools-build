@@ -2,6 +2,7 @@
 
 * Requires Gradle 1.3. Runtime check will ensure this.
 * Requires Android Platform Tools 16.0.2+. Runtime check will ensure this.
+* Default Java compile target set to 1.6.
 * API to manipulate Build Variants
 * Support for multi resource folders. See 'multires' sample
 * versionName suffix in build type.

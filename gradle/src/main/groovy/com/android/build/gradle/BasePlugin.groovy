@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.SdkConstants
 import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.LoggerWrapper
@@ -73,13 +72,11 @@ import org.gradle.api.artifacts.result.ResolvedModuleVersionResult
 import org.gradle.api.internal.plugins.ProcessResources
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.JavaBasePlugin
-import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
 import org.gradle.util.GUtil
-
 /**
  * Base class for all Android plugins
  */
@@ -510,14 +507,11 @@ public abstract class BasePlugin {
         }
 
         // set source/target compatibility
-        // TODO: fix?
-        JavaPluginConvention convention = project.convention.getPlugin(JavaPluginConvention.class);
-
         compileTask.conventionMapping.sourceCompatibility = {
-            convention.sourceCompatibility.toString()
+            extension.compileOptions.sourceCompatibility.toString()
         }
         compileTask.conventionMapping.targetCompatibility = {
-            convention.targetCompatibility.toString()
+            extension.compileOptions.targetCompatibility.toString()
         }
 
         // setup the boot classpath just before the task actually runs since this will
