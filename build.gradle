@@ -1,9 +1,20 @@
+// ext.androidHostOut is shared by all tools/{base,build,swt} gradle projects/
+ext.androidHostOut = java.lang.System.getenv("ANDROID_HOST_OUT")
+if (ext.androidHostOut == null) {
+  ext.androidHostOut = "$rootdir/../../out/host/common"
+}
+// rootProject.buildDir is specific to this gradle build.
+buildDir = new File(file(ext.androidHostOut), "tools/build/build")
+
 subprojects {
+    // Change buildDir first so that all plugins pick up the new value.
+    project.buildDir = project.file("$project.parent.buildDir/../$project.name")
+
     apply plugin: 'idea'
 
     repositories {
         mavenCentral()
-        maven { url = uri("$rootDir/../base/repo") }
+        maven { url = uri("$rootProject.ext.androidHostOut/repo") }
     }
 
     project.ext {
@@ -20,12 +31,14 @@ def testTasks = subprojects.collect { it.tasks.withType(Test) }.flatten()
 
 task aggregateResults(type: Copy) {
     from { testTasks*.testResultsDir }
-    into { file("build/results") }
+    into { file("$buildDir/results") }
 }
 aggregateResults.dependsOn testTasks
 
 task makeAggregateReport(dependsOn: aggregateResults) {
-    def report = new org.gradle.api.internal.tasks.testing.junit.report.DefaultTestReport(testReportDir: file("build/reports/tests"), testResultsDir: file("build/results"))
+    def report = new org.gradle.api.internal.tasks.testing.junit.report.DefaultTestReport(
+                        testReportDir:  file("$buildDir/reports/tests"),
+                        testResultsDir: file("$buildDir/results"))
     report.generateReport()
 }
 
@@ -37,3 +50,4 @@ check.dependsOn makeAggregateReport
 task clean(type: Delete) {
    delete 'build'
 }
+
