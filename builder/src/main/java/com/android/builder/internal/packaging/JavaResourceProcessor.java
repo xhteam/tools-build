@@ -99,7 +99,7 @@ public class JavaResourceProcessor {
             throws IOException, DuplicateFileException, PackagerException, SealedPackageException {
         if (file.isDirectory()) {
             // a directory? we check it
-            if (checkFolderForPackaging(file.getName())) {
+            if (PackagingUtils.checkFolderForPackaging(file.getName())) {
                 // if it's valid, we append its name to the current path.
                 if (path == null) {
                     path = file.getName();
@@ -115,7 +115,7 @@ public class JavaResourceProcessor {
             }
         } else {
             // a file? we check it to make sure it should be added
-            if (checkFileForPackaging(file.getName())) {
+            if (PackagingUtils.checkFileForPackaging(file.getName())) {
                 // we append its name to the current path
                 if (path == null) {
                     path = file.getName();
@@ -127,58 +127,5 @@ public class JavaResourceProcessor {
                 mBuilder.addFile(file, path);
             }
         }
-    }
-
-    /**
-     * Checks whether a folder and its content is valid for packaging into the .apk as
-     * standard Java resource.
-     * @param folderName the name of the folder.
-     */
-    public static boolean checkFolderForPackaging(String folderName) {
-        return !folderName.equalsIgnoreCase("CVS") &&
-                !folderName.equalsIgnoreCase(".svn") &&
-                !folderName.equalsIgnoreCase("SCCS") &&
-                !folderName.equalsIgnoreCase("META-INF") &&
-                !folderName.startsWith("_");
-    }
-
-    /**
-     * Checks a file to make sure it should be packaged as standard resources.
-     * @param fileName the name of the file (including extension)
-     * @return true if the file should be packaged as standard java resources.
-     */
-    public static boolean checkFileForPackaging(String fileName) {
-        String[] fileSegments = fileName.split("\\.");
-        String fileExt = "";
-        if (fileSegments.length > 1) {
-            fileExt = fileSegments[fileSegments.length-1];
-        }
-
-        return checkFileForPackaging(fileName, fileExt);
-    }
-
-    /**
-     * Checks a file to make sure it should be packaged as standard resources.
-     * @param fileName the name of the file (including extension)
-     * @param extension the extension of the file (excluding '.')
-     * @return true if the file should be packaged as standard java resources.
-     */
-    public static boolean checkFileForPackaging(String fileName, String extension) {
-        // ignore hidden files and backup files
-        return !(fileName.charAt(0) == '.' || fileName.charAt(fileName.length() - 1) == '~') &&
-                !"aidl".equalsIgnoreCase(extension) &&        // Aidl files
-                !"rs".equalsIgnoreCase(extension) &&          // RenderScript files
-                !"rsh".equalsIgnoreCase(extension) &&         // RenderScript header files
-                !"d".equalsIgnoreCase(extension) &&           // Dependency files
-                !"java".equalsIgnoreCase(extension) &&        // Java files
-                !"scala".equalsIgnoreCase(extension) &&       // Scala files
-                !"class".equalsIgnoreCase(extension) &&       // Java class files
-                !"scc".equalsIgnoreCase(extension) &&         // VisualSourceSafe
-                !"swp".equalsIgnoreCase(extension) &&         // vi swap file
-                !"thumbs.db".equalsIgnoreCase(fileName) &&    // image index file
-                !"picasa.ini".equalsIgnoreCase(fileName) &&   // image index file
-                !"package.html".equalsIgnoreCase(fileName) && // Javadoc
-                !"overview.html".equalsIgnoreCase(fileName);  // Javadoc
-
     }
 }

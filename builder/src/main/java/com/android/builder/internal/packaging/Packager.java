@@ -105,7 +105,7 @@ public final class Packager implements IArchiveBuilder {
             // jar file, but we need to exclude some other folder (like /META-INF) so
             // we check anyway.
             for (int i = 0 ; i < segments.length - 1; i++) {
-                if (!JavaResourceProcessor.checkFolderForPackaging(segments[i])) {
+                if (!PackagingUtils.checkFolderForPackaging(segments[i])) {
                     return false;
                 }
             }
@@ -113,7 +113,7 @@ public final class Packager implements IArchiveBuilder {
             // get the file name from the path
             String fileName = segments[segments.length-1];
 
-            boolean check = JavaResourceProcessor.checkFileForPackaging(fileName);
+            boolean check = PackagingUtils.checkFileForPackaging(fileName);
 
             // only do additional checks if the file passes the default checks.
             if (check) {

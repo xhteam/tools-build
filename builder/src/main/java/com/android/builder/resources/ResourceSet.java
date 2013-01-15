@@ -17,6 +17,7 @@
 package com.android.builder.resources;
 
 import com.android.annotations.NonNull;
+import com.android.builder.internal.packaging.PackagingUtils;
 import com.android.resources.FolderTypeRelationship;
 import com.android.resources.ResourceConstants;
 import com.android.resources.ResourceFolderType;
@@ -32,8 +33,6 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.Override;
-import java.lang.String;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -382,7 +381,9 @@ public class ResourceSet implements SourceSet, ResourceMap {
         File[] folders = sourceFolder.listFiles();
         if (folders != null) {
             for (File folder : folders) {
-                if (folder.isDirectory()) {
+                // TODO: use the aapt ignore pattern value.
+                if (folder.isDirectory() &&
+                        PackagingUtils.checkFolderForPackaging(folder.getName())) {
                     parseFolder(sourceFolder, folder);
                 }
             }
@@ -441,6 +442,9 @@ public class ResourceSet implements SourceSet, ResourceMap {
         File[] files = folder.listFiles();
         if (files != null && files.length > 0) {
             for (File file : files) {
+                if (!checkFileForAndroidRes(file)) {
+                    continue;
+                }
                 if (folderData.type != null) {
                     Resource item = handleSingleResFile(sourceFolder,
                             folderData.qualifiers, folderData.type, file);
@@ -643,5 +647,28 @@ public class ResourceSet implements SourceSet, ResourceMap {
     @Override
     public String toString() {
         return Arrays.toString(mSourceFiles.toArray());
+    }
+
+    /**
+     * Checks a file to make sure it is a valid file in the android res folder.
+     * @param file the file to check
+     * @return true if it is a valid file, false if it should be ignored.
+     */
+    private boolean checkFileForAndroidRes(File file) {
+        // TODO: use the aapt ignore pattern value.
+
+        String name = file.getName();
+        int pos = name.lastIndexOf('.');
+        String extension = "";
+        if (pos != -1) {
+            extension = name.substring(pos + 1);
+        }
+
+        // ignore hidden files and backup files
+        return !(name.charAt(0) == '.' || name.charAt(name.length() - 1) == '~') &&
+                !"scc".equalsIgnoreCase(extension) &&     // VisualSourceSafe
+                !"swp".equalsIgnoreCase(extension) &&     // vi swap file
+                !"thumbs.db".equalsIgnoreCase(name) &&    // image index file
+                !"picasa.ini".equalsIgnoreCase(name);     // image index file
     }
 }
