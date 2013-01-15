@@ -41,7 +41,8 @@ public abstract class BaseTest extends TestCase {
                 File dir = new File(location.toURI())
                 assertTrue(dir.getPath(), dir.exists())
 
-                return dir.getParentFile().getParentFile().getParentFile().getParentFile()
+                File f= dir.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+                return  new File(f, "tools" + File.separator + "build")
             } catch (URISyntaxException e) {
                 fail(e.getLocalizedMessage())
             }
