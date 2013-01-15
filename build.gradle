@@ -21,6 +21,12 @@ subprojects {
         baseVersion = '0.3'
     }
 
+    task disableTestFailures << {
+        tasks.withType(Test) {
+            ignoreFailures = true
+        }
+    }
+
     group = 'com.android.tools.build'
 }
 
