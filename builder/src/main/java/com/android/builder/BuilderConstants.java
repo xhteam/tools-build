@@ -25,4 +25,8 @@ public class BuilderConstants {
      * Extension for library packages.
      */
     public final static String EXT_LIB_ARCHIVE = "aar";
+
+    public final static String DEBUG = "debug";
+    public final static String RELEASE = "release";
+
 }

@@ -23,12 +23,9 @@ import com.google.common.base.Objects;
 public class BuildType extends BuildConfig {
     private static final long serialVersionUID = 1L;
 
-    public final static String DEBUG = "debug";
-    public final static String RELEASE = "release";
-
     private final String mName;
-    private boolean mDebuggable;
-    private boolean mDebugJniBuild;
+    private boolean mDebuggable = false;
+    private boolean mDebugJniBuild = false;
     private String mPackageNameSuffix = null;
     private String mVersionNameSuffix = null;
     private boolean mRunProguard = false;
@@ -38,25 +35,9 @@ public class BuildType extends BuildConfig {
 
     public BuildType(@NonNull String name) {
         mName = name;
-        if (DEBUG.equals(name)) {
-            initDebug();
-        } else if (RELEASE.equals(name)) {
-            initRelease();
-        }
     }
 
-    private void initDebug() {
-        mDebuggable = true;
-        mDebugJniBuild = true;
-        mZipAlign = false;
-        mSigningConfig = new SigningConfig(SigningConfig.DEBUG);
-    }
-
-    private void initRelease() {
-        mDebuggable = false;
-        mDebugJniBuild = false;
-    }
-
+    @NonNull
     public String getName() {
         return mName;
     }
@@ -121,7 +102,7 @@ public class BuildType extends BuildConfig {
     }
 
     @Nullable
-    SigningConfig getSigningConfig() {
+    public SigningConfig getSigningConfig() {
         return mSigningConfig;
     }
 
@@ -178,7 +159,7 @@ public class BuildType extends BuildConfig {
                 .add("versionNameSuffix", mVersionNameSuffix)
                 .add("runProguard", mRunProguard)
                 .add("zipAlign", mZipAlign)
-                .add("keystore", mSigningConfig)
+                .add("signingConfig", mSigningConfig)
                 .toString();
     }
 }

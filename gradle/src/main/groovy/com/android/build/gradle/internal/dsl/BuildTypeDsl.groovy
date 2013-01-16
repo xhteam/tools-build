@@ -16,16 +16,55 @@
 
 package com.android.build.gradle.internal.dsl
 
+import com.android.annotations.NonNull
 import com.android.builder.BuildType
+import com.android.builder.BuilderConstants
+import com.android.builder.SigningConfig
 
 /**
  * DSL overlay to make methods that accept String... work.
  */
-public class BuildTypeDsl extends BuildType {
+public class BuildTypeDsl extends BuildType implements Serializable {
     private static final long serialVersionUID = 1L
 
-    BuildTypeDsl(String name) {
+    BuildTypeDsl(@NonNull String name) {
         super(name)
+    }
+
+    public void init(SigningConfig debugSigningConfig) {
+        if (BuilderConstants.DEBUG.equals(getName())) {
+            setDebuggable(true)
+            setDebugJniBuild(true)
+            setZipAlign(false)
+
+            assert debugSigningConfig != null
+            setSigningConfig(debugSigningConfig)
+        } else if (BuilderConstants.RELEASE.equals(getName())) {
+            setDebuggable(false)
+            setDebugJniBuild(false)
+        }
+    }
+
+    public BuildTypeDsl initWith(BuildType that) {
+        setDebuggable(that.isDebuggable())
+        setDebugJniBuild(that.isDebugJniBuild())
+        setPackageNameSuffix(that.getPackageNameSuffix())
+        setVersionNameSuffix(that.getVersionNameSuffix())
+        setRunProguard(that.isRunProguard())
+        setZipAlign(that.isZipAlign())
+        setSigningConfig(that.getSigningConfig())
+
+        return this;
+    }
+
+
+    @Override
+    boolean equals(o) {
+        if (this.is(o)) return true
+        if (getClass() != o.class) return false
+        if (!super.equals(o)) return false
+
+        return true
     }
 
     // -- DSL Methods. TODO remove once the instantiator does what I expect it to do.

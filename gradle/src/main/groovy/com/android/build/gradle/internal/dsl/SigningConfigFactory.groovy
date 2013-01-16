@@ -33,6 +33,6 @@ class SigningConfigFactory implements NamedDomainObjectFactory<SigningConfig> {
 
     @Override
     SigningConfig create(String name) {
-        return instantiator.newInstance(SigningConfig.class, name)
+        return instantiator.newInstance(SigningConfigDsl.class, name)
     }
 }
