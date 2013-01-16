@@ -15,16 +15,17 @@
  */
 
 package com.android.build.gradle
-
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
 import com.android.build.gradle.internal.TestAppVariant
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
+import com.android.build.gradle.internal.dsl.BuildTypeDsl
 import com.android.build.gradle.internal.dsl.BuildTypeFactory
 import com.android.build.gradle.internal.dsl.GroupableProductFlavor
 import com.android.build.gradle.internal.dsl.GroupableProductFlavorFactory
+import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.dsl.SigningConfigFactory
 import com.android.build.gradle.internal.tasks.AndroidReportTask
 import com.android.build.gradle.internal.tasks.AndroidTestTask
@@ -32,6 +33,7 @@ import com.android.build.gradle.internal.test.PluginHolder
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
+import com.android.builder.BuilderConstants
 import com.android.builder.JarDependency
 import com.android.builder.SigningConfig
 import com.android.builder.VariantConfiguration
@@ -45,7 +47,6 @@ import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
-
 /**
  * Gradle plugin class for 'application' projects.
  */
@@ -84,48 +85,53 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
                 buildTypeContainer, productFlavorContainer, signingConfigContainer)
         setDefaultConfig(extension.defaultConfig, extension.sourceSetsContainer)
 
-        buildTypeContainer.whenObjectAdded { BuildType buildType ->
-            addBuildType(buildType)
-        }
-        buildTypeContainer.whenObjectRemoved {
-            throw new UnsupportedOperationException("Removing build types is not implemented yet.")
+        // map the whenObjectAdded callbacks on the containers.
+        signingConfigContainer.whenObjectAdded { SigningConfig signingConfig ->
+            signingConfigs[((SigningConfigDsl)signingConfig).name] = signingConfig
         }
 
-        buildTypeContainer.create(BuildType.DEBUG)
-        buildTypeContainer.create(BuildType.RELEASE)
+        buildTypeContainer.whenObjectAdded { BuildType buildType ->
+            ((BuildTypeDsl)buildType).init(signingConfigContainer.getByName(BuilderConstants.DEBUG))
+            addBuildType(buildType)
+        }
 
         productFlavorContainer.whenObjectAdded { GroupableProductFlavor productFlavor ->
             addProductFlavor(productFlavor)
         }
 
+        // create default Objects, signingConfig first as its used by the BuildTypes.
+        signingConfigContainer.create(BuilderConstants.DEBUG)
+        buildTypeContainer.create(BuilderConstants.DEBUG)
+        buildTypeContainer.create(BuilderConstants.RELEASE)
+
+        // map whenOjbectRemoved on the containers to throw an exception.
+        signingConfigContainer.whenObjectRemoved {
+            throw new UnsupportedOperationException("Removing signingConfigs is not supported.")
+        }
+        buildTypeContainer.whenObjectRemoved {
+            throw new UnsupportedOperationException("Removing build types is not supported.")
+        }
         productFlavorContainer.whenObjectRemoved {
-            throw new UnsupportedOperationException(
-                    "Removing product flavors is not implemented yet.")
+            throw new UnsupportedOperationException("Removing product flavors is not supported.")
         }
 
-        signingConfigContainer.whenObjectAdded { SigningConfig signingConfig ->
-            signingConfigs[signingConfig.name] = signingConfig
-        }
-        signingConfigContainer.whenObjectRemoved {
-            throw new UnsupportedOperationException("Removing signingConfigs is not implemented yet.")
-        }
-        signingConfigContainer.create(SigningConfig.DEBUG)
     }
 
     private void addBuildType(BuildType buildType) {
-        if (buildType.name.startsWith("test")) {
+        String name = buildType.name
+        if (name.startsWith("test")) {
             throw new RuntimeException("BuildType names cannot start with 'test'")
         }
-        if (productFlavors.containsKey(buildType.name)) {
+        if (productFlavors.containsKey(name)) {
             throw new RuntimeException("BuildType names cannot collide with ProductFlavor names")
         }
 
-        def sourceSet = extension.sourceSetsContainer.create(buildType.name)
+        def sourceSet = extension.sourceSetsContainer.create(name)
 
         BuildTypeData buildTypeData = new BuildTypeData(buildType, sourceSet, project)
         project.tasks.assemble.dependsOn buildTypeData.assembleTask
 
-        buildTypes[buildType.name] = buildTypeData
+        buildTypes[name] = buildTypeData
     }
 
     private void addProductFlavor(GroupableProductFlavor productFlavor) {

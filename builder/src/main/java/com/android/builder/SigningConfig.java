@@ -16,58 +16,37 @@
 
 package com.android.builder;
 
-import com.android.annotations.NonNull;
 import com.android.builder.internal.signing.DebugKeyHelper;
-import com.android.prefs.AndroidLocation;
+import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.google.common.base.Objects;
-
-import java.io.Serializable;
 
 /**
  * SigningConfig encapsulates the information necessary to access certificates in a keystore file
  * that can be used to sign APKs.
  */
-public class SigningConfig implements Serializable {
-    private static final long serialVersionUID = 1L;
+public class SigningConfig {
 
-    /**
-     * The name of the default keystore that can sign debug builds.
-     */
-    public static final String DEBUG = "debug";
-
-    private final String mName;
     private String mStoreLocation = null;
     private String mStorePassword = null;
     private String mKeyAlias = null;
     private String mKeyPassword = null;
 
     /**
-     * Creates a SigningConfig with a given name.
-     *
-     * @param name the name of the keystore.
-     *
-     * @see #DEBUG
+     * Creates a SigningConfig.
      */
-    public SigningConfig(@NonNull String name) {
-        mName = name;
-        if (DEBUG.equals(name)) {
-            initDebug();
-        }
+    public SigningConfig() {
     }
 
-    public String getName() {
-        return mName;
-    }
-
-    private void initDebug() {
-        try {
-            mStoreLocation = DebugKeyHelper.defaultDebugKeyStoreLocation();
-            mStorePassword = "android";
-            mKeyAlias = "androiddebugkey";
-            mKeyPassword = "android";
-        } catch (AndroidLocation.AndroidLocationException e) {
-            throw new RuntimeException(e);
-        }
+    /**
+     * Initializes the SigningConfig with the debug keystore/key alias data.
+     *
+     * @throws AndroidLocationException if the debug keystore location cannot be found
+     */
+    public void initDebug() throws AndroidLocationException {
+        mStoreLocation = DebugKeyHelper.defaultDebugKeyStoreLocation();
+        mStorePassword = "android";
+        mKeyAlias = "androiddebugkey";
+        mKeyPassword = "android";
     }
 
     public String getStoreLocation() {
@@ -121,7 +100,6 @@ public class SigningConfig implements Serializable {
 
         SigningConfig that = (SigningConfig) o;
 
-        if (mName != null ? !mName.equals(that.mName) : that.mName != null) return false;
         if (mKeyAlias != null ?
                 !mKeyAlias.equals(that.mKeyAlias) :
                 that.mKeyAlias != null)
@@ -145,7 +123,6 @@ public class SigningConfig implements Serializable {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (mName != null ? mName.hashCode() : 0);
         result = 31 * result + (mStoreLocation != null ?
                 mStoreLocation.hashCode() : 0);
         result = 31 * result + (mStorePassword != null ?
@@ -158,7 +135,6 @@ public class SigningConfig implements Serializable {
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("name", mName)
                 .add("storeLocation", mStoreLocation)
                 .add("storePassword", mStorePassword)
                 .add("keyAlias", mKeyAlias)

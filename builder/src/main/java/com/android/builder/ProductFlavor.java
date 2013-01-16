@@ -243,7 +243,7 @@ public class ProductFlavor extends BuildConfig {
                 .add("packageName", mPackageName)
                 .add("testPackageName", mTestPackageName)
                 .add("testInstrumentationRunner", mTestInstrumentationRunner)
-                .add("keystore", mSigningConfig)
+                .add("signingConfig", mSigningConfig)
                 .toString();
     }
 

@@ -14,11 +14,10 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.build.gradle.internal.test.BaseTest
+import com.android.builder.SigningConfig
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-
 /**
  * Tests for the public DSL of the App plugin ("android-library")
  */
@@ -48,6 +47,31 @@ public class LibraryPluginDslTest extends BaseTest {
         checkTestedVariant("Debug", "Test", variants, testVariants)
         checkNonTestedVariant("Release", variants)
     }
+
+    /**
+     * test that debug build type maps to the SigningConfig object as the signingConfig container
+     * @throws Exception
+     */
+    public void testDebugSigningConfig() throws Exception {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
+
+        project.apply plugin: 'android-library'
+
+        project.android {
+            target "android-15"
+
+            debugSigningConfig {
+                storePassword = "foo"
+            }
+        }
+
+        SigningConfig signingConfig = project.android.debug.signingConfig
+
+        assertEquals(project.android.debugSigningConfig, signingConfig)
+        assertEquals("foo", signingConfig.storePassword)
+    }
+
 
     private void checkTestedVariant(String variantName, String testedVariantName,
                                     Set<BuildVariant> variants, Set<BuildVariant> testVariants) {

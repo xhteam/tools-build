@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.gradle
 
 import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.test.BaseTest
 import com.android.build.gradle.internal.test.PluginHolder
 import com.android.builder.BuildType
+import com.android.builder.BuilderConstants
 import com.android.builder.SigningConfig
 import com.android.builder.internal.signing.DebugKeyHelper
 import org.gradle.api.Project
@@ -49,8 +51,8 @@ public class AppPluginInternalTest extends BaseTest {
         plugin.createAndroidTasks()
 
         assertEquals(2, plugin.buildTypes.size())
-        assertNotNull(plugin.buildTypes.get(BuildType.DEBUG))
-        assertNotNull(plugin.buildTypes.get(BuildType.RELEASE))
+        assertNotNull(plugin.buildTypes.get(BuilderConstants.DEBUG))
+        assertNotNull(plugin.buildTypes.get(BuilderConstants.RELEASE))
         assertEquals(0, plugin.productFlavors.size())
 
 
@@ -344,7 +346,61 @@ public class AppPluginInternalTest extends BaseTest {
         assertEquals("a3", signingConfig.storeLocation)
     }
 
+    /**
+     * test that debug build type maps to the SigningConfig object as the signingConfig container
+     * @throws Exception
+     */
+    public void testDebugSigningConfig() throws Exception {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
 
+        project.apply plugin: 'android'
+
+        project.android {
+            target "android-15"
+
+            signingConfigs {
+                debug {
+                    storePassword = "foo"
+                }
+            }
+        }
+
+        AppPlugin plugin = AppPlugin.pluginHolder.plugin
+
+        // check that the debug buildType has the updated debug signing config.
+        BuildType buildType = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
+        SigningConfig signingConfig = buildType.signingConfig
+        assertEquals(plugin.signingConfigs.get(BuilderConstants.DEBUG), signingConfig)
+        assertEquals("foo", signingConfig.storePassword)
+    }
+
+    public void testSigningConfigInitWith() throws Exception {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
+
+        project.apply plugin: 'android'
+
+        project.android {
+            target "android-15"
+
+            signingConfigs {
+                foo.initWith(owner.signingConfigs.debug)
+            }
+        }
+
+        AppPlugin plugin = AppPlugin.pluginHolder.plugin
+
+        SigningConfig debugSC = plugin.signingConfigs.get(BuilderConstants.DEBUG)
+        SigningConfig fooSC = plugin.signingConfigs.get("foo")
+
+        assertNotNull(fooSC);
+
+        assertEquals(debugSC.getStoreLocation(), fooSC.getStoreLocation());
+        assertEquals(debugSC.getStorePassword(), fooSC.getStorePassword());
+        assertEquals(debugSC.getKeyAlias(), fooSC.getKeyAlias());
+        assertEquals(debugSC.getKeyPassword(), fooSC.getKeyPassword());
+    }
 
     private static ApplicationVariant findVariant(Collection<ApplicationVariant> variants,
                                                   String name) {

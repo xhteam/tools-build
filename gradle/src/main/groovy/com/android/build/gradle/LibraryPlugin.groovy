@@ -14,15 +14,14 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
 import com.android.build.gradle.internal.TestAppVariant
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
+import com.android.build.gradle.internal.test.PluginHolder
 import com.android.builder.AndroidDependency
-import com.android.builder.BuildType
 import com.android.builder.BuilderConstants
 import com.android.builder.BundleDependency
 import com.android.builder.JarDependency
@@ -38,7 +37,6 @@ import org.gradle.api.tasks.bundling.Zip
 import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
-
 /**
  * Gradle plugin class for 'library' projects.
  */
@@ -65,8 +63,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
 
         // create the source sets for the build type.
         // the ones for the main product flavors are handled by the base plugin.
-        def debugSourceSet = extension.sourceSetsContainer.create(BuildType.DEBUG)
-        def releaseSourceSet = extension.sourceSetsContainer.create(BuildType.RELEASE)
+        def debugSourceSet = extension.sourceSetsContainer.create(BuilderConstants.DEBUG)
+        def releaseSourceSet = extension.sourceSetsContainer.create(BuilderConstants.RELEASE)
 
         debugBuildTypeData = new BuildTypeData(extension.debug, debugSourceSet, project)
         releaseBuildTypeData = new BuildTypeData(extension.release, releaseSourceSet, project)
@@ -77,8 +75,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
     }
 
     void createConfigurations() {
-        def debugConfig = project.configurations.add(BuildType.DEBUG)
-        def releaseConfig = project.configurations.add(BuildType.RELEASE)
+        def debugConfig = project.configurations.add(BuilderConstants.DEBUG)
+        def releaseConfig = project.configurations.add(BuilderConstants.RELEASE)
         debugConfig.extendsFrom(project.configurations["package"])
         releaseConfig.extendsFrom(project.configurations["package"])
         project.configurations["default"].extendsFrom(releaseConfig)
@@ -201,7 +199,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         bundle.setDescription("Assembles a bundle containing the library in ${variant.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
         bundle.extension = BuilderConstants.EXT_LIB_ARCHIVE
-        if (variant.baseName != BuildType.RELEASE) {
+        if (variant.baseName != BuilderConstants.RELEASE) {
             bundle.classifier = variant.baseName
         }
         bundle.from(project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}"))
