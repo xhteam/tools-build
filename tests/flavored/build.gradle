@@ -42,7 +42,7 @@ android {
         staging {
             packageNameSuffix = ".staging"
             versionNameSuffix = ".S"
-            keystore keystores.debug
+            signingConfig signingConfigs.debug
         }
     }
 }

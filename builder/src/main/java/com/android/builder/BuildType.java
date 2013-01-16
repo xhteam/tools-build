@@ -32,7 +32,7 @@ public class BuildType extends BuildConfig {
     private String mPackageNameSuffix = null;
     private String mVersionNameSuffix = null;
     private boolean mRunProguard = false;
-    private Keystore mKeystore = null;
+    private SigningConfig mSigningConfig = null;
 
     private boolean mZipAlign = true;
 
@@ -49,7 +49,7 @@ public class BuildType extends BuildConfig {
         mDebuggable = true;
         mDebugJniBuild = true;
         mZipAlign = false;
-        mKeystore = new Keystore(Keystore.DEBUG);
+        mSigningConfig = new SigningConfig(SigningConfig.DEBUG);
     }
 
     private void initRelease() {
@@ -115,14 +115,14 @@ public class BuildType extends BuildConfig {
         return mZipAlign;
     }
 
-    public BuildType setKeystore(@Nullable Keystore keystore) {
-        mKeystore = keystore;
+    public BuildType setSigningConfig(@Nullable SigningConfig signingConfig) {
+        mSigningConfig = signingConfig;
         return this;
     }
 
     @Nullable
-    Keystore getKeystore() {
-        return mKeystore;
+    SigningConfig getSigningConfig() {
+        return mSigningConfig;
     }
 
     @Override
@@ -146,9 +146,9 @@ public class BuildType extends BuildConfig {
                 !mVersionNameSuffix.equals(buildType.mVersionNameSuffix) :
                 buildType.mVersionNameSuffix != null)
             return false;
-        if (mKeystore != null ?
-                !mKeystore.equals(buildType.mKeystore) :
-                buildType.mKeystore != null)
+        if (mSigningConfig != null ?
+                !mSigningConfig.equals(buildType.mSigningConfig) :
+                buildType.mSigningConfig != null)
             return false;
 
         return true;
@@ -164,7 +164,7 @@ public class BuildType extends BuildConfig {
         result = 31 * result + (mVersionNameSuffix != null ? mVersionNameSuffix.hashCode() : 0);
         result = 31 * result + (mRunProguard ? 1 : 0);
         result = 31 * result + (mZipAlign ? 1 : 0);
-        result = 31 * result + (mKeystore != null ? mKeystore.hashCode() : 0);
+        result = 31 * result + (mSigningConfig != null ? mSigningConfig.hashCode() : 0);
         return result;
     }
 
@@ -178,7 +178,7 @@ public class BuildType extends BuildConfig {
                 .add("versionNameSuffix", mVersionNameSuffix)
                 .add("runProguard", mRunProguard)
                 .add("zipAlign", mZipAlign)
-                .add("keystore", mKeystore)
+                .add("keystore", mSigningConfig)
                 .toString();
     }
 }

@@ -25,7 +25,7 @@ import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.build.gradle.internal.dsl.BuildTypeFactory
 import com.android.build.gradle.internal.dsl.GroupableProductFlavor
 import com.android.build.gradle.internal.dsl.GroupableProductFlavorFactory
-import com.android.build.gradle.internal.dsl.KeystoreFactory
+import com.android.build.gradle.internal.dsl.SigningConfigFactory
 import com.android.build.gradle.internal.tasks.AndroidReportTask
 import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.test.PluginHolder
@@ -33,7 +33,7 @@ import com.android.build.gradle.internal.test.report.ReportType
 import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
 import com.android.builder.JarDependency
-import com.android.builder.Keystore
+import com.android.builder.SigningConfig
 import com.android.builder.VariantConfiguration
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
@@ -54,7 +54,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
     final Map<String, BuildTypeData> buildTypes = [:]
     final Map<String, ProductFlavorData<GroupableProductFlavor>> productFlavors = [:]
-    final Map<String, Keystore> keystores = [:]
+    final Map<String, SigningConfig> signingConfigs = [:]
 
     AppExtension extension
     AndroidReportTask testTask
@@ -76,12 +76,12 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         def buildTypeContainer = project.container(BuildType, new BuildTypeFactory(instantiator))
         def productFlavorContainer = project.container(GroupableProductFlavor,
                 new GroupableProductFlavorFactory(instantiator))
-        def keystoreContainer = project.container(Keystore,
-                new KeystoreFactory(instantiator))
+        def signingConfigContainer = project.container(SigningConfig,
+                new SigningConfigFactory(instantiator))
 
         extension = project.extensions.create('android', AppExtension,
                 this, (ProjectInternal) project, instantiator,
-                buildTypeContainer, productFlavorContainer, keystoreContainer)
+                buildTypeContainer, productFlavorContainer, signingConfigContainer)
         setDefaultConfig(extension.defaultConfig, extension.sourceSetsContainer)
 
         buildTypeContainer.whenObjectAdded { BuildType buildType ->
@@ -103,13 +103,13 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
                     "Removing product flavors is not implemented yet.")
         }
 
-        keystoreContainer.whenObjectAdded { Keystore keystore ->
-            keystores[keystore.name] = keystore
+        signingConfigContainer.whenObjectAdded { SigningConfig signingConfig ->
+            signingConfigs[signingConfig.name] = signingConfig
         }
-        keystoreContainer.whenObjectRemoved {
-            throw new UnsupportedOperationException("Removing keystores is not implemented yet.")
+        signingConfigContainer.whenObjectRemoved {
+            throw new UnsupportedOperationException("Removing signingConfigs is not implemented yet.")
         }
-        keystoreContainer.create(Keystore.DEBUG)
+        signingConfigContainer.create(SigningConfig.DEBUG)
     }
 
     private void addBuildType(BuildType buildType) {

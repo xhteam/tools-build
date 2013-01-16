@@ -90,7 +90,7 @@ public class DependencyChecker {
             case ConfigurationDependencies.ConfigType.BUILDTYPE:
                 return "Build Type ${configurationDependencies.sourceSet.name.capitalize()}"
             case ConfigurationDependencies.ConfigType.KEYSTORE:
-                return "Signing Keystore ${configurationDependencies.sourceSet.name.capitalize()}"
+                return "Signing SigningConfig ${configurationDependencies.sourceSet.name.capitalize()}"
         }
     }
 

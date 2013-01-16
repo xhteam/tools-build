@@ -29,11 +29,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * Both the {@link PrivateKey} and the {@link X509Certificate} are guaranteed to be non-null.
  *
  */
-public class SigningInfo {
+public class CertificateInfo {
     public final PrivateKey mKey;
     public final X509Certificate mCertificate;
 
-    public SigningInfo(@NonNull PrivateKey key, @NonNull X509Certificate certificate) {
+    public CertificateInfo(@NonNull PrivateKey key, @NonNull X509Certificate certificate) {
         mKey = checkNotNull(key, "Key cannot be null.");
         mCertificate = checkNotNull(certificate, "Certificate cannot be null.");
     }

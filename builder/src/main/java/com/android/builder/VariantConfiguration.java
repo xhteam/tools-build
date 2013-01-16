@@ -633,17 +633,17 @@ public class VariantConfiguration {
         return fullList;
     }
 
-    public Keystore getKeystore() {
-        Keystore keystore = mBuildType.getKeystore();
-        if (keystore != null) {
-            return keystore;
+    public SigningConfig getSigningConfig() {
+        SigningConfig signingConfig = mBuildType.getSigningConfig();
+        if (signingConfig != null) {
+            return signingConfig;
         }
-        return mMergedFlavor.getKeystore();
+        return mMergedFlavor.getSigningConfig();
     }
 
     public boolean isSigningReady() {
-        Keystore keystore = getKeystore();
-        return keystore != null && keystore.isSigningReady();
+        SigningConfig signingConfig = getSigningConfig();
+        return signingConfig != null && signingConfig.isSigningReady();
     }
 
     protected void validate() {

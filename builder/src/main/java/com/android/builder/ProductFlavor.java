@@ -41,7 +41,7 @@ public class ProductFlavor extends BuildConfig {
     private String mPackageName = null;
     private String mTestPackageName = null;
     private String mTestInstrumentationRunner = null;
-    private Keystore mKeystore = null;
+    private SigningConfig mSigningConfig = null;
 
     /**
      * Creates a ProductFlavor with a given name.
@@ -140,12 +140,12 @@ public class ProductFlavor extends BuildConfig {
         return mTestInstrumentationRunner;
     }
 
-    public Keystore getKeystore() {
-        return mKeystore;
+    public SigningConfig getSigningConfig() {
+        return mSigningConfig;
     }
 
-    public ProductFlavor setKeystore(Keystore keystore) {
-        mKeystore = keystore;
+    public ProductFlavor setSigningConfig(SigningConfig signingConfig) {
+        mSigningConfig = signingConfig;
         return this;
     }
 
@@ -169,8 +169,8 @@ public class ProductFlavor extends BuildConfig {
         flavor.mTestInstrumentationRunner = chooseString(mTestInstrumentationRunner,
                 base.mTestInstrumentationRunner);
 
-        flavor.mKeystore =
-                mKeystore != null ? mKeystore : base.mKeystore;
+        flavor.mSigningConfig =
+                mSigningConfig != null ? mSigningConfig : base.mSigningConfig;
 
         return flavor;
     }
@@ -209,8 +209,8 @@ public class ProductFlavor extends BuildConfig {
         if (mVersionName != null ?
                 !mVersionName.equals(that.mVersionName) : that.mVersionName != null)
             return false;
-        if (mKeystore != null ?
-                !mKeystore.equals(that.mKeystore) : that.mKeystore != null)
+        if (mSigningConfig != null ?
+                !mSigningConfig.equals(that.mSigningConfig) : that.mSigningConfig != null)
             return false;
 
         return true;
@@ -228,7 +228,7 @@ public class ProductFlavor extends BuildConfig {
         result = 31 * result + (mTestPackageName != null ? mTestPackageName.hashCode() : 0);
         result = 31 * result + (mTestInstrumentationRunner != null ?
                 mTestInstrumentationRunner.hashCode() : 0);
-        result = 31 * result + (mKeystore != null ? mKeystore.hashCode() : 0);
+        result = 31 * result + (mSigningConfig != null ? mSigningConfig.hashCode() : 0);
         return result;
     }
 
@@ -243,7 +243,7 @@ public class ProductFlavor extends BuildConfig {
                 .add("packageName", mPackageName)
                 .add("testPackageName", mTestPackageName)
                 .add("testInstrumentationRunner", mTestInstrumentationRunner)
-                .add("keystore", mKeystore)
+                .add("keystore", mSigningConfig)
                 .toString();
     }
 

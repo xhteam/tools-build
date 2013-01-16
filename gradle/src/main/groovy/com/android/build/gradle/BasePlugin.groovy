@@ -665,15 +665,15 @@ public abstract class BasePlugin {
         packageApp.conventionMapping.debugJni = { config.buildType.debugJniBuild }
 
 
-        if (config.keystore) {
+        if (config.signingConfig) {
             packageApp.conventionMapping.signingStoreLocation = {
-                project.file(config.keystore.storeLocation)
+                project.file(config.signingConfig.storeLocation)
             }
             packageApp.conventionMapping.signingStorePassword = {
-                config.keystore.storePassword
+                config.signingConfig.storePassword
             }
-            packageApp.conventionMapping.signingKeyAlias = { config.keystore.keyAlias }
-            packageApp.conventionMapping.signingKeyPassword = { config.keystore.keyPassword }
+            packageApp.conventionMapping.signingKeyAlias = { config.signingConfig.keyAlias }
+            packageApp.conventionMapping.signingKeyPassword = { config.signingConfig.keyPassword }
         }
 
         def signedApk = variant.isSigned()

@@ -66,7 +66,7 @@ public class DebugKeyHelper {
                 logger);
     }
 
-    public static SigningInfo getDebugKey(@NonNull String keyStoreLocation, String storeStype)
+    public static CertificateInfo getDebugKey(@NonNull String keyStoreLocation, String storeStype)
             throws KeytoolException, FileNotFoundException {
 
         return KeystoreHelper.getSigningInfo(

@@ -82,7 +82,7 @@ public class AppPluginDslTest extends BaseTest {
 
             buildTypes {
                 staging {
-                    keystore keystores.debug
+                    signingConfig signingConfigs.debug
                 }
             }
         }
