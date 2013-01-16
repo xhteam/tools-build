@@ -15,8 +15,8 @@ android {
     target "android-15"
     testBuildType "debug"
 
-    keystores {
-        myKeystore {
+    signingConfigs {
+        myConfig {
             storeLocation "debug.keystore"
             storePassword "android"
             keyAlias "androiddebugkey"
@@ -29,7 +29,7 @@ android {
         versionName "2.0"
         minSdkVersion 16
         targetSdkVersion 16
-        keystore keystores.myKeystore
+        signingConfig signingConfigs.myConfig
 
         buildConfig "private final static boolean DEFAULT = true;", \
                     "private final static String FOO = \"foo\";"

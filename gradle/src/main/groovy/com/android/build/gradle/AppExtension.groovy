@@ -16,8 +16,8 @@
 package com.android.build.gradle
 
 import com.android.builder.BuildType
-import com.android.builder.Keystore
 import com.android.builder.ProductFlavor
+import com.android.builder.SigningConfig
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.internal.project.ProjectInternal
@@ -30,7 +30,7 @@ public class AppExtension extends BaseExtension {
 
     final NamedDomainObjectContainer<ProductFlavor> productFlavors
     final NamedDomainObjectContainer<BuildType> buildTypes
-    final NamedDomainObjectContainer<Keystore> keystores
+    final NamedDomainObjectContainer<SigningConfig> signingConfigs
 
     List<String> flavorGroupList
     String testBuildType = "debug"
@@ -38,11 +38,11 @@ public class AppExtension extends BaseExtension {
     AppExtension(AppPlugin plugin, ProjectInternal project, Instantiator instantiator,
                  NamedDomainObjectContainer<BuildType> buildTypes,
                  NamedDomainObjectContainer<ProductFlavor> productFlavors,
-                 NamedDomainObjectContainer<Keystore> keystores) {
+                 NamedDomainObjectContainer<SigningConfig> signingConfigs) {
         super(plugin, project, instantiator)
         this.buildTypes = buildTypes
         this.productFlavors = productFlavors
-        this.keystores = keystores
+        this.signingConfigs = signingConfigs
     }
 
     void buildTypes(Action<? super NamedDomainObjectContainer<BuildType>> action) {
@@ -53,8 +53,8 @@ public class AppExtension extends BaseExtension {
         action.execute(productFlavors)
     }
 
-    void keystores(Action<? super NamedDomainObjectContainer<Keystore>> action) {
-        action.execute(keystores)
+    void signingConfigs(Action<? super NamedDomainObjectContainer<SigningConfig>> action) {
+        action.execute(signingConfigs)
     }
 
     public void flavorGroups(String... groups) {

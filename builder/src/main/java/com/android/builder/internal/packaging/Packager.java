@@ -22,7 +22,7 @@ import com.android.builder.internal.packaging.JavaResourceProcessor.IArchiveBuil
 import com.android.builder.internal.signing.DebugKeyProvider;
 import com.android.builder.internal.signing.SignedJarBuilder;
 import com.android.builder.internal.signing.SignedJarBuilder.IZipEntryFilter;
-import com.android.builder.internal.signing.SigningInfo;
+import com.android.builder.internal.signing.CertificateInfo;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
@@ -219,7 +219,7 @@ public final class Packager implements IArchiveBuilder {
      * @param apkLocation the file to create
      * @param resLocation the file representing the packaged resource file.
      * @param dexLocation the file representing the dex file. This can be null for apk with no code.
-     * @param signingInfo the signing information used to sign the package. Optional the OS path to the debug keystore, if needed or null.
+     * @param certificateInfo the signing information used to sign the package. Optional the OS path to the debug keystore, if needed or null.
      * @param logger the logger.
      * @throws com.android.builder.packaging.PackagerException
      */
@@ -227,7 +227,7 @@ public final class Packager implements IArchiveBuilder {
             @NonNull String apkLocation,
             @NonNull String resLocation,
             @NonNull String dexLocation,
-            SigningInfo signingInfo,
+            CertificateInfo certificateInfo,
             ILogger logger) throws PackagerException {
 
         try {
@@ -247,8 +247,8 @@ public final class Packager implements IArchiveBuilder {
 
             mBuilder = new SignedJarBuilder(
                     new FileOutputStream(apkFile, false /* append */),
-                    signingInfo != null ? signingInfo.getKey() : null,
-                    signingInfo != null ? signingInfo.getCertificate() : null);
+                    certificateInfo != null ? certificateInfo.getKey() : null,
+                    certificateInfo != null ? certificateInfo.getCertificate() : null);
 
             mLogger.verbose("Packaging %s", apkFile.getName());
 

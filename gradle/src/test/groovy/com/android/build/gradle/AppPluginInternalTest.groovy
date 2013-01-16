@@ -19,7 +19,7 @@ import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.test.BaseTest
 import com.android.build.gradle.internal.test.PluginHolder
 import com.android.builder.BuildType
-import com.android.builder.Keystore
+import com.android.builder.SigningConfig
 import com.android.builder.internal.signing.DebugKeyHelper
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -76,8 +76,8 @@ public class AppPluginInternalTest extends BaseTest {
         project.android {
             target "android-15"
 
-            keystores {
-                fakeKeystore {
+            signingConfigs {
+                fakeConfig {
                     storeLocation "aa"
                     storePassword "bb"
                     keyAlias "cc"
@@ -91,7 +91,7 @@ public class AppPluginInternalTest extends BaseTest {
                 minSdkVersion 2
                 targetSdkVersion 3
 
-                keystore keystores.fakeKeystore
+                signingConfig signingConfigs.fakeConfig
             }
         }
 
@@ -103,10 +103,10 @@ public class AppPluginInternalTest extends BaseTest {
         assertEquals(3, plugin.extension.defaultConfig.targetSdkVersion)
         assertEquals("2.0", plugin.extension.defaultConfig.versionName)
 
-        assertEquals("aa", plugin.extension.defaultConfig.keystore.storeLocation)
-        assertEquals("bb", plugin.extension.defaultConfig.keystore.storePassword)
-        assertEquals("cc", plugin.extension.defaultConfig.keystore.keyAlias)
-        assertEquals("dd", plugin.extension.defaultConfig.keystore.keyPassword)
+        assertEquals("aa", plugin.extension.defaultConfig.signingConfig.storeLocation)
+        assertEquals("bb", plugin.extension.defaultConfig.signingConfig.storePassword)
+        assertEquals("cc", plugin.extension.defaultConfig.signingConfig.keyAlias)
+        assertEquals("dd", plugin.extension.defaultConfig.signingConfig.keyPassword)
     }
 
     public void testBuildTypes() {
@@ -121,7 +121,7 @@ public class AppPluginInternalTest extends BaseTest {
 
             buildTypes {
                 staging {
-                    keystore keystores.debug
+                    signingConfig signingConfigs.debug
                 }
             }
         }
@@ -242,7 +242,7 @@ public class AppPluginInternalTest extends BaseTest {
         assertNotNull(findVariant(variants, "F2FcTest"))
     }
 
-    public void testKeystores() {
+    public void testSigningConfigs() {
         Project project = ProjectBuilder.builder().withProjectDir(
                 new File(testDir, "basic")).build()
 
@@ -251,7 +251,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.android {
             target "android-15"
 
-            keystores {
+            signingConfigs {
                 one {
                     storeLocation "a1"
                     storePassword "b1"
@@ -285,7 +285,7 @@ public class AppPluginInternalTest extends BaseTest {
                 staging {
                 }
                 release {
-                    keystore owner.keystores.three
+                    signingConfig owner.signingConfigs.three
                 }
             }
 
@@ -293,7 +293,7 @@ public class AppPluginInternalTest extends BaseTest {
                 flavor1 {
                 }
                 flavor2 {
-                    keystore owner.keystores.one
+                    signingConfig owner.signingConfigs.one
                 }
             }
 
@@ -306,42 +306,42 @@ public class AppPluginInternalTest extends BaseTest {
         assertEquals(8, variants.size())   // includes the test variant(s)
 
         ApplicationVariant variant
-        Keystore keystore
+        SigningConfig signingConfig
 
         variant = findVariant(variants, "Flavor1Debug")
         assertNotNull(variant)
-        keystore = variant.config.keystore
-        assertNotNull(keystore)
-        assertEquals(DebugKeyHelper.defaultDebugKeyStoreLocation(), keystore.storeLocation)
+        signingConfig = variant.config.signingConfig
+        assertNotNull(signingConfig)
+        assertEquals(DebugKeyHelper.defaultDebugKeyStoreLocation(), signingConfig.storeLocation)
 
         variant = findVariant(variants, "Flavor1Staging")
         assertNotNull(variant)
-        keystore = variant.config.keystore
-        assertNull(keystore)
+        signingConfig = variant.config.signingConfig
+        assertNull(signingConfig)
 
         variant = findVariant(variants, "Flavor1Release")
         assertNotNull(variant)
-        keystore = variant.config.keystore
-        assertNotNull(keystore)
-        assertEquals("a3", keystore.storeLocation)
+        signingConfig = variant.config.signingConfig
+        assertNotNull(signingConfig)
+        assertEquals("a3", signingConfig.storeLocation)
 
         variant = findVariant(variants, "Flavor2Debug")
         assertNotNull(variant)
-        keystore = variant.config.keystore
-        assertNotNull(keystore)
-        assertEquals(DebugKeyHelper.defaultDebugKeyStoreLocation(), keystore.storeLocation)
+        signingConfig = variant.config.signingConfig
+        assertNotNull(signingConfig)
+        assertEquals(DebugKeyHelper.defaultDebugKeyStoreLocation(), signingConfig.storeLocation)
 
         variant = findVariant(variants, "Flavor2Staging")
         assertNotNull(variant)
-        keystore = variant.config.keystore
-        assertNotNull(keystore)
-        assertEquals("a1", keystore.storeLocation)
+        signingConfig = variant.config.signingConfig
+        assertNotNull(signingConfig)
+        assertEquals("a1", signingConfig.storeLocation)
 
         variant = findVariant(variants, "Flavor2Release")
         assertNotNull(variant)
-        keystore = variant.config.keystore
-        assertNotNull(keystore)
-        assertEquals("a3", keystore.storeLocation)
+        signingConfig = variant.config.signingConfig
+        assertNotNull(signingConfig)
+        assertEquals("a3", signingConfig.storeLocation)
     }
 
 

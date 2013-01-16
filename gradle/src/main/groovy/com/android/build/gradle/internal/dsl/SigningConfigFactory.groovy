@@ -16,23 +16,23 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.builder.Keystore
+import com.android.builder.SigningConfig
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.internal.reflect.Instantiator
 
 /**
- * Factory to create Keystore object using an {@ling Instantiator} to add the DSL methods.
+ * Factory to create SigningConfig object using an {@ling Instantiator} to add the DSL methods.
  */
-class KeystoreFactory implements NamedDomainObjectFactory<Keystore> {
+class SigningConfigFactory implements NamedDomainObjectFactory<SigningConfig> {
 
     final Instantiator instantiator
 
-    public KeystoreFactory(Instantiator instantiator) {
+    public SigningConfigFactory(Instantiator instantiator) {
         this.instantiator = instantiator
     }
 
     @Override
-    Keystore create(String name) {
-        return instantiator.newInstance(Keystore.class, name)
+    SigningConfig create(String name) {
+        return instantiator.newInstance(SigningConfig.class, name)
     }
 }

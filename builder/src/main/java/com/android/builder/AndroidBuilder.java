@@ -31,7 +31,7 @@ import com.android.builder.internal.packaging.Packager;
 import com.android.builder.internal.signing.DebugKeyHelper;
 import com.android.builder.internal.signing.KeystoreHelper;
 import com.android.builder.internal.signing.KeytoolException;
-import com.android.builder.internal.signing.SigningInfo;
+import com.android.builder.internal.signing.CertificateInfo;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
@@ -766,7 +766,7 @@ public class AndroidBuilder {
         checkNotNull(classesDexLocation, "classesDexLocation cannot be null.");
         checkNotNull(outApkLocation, "outApkLocation cannot be null.");
 
-        SigningInfo signingInfo = null;
+        CertificateInfo certificateInfo = null;
         try {
             if (signingStoreLocation != null &&
                     signingStorePassword != null &&
@@ -775,7 +775,7 @@ public class AndroidBuilder {
                 if (DebugKeyHelper.defaultDebugKeyStoreLocation().equals(signingStoreLocation)) {
                     createDebugKeystore(signingStoreLocation.getAbsolutePath());
                 }
-                signingInfo = KeystoreHelper.getSigningInfo(
+                certificateInfo = KeystoreHelper.getSigningInfo(
                         signingStoreLocation.getAbsolutePath(),
                         signingStorePassword,
                         null, /*storeStype*/
@@ -794,7 +794,7 @@ public class AndroidBuilder {
         try {
             Packager packager = new Packager(
                     outApkLocation, androidResPkgLocation, classesDexLocation,
-                    signingInfo, mLogger);
+                    certificateInfo, mLogger);
 
             packager.setDebugJniMode(debugJni);
 

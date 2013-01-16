@@ -25,8 +25,8 @@ public class BuildTypeTest extends TestCase {
 
         assertTrue(type.isDebuggable());
         assertTrue(type.isDebugJniBuild());
-        assertNotNull(type.getKeystore());
-        assertTrue(type.getKeystore().isSigningReady());
+        assertNotNull(type.getSigningConfig());
+        assertTrue(type.getSigningConfig().isSigningReady());
     }
 
     public void testRelease() {

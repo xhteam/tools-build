@@ -21,11 +21,13 @@ import com.android.builder.internal.signing.DebugKeyHelper;
 import com.android.prefs.AndroidLocation;
 import com.google.common.base.Objects;
 
+import java.io.Serializable;
+
 /**
- * Keystore encapsulates the information necessary to access certificates in a keystore file
+ * SigningConfig encapsulates the information necessary to access certificates in a keystore file
  * that can be used to sign APKs.
  */
-public class Keystore extends BuildConfig {
+public class SigningConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -40,13 +42,13 @@ public class Keystore extends BuildConfig {
     private String mKeyPassword = null;
 
     /**
-     * Creates a Keystore with a given name.
+     * Creates a SigningConfig with a given name.
      *
      * @param name the name of the keystore.
      *
      * @see #DEBUG
      */
-    public Keystore(@NonNull String name) {
+    public SigningConfig(@NonNull String name) {
         mName = name;
         if (DEBUG.equals(name)) {
             initDebug();
@@ -72,7 +74,7 @@ public class Keystore extends BuildConfig {
         return mStoreLocation;
     }
 
-    public Keystore setStoreLocation(String storeLocation) {
+    public SigningConfig setStoreLocation(String storeLocation) {
         mStoreLocation = storeLocation;
         return this;
     }
@@ -81,7 +83,7 @@ public class Keystore extends BuildConfig {
         return mStorePassword;
     }
 
-    public Keystore setStorePassword(String storePassword) {
+    public SigningConfig setStorePassword(String storePassword) {
         mStorePassword = storePassword;
         return this;
     }
@@ -90,7 +92,7 @@ public class Keystore extends BuildConfig {
         return mKeyAlias;
     }
 
-    public Keystore setKeyAlias(String keyAlias) {
+    public SigningConfig setKeyAlias(String keyAlias) {
         mKeyAlias = keyAlias;
         return this;
     }
@@ -99,7 +101,7 @@ public class Keystore extends BuildConfig {
         return mKeyPassword;
     }
 
-    public Keystore setKeyPassword(String keyPassword) {
+    public SigningConfig setKeyPassword(String keyPassword) {
         mKeyPassword = keyPassword;
         return this;
     }
@@ -117,7 +119,7 @@ public class Keystore extends BuildConfig {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        Keystore that = (Keystore) o;
+        SigningConfig that = (SigningConfig) o;
 
         if (mName != null ? !mName.equals(that.mName) : that.mName != null) return false;
         if (mKeyAlias != null ?

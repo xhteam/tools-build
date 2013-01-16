@@ -154,7 +154,7 @@ public final class KeystoreHelper {
         return result == 0;
     }
 
-    public static SigningInfo getSigningInfo(
+    public static CertificateInfo getSigningInfo(
             @NonNull String keyStoreLocation,
             @NonNull String keyStorePassword,
             String keyStoreType,
@@ -172,7 +172,7 @@ public final class KeystoreHelper {
                     keyAlias, new KeyStore.PasswordProtection(keyPassword.toCharArray()));
 
             if (entry != null) {
-                return new SigningInfo(entry.getPrivateKey(), (X509Certificate) entry.getCertificate());
+                return new CertificateInfo(entry.getPrivateKey(), (X509Certificate) entry.getCertificate());
             }
         } catch (FileNotFoundException e) {
             throw e;
