@@ -24,7 +24,6 @@ import org.gradle.tooling.GradleConnector
 import org.gradle.tooling.ProjectConnection
 
 import java.security.CodeSource
-
 /**
  * Base class for tests.
  */
@@ -119,7 +118,7 @@ public abstract class BaseTest extends TestCase {
             GradleConnector connector = GradleConnector.newConnector()
 
             ProjectConnection connection = connector
-                    .useGradleVersion(BasePlugin.GRADLE_VERSION)
+                    .useGradleVersion(BasePlugin.GRADLE_MIN_VERSION)
                     .forProjectDirectory(project)
                     .connect()
 

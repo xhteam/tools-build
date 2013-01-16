@@ -81,11 +81,11 @@ import org.gradle.util.GUtil
  * Base class for all Android plugins
  */
 public abstract class BasePlugin {
-
-    public final static String GRADLE_VERSION = "1.3";
-
+    private final static String[] GRADLE_SUPPORTED_VERSIONS = [ "1.3", "1.4" ]
+    public final static String GRADLE_MIN_VERSION = "1.3"
 
     public final static String INSTALL_GROUP = "Install"
+
     protected static File TEST_SDK_DIR;
 
     protected Instantiator instantiator
@@ -121,12 +121,7 @@ public abstract class BasePlugin {
     protected void apply(Project project) {
         this.project = project
 
-        if (!project.getGradle().gradleVersion.startsWith(GRADLE_VERSION)) {
-            throw new BuildException(
-                    String.format(
-                            "Gradle version %s is required. Current version is %s",
-                            GRADLE_VERSION, project.getGradle().gradleVersion), null);
-        }
+        checkGradleVersion()
 
         project.apply plugin: JavaBasePlugin
 
@@ -141,6 +136,24 @@ public abstract class BasePlugin {
 
         project.afterEvaluate {
             createAndroidTasks()
+        }
+    }
+
+    private void checkGradleVersion() {
+        boolean foundMatch = false
+        for (String version : GRADLE_SUPPORTED_VERSIONS) {
+            if (project.getGradle().gradleVersion.startsWith(version)) {
+                foundMatch = true
+                break
+            }
+        }
+
+        if (!foundMatch) {
+            throw new BuildException(
+                    String.format(
+                            "Gradle version %s is required. Current version is %s",
+                            GRADLE_MIN_VERSION, project.getGradle().gradleVersion), null);
+
         }
     }
 
