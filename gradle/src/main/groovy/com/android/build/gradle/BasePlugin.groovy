@@ -326,7 +326,8 @@ public abstract class BasePlugin {
 
         mergeResourcesTask.plugin = this
         mergeResourcesTask.variant = variant
-        mergeResourcesTask.incrementalFolder = project.file("$project.buildDir/incremental/$variant.dirName")
+        mergeResourcesTask.incrementalFolder =
+                project.file("$project.buildDir/incremental-mergeResources/$variant.dirName")
 
         mergeResourcesTask.process9Patch = process9Patch
 
@@ -634,6 +635,8 @@ public abstract class BasePlugin {
 
         dexTask.plugin = this
         dexTask.variant = variant
+        dexTask.incrementalFolder =
+                project.file("$project.buildDir/incremental-dex/$variant.dirName")
 
         dexTask.conventionMapping.libraries = { project.files({ variant.config.packagedJars }) }
         dexTask.conventionMapping.sourceFiles = { variant.javaCompileTask.outputs.files } // this creates a dependency

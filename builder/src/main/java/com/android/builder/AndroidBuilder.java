@@ -72,7 +72,7 @@ import static com.google.common.base.Preconditions.checkState;
  * {@link #processTestManifest(String, int, String, String, java.util.List, String)}
  * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
  * {@link #compileAidl(java.util.List, java.io.File, java.util.List)}
- * {@link #convertByteCode(Iterable, Iterable, String, DexOptions)}
+ * {@link #convertByteCode(Iterable, Iterable, String, DexOptions, boolean)}
  * {@link #packageApk(String, String, java.util.List, String, String, boolean, java.io.File, String, String, String, String)}
  *
  * Java compilation is not handled but the builder provides the runtime classpath with
@@ -669,6 +669,7 @@ public class AndroidBuilder {
      * @param libraries the list of libraries
      * @param outDexFile the location of the output classes.dex file
      * @param dexOptions dex options
+     * @param incremental true if it should attempt incremental dex if applicable
      * @throws IOException
      * @throws InterruptedException
      */
@@ -676,7 +677,8 @@ public class AndroidBuilder {
             @NonNull Iterable<File> classesLocation,
             @NonNull Iterable<File> libraries,
             @NonNull String outDexFile,
-            @NonNull DexOptions dexOptions) throws IOException, InterruptedException {
+            @NonNull DexOptions dexOptions,
+            boolean incremental) throws IOException, InterruptedException {
         checkState(mTarget != null, "Target not set.");
         checkNotNull(classesLocation, "classesLocation cannot be null.");
         checkNotNull(libraries, "libraries cannot be null.");
@@ -698,6 +700,11 @@ public class AndroidBuilder {
 
         if (dexOptions.isCoreLibrary()) {
             command.add("--core-library");
+        }
+
+        if (incremental) {
+            command.add("--incremental");
+            command.add("--no-strict");
         }
 
         command.add("--output");

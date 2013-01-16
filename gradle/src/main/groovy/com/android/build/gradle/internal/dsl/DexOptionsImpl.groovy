@@ -22,7 +22,10 @@ import org.gradle.api.tasks.Input;
 public class DexOptionsImpl implements DexOptions {
 
     @Input
-    private boolean coreLibraryFlag;
+    private boolean coreLibraryFlag
+
+    @Input
+    private boolean isIncrementalFlag = true
 
     public void setCoreLibrary(boolean coreLibrary) {
         coreLibraryFlag = coreLibrary
@@ -31,5 +34,14 @@ public class DexOptionsImpl implements DexOptions {
     @Override
     boolean isCoreLibrary() {
         return coreLibraryFlag
+    }
+
+    public void setIncremental(boolean isIncremental) {
+        isIncrementalFlag = isIncremental
+    }
+
+    @Override
+    boolean getIncremental() {
+        return isIncrementalFlag
     }
 }
