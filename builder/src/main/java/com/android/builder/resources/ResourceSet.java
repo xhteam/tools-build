@@ -471,7 +471,9 @@ public class ResourceSet implements SourceSet, ResourceMap {
         int pos;// get the resource name based on the filename
         String name = file.getName();
         pos = name.indexOf('.');
-        name = name.substring(0, pos);
+        if (pos >= 0) {
+            name = name.substring(0, pos);
+        }
 
         Resource item = new Resource(name, type, null);
         ResourceFile resourceFile = new ResourceFile(file, item, qualifiers);
