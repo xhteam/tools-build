@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 package com.android.build.gradle
+
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
 import com.android.build.gradle.internal.TestAppVariant
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
-import com.android.build.gradle.internal.test.PluginHolder
 import com.android.builder.AndroidDependency
 import com.android.builder.BuilderConstants
 import com.android.builder.BundleDependency
@@ -37,6 +37,7 @@ import org.gradle.api.tasks.bundling.Zip
 import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
+
 /**
  * Gradle plugin class for 'library' projects.
  */

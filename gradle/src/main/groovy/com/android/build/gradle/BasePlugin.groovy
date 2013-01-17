@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.android.build.gradle
+
 import com.android.SdkConstants
 import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.LoggerWrapper
@@ -25,6 +26,7 @@ import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.build.gradle.internal.dependency.DependencyChecker
 import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
+import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.tasks.AidlCompileTask
 import com.android.build.gradle.internal.tasks.AndroidDependencyTask
 import com.android.build.gradle.internal.tasks.AndroidTestTask
@@ -42,6 +44,7 @@ import com.android.build.gradle.internal.tasks.ProcessTestManifestTask
 import com.android.build.gradle.internal.tasks.TestFlavorTask
 import com.android.build.gradle.internal.tasks.TestLibraryTask
 import com.android.build.gradle.internal.tasks.UninstallTask
+import com.android.build.gradle.internal.tasks.ValidateSigningTask
 import com.android.build.gradle.internal.tasks.ZipAlignTask
 import com.android.builder.AndroidBuilder
 import com.android.builder.AndroidDependency
@@ -54,6 +57,7 @@ import com.android.builder.SdkParser
 import com.android.builder.SourceProvider
 import com.android.builder.SymbolFileProvider
 import com.android.builder.VariantConfiguration
+import com.android.builder.signing.SigningConfig
 import com.android.utils.ILogger
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
@@ -77,6 +81,7 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
 import org.gradle.util.GUtil
+
 /**
  * Base class for all Android plugins
  */
@@ -94,6 +99,7 @@ public abstract class BasePlugin {
 
     final List<ApplicationVariant> variants = []
     final Map<AndroidDependencyImpl, PrepareLibraryTask> prepareTaskMap = [:]
+    final Map<SigningConfig, ValidateSigningTask> validateSigningTaskMap = [:]
 
     protected Project project
     protected File sdkDir
@@ -680,16 +686,20 @@ public abstract class BasePlugin {
 
         packageApp.conventionMapping.debugJni = { config.buildType.debugJniBuild }
 
+        SigningConfigDsl sc = config.signingConfig
+        packageApp.conventionMapping.signingConfig = { sc }
+        if (sc != null) {
+            ValidateSigningTask validateSigningTask = validateSigningTaskMap.get(sc)
+            if (validateSigningTask == null) {
+                validateSigningTask = project.tasks.add("validate${sc.name.capitalize()}Signing",
+                    ValidateSigningTask)
+                validateSigningTask.plugin = this
+                validateSigningTask.signingConfig = sc
 
-        if (config.signingConfig) {
-            packageApp.conventionMapping.signingStoreLocation = {
-                project.file(config.signingConfig.storeLocation)
+                validateSigningTaskMap.put(sc, validateSigningTask)
             }
-            packageApp.conventionMapping.signingStorePassword = {
-                config.signingConfig.storePassword
-            }
-            packageApp.conventionMapping.signingKeyAlias = { config.signingConfig.keyAlias }
-            packageApp.conventionMapping.signingKeyPassword = { config.signingConfig.keyPassword }
+
+            packageApp.dependsOn validateSigningTask
         }
 
         def signedApk = variant.isSigned()

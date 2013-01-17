@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.builder;
+package com.android.builder.signing;
 
-import com.android.builder.internal.signing.DebugKeyHelper;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.google.common.base.Objects;
+
+import java.security.KeyStore;
 
 /**
  * SigningConfig encapsulates the information necessary to access certificates in a keystore file
@@ -26,10 +27,14 @@ import com.google.common.base.Objects;
  */
 public class SigningConfig {
 
+    public static final String DFAULT_PASSWORD = "android";
+    public static final String DEFAULT_ALIAS = "AndroidDebugKey";
+
     private String mStoreLocation = null;
     private String mStorePassword = null;
     private String mKeyAlias = null;
     private String mKeyPassword = null;
+    private String mStoreType = KeyStore.getDefaultType();
 
     /**
      * Creates a SigningConfig.
@@ -43,10 +48,10 @@ public class SigningConfig {
      * @throws AndroidLocationException if the debug keystore location cannot be found
      */
     public void initDebug() throws AndroidLocationException {
-        mStoreLocation = DebugKeyHelper.defaultDebugKeyStoreLocation();
-        mStorePassword = "android";
-        mKeyAlias = "androiddebugkey";
-        mKeyPassword = "android";
+        mStoreLocation = KeystoreHelper.defaultDebugKeystoreLocation();
+        mStorePassword = DFAULT_PASSWORD;
+        mKeyAlias = DEFAULT_ALIAS;
+        mKeyPassword = DFAULT_PASSWORD;
     }
 
     public String getStoreLocation() {
@@ -85,6 +90,14 @@ public class SigningConfig {
         return this;
     }
 
+    public String getStoreType() {
+        return mStoreType;
+    }
+
+    public void SetStoreType(String storeType) {
+        mStoreType = storeType;
+    }
+
     public boolean isSigningReady() {
         return mStoreLocation != null &&
                 mStorePassword != null &&
@@ -116,6 +129,10 @@ public class SigningConfig {
                 !mStorePassword.equals(that.mStorePassword) :
                 that.mStorePassword != null)
             return false;
+        if (mStoreType != null ?
+                !mStoreType.equals(that.mStoreType) :
+                that.mStoreType != null)
+            return false;
 
         return true;
     }
@@ -129,6 +146,7 @@ public class SigningConfig {
                 mStorePassword.hashCode() : 0);
         result = 31 * result + (mKeyAlias != null ? mKeyAlias.hashCode() : 0);
         result = 31 * result + (mKeyPassword != null ? mKeyPassword.hashCode() : 0);
+        result = 31 * result + (mStoreType != null ? mStoreType.hashCode() : 0);
         return result;
     }
 
@@ -139,6 +157,7 @@ public class SigningConfig {
                 .add("storePassword", mStorePassword)
                 .add("keyAlias", mKeyAlias)
                 .add("keyPassword", mKeyPassword)
+                .add("storeType", mStoreType)
                 .toString();
     }
 }

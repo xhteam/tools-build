@@ -28,16 +28,16 @@ import com.android.builder.internal.compiler.AidlProcessor;
 import com.android.builder.internal.compiler.SourceGenerator;
 import com.android.builder.internal.packaging.JavaResourceProcessor;
 import com.android.builder.internal.packaging.Packager;
-import com.android.builder.internal.signing.DebugKeyHelper;
-import com.android.builder.internal.signing.KeystoreHelper;
-import com.android.builder.internal.signing.KeytoolException;
-import com.android.builder.internal.signing.CertificateInfo;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
+import com.android.builder.packaging.SigningException;
+import com.android.builder.signing.CertificateInfo;
+import com.android.builder.signing.KeystoreHelper;
+import com.android.builder.signing.KeytoolException;
+import com.android.builder.signing.SigningConfig;
 import com.android.manifmerger.ManifestMerger;
 import com.android.manifmerger.MergerLog;
-import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.IAndroidTarget.IOptionalLibrary;
 import com.android.sdklib.internal.repository.packages.FullRevision;
@@ -73,7 +73,7 @@ import static com.google.common.base.Preconditions.checkState;
  * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
  * {@link #compileAidl(java.util.List, java.io.File, java.util.List)}
  * {@link #convertByteCode(Iterable, Iterable, String, DexOptions, boolean)}
- * {@link #packageApk(String, String, java.util.List, String, String, boolean, java.io.File, String, String, String, String)}
+ * {@link #packageApk(String, String, java.util.List, String, String, boolean, com.android.builder.signing.SigningConfig, String)}
  *
  * Java compilation is not handled but the builder provides the runtime classpath with
  * {@link #getRuntimeClasspath()}.
@@ -747,12 +747,13 @@ public class AndroidBuilder {
      * @param javaResourcesLocation the processed Java resource folder
      * @param jniLibsLocation the location of the compiled JNI libraries
      * @param debugJni whether the app should include jni debug data
-     * @param signingStoreLocation signing store location (if not debug signed)
-     * @param signingStorePassword signing store password (if not debug signed)
-     * @param signingKeyAlias signing key alias (if not debug signed)
-     * @param signingKeyPassword signing key password (if not debug signed)
+     * @param signingConfig the signing configuration
      * @param outApkLocation location of the APK.
      * @throws DuplicateFileException
+     * @throws FileNotFoundException if the store location was not found
+     * @throws KeytoolException
+     * @throws PackagerException
+     * @throws SigningException when the key cannot be read from the keystore
      *
      * @see com.android.builder.VariantConfiguration#getPackagedJars()
      */
@@ -763,39 +764,20 @@ public class AndroidBuilder {
             @Nullable String javaResourcesLocation,
             @Nullable String jniLibsLocation,
             boolean debugJni,
-            @Nullable File signingStoreLocation,
-            @Nullable String signingStorePassword,
-            @Nullable String signingKeyAlias,
-            @Nullable String signingKeyPassword,
-            @NonNull String outApkLocation) throws DuplicateFileException {
+            @Nullable SigningConfig signingConfig,
+            @NonNull String outApkLocation) throws DuplicateFileException, FileNotFoundException,
+            KeytoolException, PackagerException, SigningException {
         checkState(mTarget != null, "Target not set.");
         checkNotNull(androidResPkgLocation, "androidResPkgLocation cannot be null.");
         checkNotNull(classesDexLocation, "classesDexLocation cannot be null.");
         checkNotNull(outApkLocation, "outApkLocation cannot be null.");
 
         CertificateInfo certificateInfo = null;
-        try {
-            if (signingStoreLocation != null &&
-                    signingStorePassword != null &&
-                    signingKeyAlias != null &&
-                    signingKeyPassword != null) {
-                if (DebugKeyHelper.defaultDebugKeyStoreLocation().equals(signingStoreLocation)) {
-                    createDebugKeystore(signingStoreLocation.getAbsolutePath());
-                }
-                certificateInfo = KeystoreHelper.getSigningInfo(
-                        signingStoreLocation.getAbsolutePath(),
-                        signingStorePassword,
-                        null, /*storeStype*/
-                        signingKeyAlias,
-                        signingKeyPassword);
+        if (signingConfig != null && signingConfig.isSigningReady()) {
+            certificateInfo = KeystoreHelper.getCertificateInfo(signingConfig);
+            if (certificateInfo == null) {
+                throw new SigningException("Failed to read key from keystore");
             }
-        } catch (AndroidLocationException e) {
-            throw new RuntimeException(e);
-        } catch (KeytoolException e) {
-            throw new RuntimeException(e);
-        } catch (FileNotFoundException e) {
-            // this shouldn't happen as we have checked ahead of calling getDebugKey.
-            throw new RuntimeException(e);
         }
 
         try {
@@ -823,30 +805,9 @@ public class AndroidBuilder {
             }
 
             packager.sealApk();
-        } catch (PackagerException e) {
-            throw new RuntimeException(e);
         } catch (SealedPackageException e) {
+            // shouldn't happen since we control the package from start to end.
             throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Creates a debug signing keystore at the given location if one does not already exist.
-     *
-     * @param storeLocation the fully-qualified path where the keystore should live.
-     * @throws KeytoolException
-     */
-    private void createDebugKeystore(String storeLocation) throws KeytoolException {
-        File storeFile = new File(storeLocation);
-        if (storeFile.isDirectory()) {
-            throw new RuntimeException(
-                    String.format("A folder is in the way of the debug keystore: %s",
-                            storeLocation));
-        } else if (!storeFile.exists()) {
-            if (!DebugKeyHelper.createNewStore(
-                    storeLocation, null /*storeType*/, mLogger)) {
-                throw new RuntimeException("Unable to recreate missing debug keystore.");
-            }
         }
     }
 }

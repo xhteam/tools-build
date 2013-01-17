@@ -20,6 +20,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
 import com.android.builder.resources.ResourceSet;
+import com.android.builder.signing.SigningConfig;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 

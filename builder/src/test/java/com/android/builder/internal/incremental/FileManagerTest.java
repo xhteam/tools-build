@@ -25,8 +25,8 @@ import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.regex.Matcher;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 public class FileManagerTest extends TestCase {
 

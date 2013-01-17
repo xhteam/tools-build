@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.builder.internal.signing;
+package com.android.builder.signing;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.utils.ILogger;
+import com.google.common.io.Files;
 import junit.framework.TestCase;
 
 import java.io.File;
@@ -26,56 +27,37 @@ import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 
-public class DebugKeyProviderTest extends TestCase {
-
-    private File mTmpFile;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        // We want to allocate a new tmp file but not have it actually exist
-        mTmpFile = File.createTempFile(this.getClass().getSimpleName(), ".keystore");
-        assertTrue(mTmpFile.delete());
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        super.tearDown();
-        if (mTmpFile != null) {
-            if (!mTmpFile.delete()) {
-                mTmpFile.deleteOnExit();
-            }
-            mTmpFile = null;
-        }
-    }
+public class KeyStoreHelperTest extends TestCase {
 
     public void testCreateAndCheckKey() throws Exception {
-        String osPath = mTmpFile.getAbsolutePath();
+        File tempFolder = Files.createTempDir();
+        File keystoreFile = new File(tempFolder, "debug.keystore");
+        keystoreFile.deleteOnExit();
 
         FakeLogger fakeLogger = new FakeLogger();
+
+        // create a default signing Config.
+        SigningConfig signingConfig = new SigningConfig();
+        signingConfig.initDebug();
+        signingConfig.setStoreLocation(keystoreFile.getAbsolutePath());
 
         // "now" is just slightly before the key was created
         long now = System.currentTimeMillis();
 
-        DebugKeyProvider provider;
-        try {
-            provider = new DebugKeyProvider(osPath,  null /*storeType*/, fakeLogger);
-        } catch (Throwable t) {
-            // In case we get any kind of exception, rewrap it to make sure we output
-            // the path used.
-            String msg = String.format("%1$s in %2$s\n%3$s",
-                    t.getClass().getSimpleName(), osPath, t.toString());
-            throw new Exception(msg, t);
-        }
-        assertNotNull(provider);
+        // create the keystore
+        KeystoreHelper.createDebugStore(signingConfig, fakeLogger);
+
+        // read the key back
+        CertificateInfo certificateInfo = KeystoreHelper.getCertificateInfo(signingConfig);
+
+        assertNotNull(certificateInfo);
 
         assertEquals("", fakeLogger.getErr());
 
-        PrivateKey key = provider.getDebugKey();
+        PrivateKey key = certificateInfo.getKey();
         assertNotNull(key);
 
-        X509Certificate certificate = (X509Certificate) provider.getCertificate();
+        X509Certificate certificate = certificateInfo.getCertificate();
         assertNotNull(certificate);
 
         // The "not-after" (a.k.a. expiration) date should be after "now"
