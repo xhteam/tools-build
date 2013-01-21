@@ -17,7 +17,7 @@ android {
 
     signingConfigs {
         myConfig {
-            storeLocation "debug.keystore"
+            storeFile file("debug.keystore")
             storePassword "android"
             keyAlias "androiddebugkey"
             keyPassword "android"

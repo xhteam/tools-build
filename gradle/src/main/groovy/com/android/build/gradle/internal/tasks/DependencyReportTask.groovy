@@ -25,7 +25,7 @@ import org.gradle.logging.StyledTextOutputFactory
 
 /**
  */
-public class AndroidDependencyTask extends DefaultTask {
+public class DependencyReportTask extends DefaultTask {
 
     private AndroidAsciiReportRenderer renderer = new AndroidAsciiReportRenderer();
 

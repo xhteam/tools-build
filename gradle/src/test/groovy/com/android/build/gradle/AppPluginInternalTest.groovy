@@ -80,7 +80,7 @@ public class AppPluginInternalTest extends BaseTest {
 
             signingConfigs {
                 fakeConfig {
-                    storeLocation "aa"
+                    storeFile project.file("aa")
                     storePassword "bb"
                     keyAlias "cc"
                     keyPassword "dd"
@@ -105,7 +105,8 @@ public class AppPluginInternalTest extends BaseTest {
         assertEquals(3, plugin.extension.defaultConfig.targetSdkVersion)
         assertEquals("2.0", plugin.extension.defaultConfig.versionName)
 
-        assertEquals("aa", plugin.extension.defaultConfig.signingConfig.storeLocation)
+        assertEquals(new File(project.projectDir, "aa"),
+                plugin.extension.defaultConfig.signingConfig.storeFile)
         assertEquals("bb", plugin.extension.defaultConfig.signingConfig.storePassword)
         assertEquals("cc", plugin.extension.defaultConfig.signingConfig.keyAlias)
         assertEquals("dd", plugin.extension.defaultConfig.signingConfig.keyPassword)
@@ -255,19 +256,19 @@ public class AppPluginInternalTest extends BaseTest {
 
             signingConfigs {
                 one {
-                    storeLocation "a1"
+                    storeFile project.file("a1")
                     storePassword "b1"
                     keyAlias "c1"
                     keyPassword "d1"
                 }
                 two {
-                    storeLocation "a2"
+                    storeFile project.file("a2")
                     storePassword "b2"
                     keyAlias "c2"
                     keyPassword "d2"
                 }
                 three {
-                    storeLocation "a3"
+                    storeFile project.file("a3")
                     storePassword "b3"
                     keyAlias "c3"
                     keyPassword "d3"
@@ -314,7 +315,7 @@ public class AppPluginInternalTest extends BaseTest {
         assertNotNull(variant)
         signingConfig = variant.config.signingConfig
         assertNotNull(signingConfig)
-        assertEquals(KeystoreHelper.defaultDebugKeystoreLocation(), signingConfig.storeLocation)
+        assertEquals(KeystoreHelper.defaultDebugKeystoreLocation(), signingConfig.storeFile?.absolutePath)
 
         variant = findVariant(variants, "Flavor1Staging")
         assertNotNull(variant)
@@ -325,25 +326,25 @@ public class AppPluginInternalTest extends BaseTest {
         assertNotNull(variant)
         signingConfig = variant.config.signingConfig
         assertNotNull(signingConfig)
-        assertEquals("a3", signingConfig.storeLocation)
+        assertEquals(new File(project.projectDir, "a3"), signingConfig.storeFile)
 
         variant = findVariant(variants, "Flavor2Debug")
         assertNotNull(variant)
         signingConfig = variant.config.signingConfig
         assertNotNull(signingConfig)
-        assertEquals(KeystoreHelper.defaultDebugKeystoreLocation(), signingConfig.storeLocation)
+        assertEquals(KeystoreHelper.defaultDebugKeystoreLocation(), signingConfig.storeFile?.absolutePath)
 
         variant = findVariant(variants, "Flavor2Staging")
         assertNotNull(variant)
         signingConfig = variant.config.signingConfig
         assertNotNull(signingConfig)
-        assertEquals("a1", signingConfig.storeLocation)
+        assertEquals(new File(project.projectDir, "a1"), signingConfig.storeFile)
 
         variant = findVariant(variants, "Flavor2Release")
         assertNotNull(variant)
         signingConfig = variant.config.signingConfig
         assertNotNull(signingConfig)
-        assertEquals("a3", signingConfig.storeLocation)
+        assertEquals(new File(project.projectDir, "a3"), signingConfig.storeFile)
     }
 
     /**
@@ -396,7 +397,7 @@ public class AppPluginInternalTest extends BaseTest {
 
         assertNotNull(fooSC);
 
-        assertEquals(debugSC.getStoreLocation(), fooSC.getStoreLocation());
+        assertEquals(debugSC.getStoreFile(), fooSC.getStoreFile());
         assertEquals(debugSC.getStorePassword(), fooSC.getStorePassword());
         assertEquals(debugSC.getKeyAlias(), fooSC.getKeyAlias());
         assertEquals(debugSC.getKeyPassword(), fooSC.getKeyPassword());

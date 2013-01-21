@@ -23,6 +23,7 @@ import com.android.prefs.AndroidLocation;
 import com.google.common.base.Objects;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.Optional;
 import org.gradle.tooling.BuildException;
 
 import java.io.File;
@@ -61,7 +62,7 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
     }
 
     public SigningConfigDsl initWith(SigningConfig that) {
-        setStoreLocation(that.getStoreLocation());
+        setStoreFile(that.getStoreFile());
         setStorePassword(that.getStorePassword());
         setKeyAlias(that.getKeyAlias());
         setKeyPassword(that.getKeyPassword());
@@ -69,11 +70,12 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
     }
 
     /**
-     * Custom store location getter to annotate it with Gradle's input annotation.
+     * Store file getter override to annotate it with Gradle's input annotation.
      */
-    @InputFile
+    @Override
+    @InputFile @Optional
     public File getStoreFile() {
-        return new File(getStoreLocation());
+        return super.getStoreFile();
     }
 
     /**
@@ -136,7 +138,7 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
     public String toString() {
         return Objects.toStringHelper(this)
                 .add("name", name)
-                .add("storeLocation", getStoreLocation())
+                .add("storeFile", getStoreFile() != null ? getStoreFile().getAbsolutePath() : "null")
                 .add("storePassword", getStorePassword())
                 .add("keyAlias", getKeyAlias())
                 .add("keyPassword", getKeyPassword())

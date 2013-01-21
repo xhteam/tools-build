@@ -19,6 +19,7 @@ package com.android.build.gradle.internal.tasks
 import com.android.builder.signing.KeystoreHelper
 import com.android.builder.signing.SigningConfig
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.tooling.BuildException
 /**
@@ -36,22 +37,26 @@ class ValidateSigningTask extends BaseTask {
      * Annotated getter for task input.
      *
      * This is an Input and not an InputFile because the file might not exist.
+     * This is not actually used by the task, this is only for Gradle to check inputs.
      *
      * @return the path of the keystore.
      */
-    @Input
-    String getLocation() {
-        return signingConfig.getStoreLocation()
+    @Input @Optional
+    String getStoreLocation() {
+        File f = signingConfig.getStoreFile()
+        if (f != null) {
+            return f.absolutePath
+        }
+        return null;
     }
 
     @TaskAction
     void validate() {
 
-        String storeLocation = getLocation()
-        File f = new File(storeLocation)
-        if (!f.exists()) {
-            if (KeystoreHelper.defaultDebugKeystoreLocation().equals(storeLocation)) {
-                getLogger().info("Creating default debug keystore at %s" + storeLocation)
+        File storeFile = signingConfig.getStoreFile()
+        if (!storeFile.exists()) {
+            if (KeystoreHelper.defaultDebugKeystoreLocation().equals(storeFile.absolutePath)) {
+                getLogger().info("Creating default debug keystore at %s" + storeFile.absolutePath)
                 if (!KeystoreHelper.createDebugStore(signingConfig, plugin.getLogger())) {
                     throw new BuildException("Unable to recreate missing debug keystore.");
                 }

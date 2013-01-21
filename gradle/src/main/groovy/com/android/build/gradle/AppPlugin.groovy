@@ -89,7 +89,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
         // map the whenObjectAdded callbacks on the containers.
         signingConfigContainer.whenObjectAdded { SigningConfig signingConfig ->
-            signingConfigs[((SigningConfigDsl)signingConfig).name] = signingConfig
+            SigningConfigDsl signingConfigDsl = (SigningConfigDsl) signingConfig
+            signingConfigs[signingConfigDsl.name] = signingConfig
         }
 
         buildTypeContainer.whenObjectAdded { BuildType buildType ->
@@ -106,7 +107,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         buildTypeContainer.create(BuilderConstants.DEBUG)
         buildTypeContainer.create(BuilderConstants.RELEASE)
 
-        // map whenOjbectRemoved on the containers to throw an exception.
+        // map whenObjectRemoved on the containers to throw an exception.
         signingConfigContainer.whenObjectRemoved {
             throw new UnsupportedOperationException("Removing signingConfigs is not supported.")
         }

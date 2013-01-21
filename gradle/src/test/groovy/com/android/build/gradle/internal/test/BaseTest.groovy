@@ -110,6 +110,14 @@ public abstract class BaseTest extends TestCase {
         return (File) localProp.file
     }
 
+    protected File runTasksOn(String name, String... tasks) {
+        File project = new File(testDir, name)
+
+        runGradleTasks(sdkDir, project, tasks)
+
+        return project;
+    }
+
     protected static void runGradleTasks(File sdkDir, File project, String... tasks) {
         File localProp = createLocalProp(project, sdkDir)
 

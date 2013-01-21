@@ -28,8 +28,8 @@ import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.tasks.AidlCompileTask
-import com.android.build.gradle.internal.tasks.AndroidDependencyTask
 import com.android.build.gradle.internal.tasks.AndroidTestTask
+import com.android.build.gradle.internal.tasks.DependencyReportTask
 import com.android.build.gradle.internal.tasks.DexTask
 import com.android.build.gradle.internal.tasks.GenerateBuildConfigTask
 import com.android.build.gradle.internal.tasks.IncrementalTask
@@ -41,6 +41,7 @@ import com.android.build.gradle.internal.tasks.PrepareLibraryTask
 import com.android.build.gradle.internal.tasks.ProcessManifestTask
 import com.android.build.gradle.internal.tasks.ProcessResourcesTask
 import com.android.build.gradle.internal.tasks.ProcessTestManifestTask
+import com.android.build.gradle.internal.tasks.SigningReportTask
 import com.android.build.gradle.internal.tasks.TestFlavorTask
 import com.android.build.gradle.internal.tasks.TestLibraryTask
 import com.android.build.gradle.internal.tasks.UninstallTask
@@ -170,7 +171,7 @@ public abstract class BasePlugin {
         hasCreatedTasks = true
 
         doCreateAndroidTasks()
-        createDependencyReportTask()
+        createReportTasks()
     }
 
     protected setDefaultConfig(ProductFlavor defaultConfig,
@@ -764,11 +765,16 @@ public abstract class BasePlugin {
         uninstallAll.dependsOn uninstallTask
     }
 
-    private void createDependencyReportTask() {
-        def androidDependencyTask = project.tasks.add("androidDependencies", AndroidDependencyTask)
-        androidDependencyTask.setDescription("Displays the Android dependencies of the project")
-        androidDependencyTask.setVariants(variants)
-        androidDependencyTask.setGroup("Help")
+    private void createReportTasks() {
+        def dependencyReportTask = project.tasks.add("androidDependencies", DependencyReportTask)
+        dependencyReportTask.setDescription("Displays the Android dependencies of the project")
+        dependencyReportTask.setVariants(variants)
+        dependencyReportTask.setGroup("Android")
+
+        def signingReportTask = project.tasks.add("signingReport", SigningReportTask)
+        signingReportTask.setDescription("Displays the signing info for each variant")
+        signingReportTask.setVariants(variants)
+        signingReportTask.setGroup("Android")
     }
 
     protected void createPrepareDependenciesTask(ApplicationVariant variant,
