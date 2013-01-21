@@ -16,6 +16,7 @@
 package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.tasks.Dex
 import com.android.builder.DexOptions
+import com.android.builder.resources.FileStatus
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
 
@@ -36,6 +37,23 @@ public class DexTask extends Dex {
                 getSourceFiles(),
                 getLibraries(),
                 getOutputFile().absolutePath,
-                getDexOptions())
+                getDexOptions(),
+                false)
+    }
+
+    @Override
+    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs,
+                                           Map<File, FileStatus> changedOutputs) {
+        getBuilder().convertByteCode(
+                changedInputs.keySet(),
+                new ArrayList<File>(),
+                getOutputFile().absolutePath,
+                getDexOptions(),
+                true)
+    }
+
+    @Override
+    protected boolean isIncremental() {
+        return dexOptions.incremental
     }
 }

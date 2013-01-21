@@ -19,4 +19,5 @@ package com.android.builder;
 public interface DexOptions {
 
     boolean isCoreLibrary();
+    boolean getIncremental();
 }
