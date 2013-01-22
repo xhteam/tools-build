@@ -15,6 +15,7 @@
  */
 
 package com.android.build.gradle
+
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
@@ -35,8 +36,8 @@ import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
 import com.android.builder.BuilderConstants
 import com.android.builder.JarDependency
-import com.android.builder.SigningConfig
 import com.android.builder.VariantConfiguration
+import com.android.builder.signing.SigningConfig
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
 import org.gradle.api.Project
@@ -47,6 +48,7 @@ import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
+
 /**
  * Gradle plugin class for 'application' projects.
  */

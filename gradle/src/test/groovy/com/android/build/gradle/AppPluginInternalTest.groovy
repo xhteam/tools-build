@@ -21,8 +21,8 @@ import com.android.build.gradle.internal.test.BaseTest
 import com.android.build.gradle.internal.test.PluginHolder
 import com.android.builder.BuildType
 import com.android.builder.BuilderConstants
-import com.android.builder.SigningConfig
-import com.android.builder.internal.signing.DebugKeyHelper
+import com.android.builder.signing.KeystoreHelper
+import com.android.builder.signing.SigningConfig
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 
@@ -314,7 +314,7 @@ public class AppPluginInternalTest extends BaseTest {
         assertNotNull(variant)
         signingConfig = variant.config.signingConfig
         assertNotNull(signingConfig)
-        assertEquals(DebugKeyHelper.defaultDebugKeyStoreLocation(), signingConfig.storeLocation)
+        assertEquals(KeystoreHelper.defaultDebugKeystoreLocation(), signingConfig.storeLocation)
 
         variant = findVariant(variants, "Flavor1Staging")
         assertNotNull(variant)
@@ -331,7 +331,7 @@ public class AppPluginInternalTest extends BaseTest {
         assertNotNull(variant)
         signingConfig = variant.config.signingConfig
         assertNotNull(signingConfig)
-        assertEquals(DebugKeyHelper.defaultDebugKeyStoreLocation(), signingConfig.storeLocation)
+        assertEquals(KeystoreHelper.defaultDebugKeystoreLocation(), signingConfig.storeLocation)
 
         variant = findVariant(variants, "Flavor2Staging")
         assertNotNull(variant)

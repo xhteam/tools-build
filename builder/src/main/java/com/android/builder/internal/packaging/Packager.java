@@ -19,13 +19,12 @@ package com.android.builder.internal.packaging;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.builder.internal.packaging.JavaResourceProcessor.IArchiveBuilder;
-import com.android.builder.internal.signing.DebugKeyProvider;
-import com.android.builder.internal.signing.SignedJarBuilder;
-import com.android.builder.internal.signing.SignedJarBuilder.IZipEntryFilter;
-import com.android.builder.internal.signing.CertificateInfo;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
+import com.android.builder.signing.CertificateInfo;
+import com.android.builder.signing.SignedJarBuilder;
+import com.android.builder.signing.SignedJarBuilder.IZipEntryFilter;
 import com.android.utils.ILogger;
 
 import java.io.File;
@@ -554,14 +553,6 @@ public final class Packager implements IArchiveBuilder {
             }
         } else {
             throw new FileNotFoundException(String.format("%s does not exist", file));
-        }
-    }
-
-    public static String getDebugKeystore() throws PackagerException {
-        try {
-            return DebugKeyProvider.getDefaultKeyStoreOsPath();
-        } catch (Exception e) {
-            throw new PackagerException(e, e.getMessage());
         }
     }
 }

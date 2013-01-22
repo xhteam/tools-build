@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.builder.internal.signing;
+package com.android.builder.signing;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.prefs.AndroidLocation;
+import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.util.GrabProcessOutput;
 import com.android.sdklib.util.GrabProcessOutput.IProcessOutput;
 import com.android.sdklib.util.GrabProcessOutput.Wait;
@@ -32,29 +34,54 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 
 /**
- * A Helper to create new keystore/key.
+ * A Helper to create and read keystore/keys.
  */
 public final class KeystoreHelper {
 
+    // Certificate CN value. This is a hard-coded value for the debug key.
+    // Android Market checks against this value in order to refuse applications signed with
+    // debug keys.
+    private static final String CERTIFICATE_DESC = "CN=Android Debug,O=Android,C=US";
+
+
+    /**
+     * Returns the location of the default debug keystore.
+     *
+     * @return The location of the default debug keystore.
+     * @throws AndroidLocationException if the location cannot be computed
+     */
+    public static String defaultDebugKeystoreLocation() throws AndroidLocationException {
+        //this is guaranteed to either return a non null value (terminated with a platform
+        // specific separator), or throw.
+        String folder = AndroidLocation.getFolder();
+        return folder + "debug.keystore";
+    }
+
+    /**
+     * Creates a new debug store with the location, keyalias, and passwords specified in the
+     * config.
+     *
+     * @param signingConfig The signing config
+     * @param logger a logger object to receive the log of the creation.
+     * @throws KeytoolException
+     */
+    public static boolean createDebugStore(@NonNull SigningConfig signingConfig,
+                                           @NonNull ILogger logger) throws KeytoolException {
+
+        return createNewStore(signingConfig, CERTIFICATE_DESC, 30 /* validity*/, logger);
+    }
+
     /**
      * Creates a new store
-     * @param osKeyStorePath the location of the store
-     * @param storeType an optional keystore type, or <code>null</code> if the default is to
-     * be used.
-     * @param storePassword
-     * @param alias
-     * @param keyPassword
-     * @param description
+     *
+     * @param signingConfig the Signing Configuration
+     * @param description description
      * @param validityYears
      * @param logger
      * @throws KeytoolException
      */
-    public static boolean createNewStore(
-            @NonNull String osKeyStorePath,
-            String storeType,
-            @NonNull String storePassword,
-            @NonNull String alias,
-            @NonNull String keyPassword,
+    private static boolean createNewStore(
+            @NonNull SigningConfig signingConfig,
             @NonNull String description,
             int validityYears,
             @NonNull final ILogger logger)
@@ -81,7 +108,7 @@ public final class KeystoreHelper {
         commandList.add(keytoolCommand);
         commandList.add("-genkey");
         commandList.add("-alias");
-        commandList.add(alias);
+        commandList.add(signingConfig.getKeyAlias());
         commandList.add("-keyalg");
         commandList.add("RSA");
         commandList.add("-dname");
@@ -89,14 +116,14 @@ public final class KeystoreHelper {
         commandList.add("-validity");
         commandList.add(Integer.toString(validityYears * 365));
         commandList.add("-keypass");
-        commandList.add(keyPassword);
+        commandList.add(signingConfig.getKeyPassword());
         commandList.add("-keystore");
-        commandList.add(osKeyStorePath);
+        commandList.add(signingConfig.getStoreLocation());
         commandList.add("-storepass");
-        commandList.add(storePassword);
-        if (storeType != null) {
+        commandList.add(signingConfig.getStorePassword());
+        if (signingConfig.getStoreType() != null) {
             commandList.add("-storetype");
-            commandList.add(storeType);
+            commandList.add(signingConfig.getStoreType());
         }
 
         String[] commandArray = commandList.toArray(new String[commandList.size()]);
@@ -154,32 +181,43 @@ public final class KeystoreHelper {
         return result == 0;
     }
 
-    public static CertificateInfo getSigningInfo(
-            @NonNull String keyStoreLocation,
-            @NonNull String keyStorePassword,
-            String keyStoreType,
-            @NonNull String keyAlias,
-            @NonNull String keyPassword) throws KeytoolException, FileNotFoundException {
+    /**
+     * Returns the CertificateInfo for the given signing configuration.
+     *
+     * Returns null if the key could not be found. If the passwords are wrong,
+     * it throws an exception
+     *
+     * @param signingConfig the signing configuration
+     * @return the certificate info if it could be loaded.
+     * @throws KeytoolException
+     * @throws FileNotFoundException
+     */
+    public static CertificateInfo getCertificateInfo(SigningConfig signingConfig)
+            throws KeytoolException, FileNotFoundException {
 
         try {
             KeyStore keyStore = KeyStore.getInstance(
-                    keyStoreType != null ? keyStoreType : KeyStore.getDefaultType());
+                    signingConfig.getStoreType() != null ?
+                            signingConfig.getStoreType() : KeyStore.getDefaultType());
 
-            FileInputStream fis = new FileInputStream(keyStoreLocation);
-            keyStore.load(fis, keyStorePassword.toCharArray());
+            FileInputStream fis = new FileInputStream(signingConfig.getStoreLocation());
+            keyStore.load(fis, signingConfig.getStorePassword().toCharArray());
             fis.close();
             PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(
-                    keyAlias, new KeyStore.PasswordProtection(keyPassword.toCharArray()));
+                    signingConfig.getKeyAlias(),
+                    new KeyStore.PasswordProtection(signingConfig.getKeyPassword().toCharArray()));
 
             if (entry != null) {
-                return new CertificateInfo(entry.getPrivateKey(), (X509Certificate) entry.getCertificate());
+                return new CertificateInfo(entry.getPrivateKey(),
+                        (X509Certificate) entry.getCertificate());
             }
         } catch (FileNotFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new KeytoolException(
                     String.format("Failed to read key %1$s from store \"%2$s\": %3$s",
-                            keyAlias, keyStoreLocation, e.getMessage()),
+                            signingConfig.getKeyAlias(), signingConfig.getKeyPassword(),
+                            e.getMessage()),
                     e);
         }
 

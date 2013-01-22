@@ -13,13 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.gradle.internal.tasks
+
+import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.builder.packaging.DuplicateFileException
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
+import org.gradle.tooling.BuildException
 
 public class PackageApplicationTask extends PackageApplication {
 
@@ -29,17 +33,8 @@ public class PackageApplicationTask extends PackageApplication {
     @Input
     boolean debugJni
 
-    @InputFile @Optional
-    File signingStoreLocation
-
-    @Input @Optional
-    String signingStorePassword
-
-    @Input @Optional
-    String signingKeyAlias
-
-    @Input @Optional
-    String signingKeyPassword
+    @Nested @Optional
+    SigningConfigDsl signingConfig
 
     @Override
     protected void doFullTaskAction() {
@@ -51,10 +46,7 @@ public class PackageApplicationTask extends PackageApplication {
                     getJavaResourceDir()?.absolutePath,
                     getJniDir()?.absolutePath,
                     getDebugJni(),
-                    getSigningStoreLocation(),
-                    getSigningStorePassword(),
-                    getSigningKeyAlias(),
-                    getSigningKeyPassword(),
+                    getSigningConfig(),
                     getOutputFile().absolutePath)
         } catch (DuplicateFileException e) {
             def logger = getLogger()
@@ -62,7 +54,9 @@ public class PackageApplicationTask extends PackageApplication {
             logger.error("\tPath in archive: " + e.archivePath)
             logger.error("\tOrigin 1: " + e.file1)
             logger.error("\tOrigin 2: " + e.file2)
-            throw new RuntimeException();
+            throw new BuildException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new BuildException(e.getMessage(), e);
         }
     }
 }

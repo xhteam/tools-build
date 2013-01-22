@@ -18,20 +18,23 @@ package com.android.build.gradle.internal.dsl;
 
 import com.android.annotations.NonNull;
 import com.android.builder.BuilderConstants;
-import com.android.builder.SigningConfig;
+import com.android.builder.signing.SigningConfig;
 import com.android.prefs.AndroidLocation;
 import com.google.common.base.Objects;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
 import org.gradle.tooling.BuildException;
 
+import java.io.File;
 import java.io.Serializable;
 
 /**
  * DSL overlay for {@link SigningConfig}.
-
  */
 public class SigningConfigDsl extends SigningConfig implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @NonNull
     private final String name;
 
     /**
@@ -65,6 +68,50 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
         return this;
     }
 
+    /**
+     * Custom store location getter to annotate it with Gradle's input annotation.
+     */
+    @InputFile
+    public File getStoreFile() {
+        return new File(getStoreLocation());
+    }
+
+    /**
+     * Store password getter override to annotate it with Gradle's input annotation.
+     */
+    @Override
+    @Input
+    public String getStorePassword() {
+        return super.getStorePassword();
+    }
+
+    /**
+     * Key alias getter override to annotate it with Gradle's input annotation.
+     */
+    @Override
+    @Input
+    public String getKeyAlias() {
+        return super.getKeyAlias();
+    }
+
+    /**
+     * Key password getter override to annotate it with Gradle's input annotation.
+     */
+    @Override
+    @Input
+    public String getKeyPassword() {
+        return super.getKeyPassword();
+    }
+
+    /**
+     * Store Type getter override to annotate it with Gradle's input annotation.
+     */
+    @Override
+    @Input
+    public String getStoreType() {
+        return super.getStoreType();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -93,6 +140,7 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
                 .add("storePassword", getStorePassword())
                 .add("keyAlias", getKeyAlias())
                 .add("keyPassword", getKeyPassword())
+                .add("storeType", getStoreFile())
                 .toString();
     }
 }

@@ -17,6 +17,7 @@
 package com.android.builder;
 
 import com.android.annotations.NonNull;
+import com.android.builder.signing.SigningConfig;
 import com.google.common.base.Objects;
 
 /**

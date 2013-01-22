@@ -19,7 +19,7 @@ package com.android.build.gradle.internal.dsl
 import com.android.annotations.NonNull
 import com.android.builder.BuildType
 import com.android.builder.BuilderConstants
-import com.android.builder.SigningConfig
+import com.android.builder.signing.SigningConfig
 
 /**
  * DSL overlay to make methods that accept String... work.

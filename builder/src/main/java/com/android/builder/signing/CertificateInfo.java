@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.builder.internal.signing;
+package com.android.builder.signing;
 
 import com.android.annotations.NonNull;
 
