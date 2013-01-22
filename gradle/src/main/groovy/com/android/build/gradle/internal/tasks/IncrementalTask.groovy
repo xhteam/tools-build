@@ -51,10 +51,8 @@ public abstract class IncrementalTask extends BaseTask {
      * Only used if {@link #isIncremental()} returns true.
      *
      * @param changedInputs the changed input files.
-     * @param changedOutputs the changed output files.
      */
-    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs,
-                                           Map<File, FileStatus> changedOutputs) {
+    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs) {
         // do nothing.
     }
 
@@ -68,28 +66,28 @@ public abstract class IncrementalTask extends BaseTask {
      */
     @TaskAction
     void taskAction() {
-        if (!isIncremental() || incrementalFolder == null) {
-            doFullTaskAction()
-            return;
-        }
-
-        // load known state.
-        ChangeManager changeManager = new ChangeManager()
-        boolean fullBuild = !changeManager.load(incrementalFolder)
-
-        // update with current files.
-        TaskInputs inputs = getInputs()
-        FileCollection inputCollection = inputs.getFiles()
-
-        for (File f : inputCollection.files) {
-            changeManager.addInput(f)
-        }
-
-        for (File f : getOutputForIncrementalBuild()) {
-            changeManager.addOutput(f);
-        }
-
         try {
+            if (!isIncremental() || incrementalFolder == null) {
+                doFullTaskAction()
+                return;
+            }
+
+            // load known state.
+            ChangeManager changeManager = new ChangeManager()
+            boolean fullBuild = !changeManager.load(incrementalFolder)
+
+            // update with current files.
+            TaskInputs inputs = getInputs()
+            FileCollection inputCollection = inputs.getFiles()
+
+            for (File f : inputCollection.files) {
+                changeManager.addInput(f)
+            }
+
+            for (File f : getOutputForIncrementalBuild()) {
+                changeManager.addOutput(f);
+            }
+
             // force full build if output changed somehow.
             Map<File, FileStatus> changedOutputs = changeManager.getChangedOutputs()
             Map<File, FileStatus> changedInputs = changeManager.getChangedInputs()
@@ -97,9 +95,6 @@ public abstract class IncrementalTask extends BaseTask {
                 project.logger.info("No incremental data: full task run")
                 doFullTaskAction();
             } else if (!changedOutputs.isEmpty()) {
-                for (File f : changedOutputs.keySet()) {
-                    project.logger.info(">> " + f)
-                }
                 project.logger.info("Changed output: full task run")
 
                 doFullTaskAction();
@@ -109,8 +104,7 @@ public abstract class IncrementalTask extends BaseTask {
                 project.logger.info("Changed non file input/output: full task run")
                 doFullTaskAction()
             } else {
-                doIncrementalTaskAction(
-                        changeManager.getChangedInputs(), changeManager.getChangedOutputs())
+                doIncrementalTaskAction(changeManager.getChangedInputs())
             }
 
             // update the outputs post task-action, to record their state

@@ -30,6 +30,11 @@ public class GenerateBuildConfigTask extends GenerateBuildConfig {
 
     @Override
     protected void doFullTaskAction() {
+        // must clear the folder in case the packagename changed, otherwise,
+        // there'll be two classes.
+        File destinationDir = getSourceOutputDir()
+        emptyFolder(destinationDir)
+
         getBuilder().generateBuildConfig(
                 getPackageName(),
                 isDebuggable(),

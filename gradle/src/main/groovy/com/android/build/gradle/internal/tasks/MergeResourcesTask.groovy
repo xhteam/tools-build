@@ -69,8 +69,7 @@ class MergeResourcesTask extends MergeResources {
     }
 
     @Override
-    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs,
-                                           Map<File, FileStatus> changedOutputs) {
+    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs) {
         // create a merger and load the known state.
         ResourceMerger merger = new ResourceMerger()
         if (!merger.loadFromBlob(getIncrementalFolder())) {

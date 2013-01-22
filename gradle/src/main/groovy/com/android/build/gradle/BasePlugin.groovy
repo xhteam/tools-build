@@ -347,7 +347,7 @@ public abstract class BasePlugin {
         mergeResourcesTask.plugin = this
         mergeResourcesTask.variant = variant
         mergeResourcesTask.incrementalFolder =
-                project.file("$project.buildDir/incremental-mergeResources/$variant.dirName")
+                project.file("$project.buildDir/incremental/mergeResources/$variant.dirName")
 
         mergeResourcesTask.process9Patch = process9Patch
 
@@ -388,7 +388,7 @@ public abstract class BasePlugin {
         }
 
         generateBuildConfigTask.conventionMapping.sourceOutputDir = {
-            project.file("$project.buildDir/source/${variant.dirName}")
+            project.file("$project.buildDir/source/buildConfig/${variant.dirName}")
         }
     }
 
@@ -427,7 +427,7 @@ public abstract class BasePlugin {
 
         // TODO: unify with generateBuilderConfig, compileAidl, and library packaging somehow?
         processResources.conventionMapping.sourceOutputDir = {
-            project.file("$project.buildDir/source/$variant.dirName")
+            project.file("$project.buildDir/source/r/$variant.dirName")
         }
         processResources.conventionMapping.textSymbolDir = {
             project.file("$project.buildDir/symbols/$variant.dirName")
@@ -480,12 +480,15 @@ public abstract class BasePlugin {
 
         compileTask.plugin = this
         compileTask.variant = variant
+        compileTask.incrementalFolder =
+            project.file("$project.buildDir/incremental/aidl/$variant.dirName")
+
 
         compileTask.conventionMapping.sourceDirs = { config.aidlSourceList }
         compileTask.conventionMapping.importDirs = { config.aidlImports }
 
         compileTask.conventionMapping.sourceOutputDir = {
-            project.file("$project.buildDir/source/$variant.dirName")
+            project.file("$project.buildDir/source/aidl/$variant.dirName")
         }
     }
 
@@ -500,6 +503,9 @@ public abstract class BasePlugin {
         List<Object> sourceList = new ArrayList<Object>();
         sourceList.add(((AndroidSourceSet) config.defaultSourceSet).java)
         sourceList.add({ variant.processResourcesTask.sourceOutputDir })
+        sourceList.add({ variant.generateBuildConfigTask.sourceOutputDir })
+        sourceList.add({ variant.aidlCompileTask.sourceOutputDir })
+
         if (config.getType() != VariantConfiguration.Type.TEST) {
             sourceList.add(((AndroidSourceSet) config.buildTypeSourceSet).java)
         }
@@ -656,7 +662,7 @@ public abstract class BasePlugin {
         dexTask.plugin = this
         dexTask.variant = variant
         dexTask.incrementalFolder =
-                project.file("$project.buildDir/incremental-dex/$variant.dirName")
+                project.file("$project.buildDir/incremental/dex/$variant.dirName")
 
         dexTask.conventionMapping.libraries = { project.files({ variant.config.packagedJars }) }
         dexTask.conventionMapping.sourceFiles = { variant.javaCompileTask.outputs.files } // this creates a dependency

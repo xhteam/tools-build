@@ -42,11 +42,10 @@ public class DexTask extends Dex {
     }
 
     @Override
-    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs,
-                                           Map<File, FileStatus> changedOutputs) {
+    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs) {
         getBuilder().convertByteCode(
-                changedInputs.keySet(),
-                new ArrayList<File>(),
+                getSourceFiles(),
+                getLibraries(),
                 getOutputFile().absolutePath,
                 getDexOptions(),
                 true)
