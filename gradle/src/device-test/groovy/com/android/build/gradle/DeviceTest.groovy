@@ -87,10 +87,6 @@ public class DeviceTest extends BaseTest {
     }
 
     private File runTestsOn(String name) {
-        File project = new File(testDir, name)
-
-        runGradleTasks(sdkDir, project, "check")
-
-        return project;
+        return runGradleTasks(name, "check")
     }
 }

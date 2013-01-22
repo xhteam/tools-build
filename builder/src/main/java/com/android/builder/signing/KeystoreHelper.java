@@ -50,6 +50,7 @@ public final class KeystoreHelper {
      * @return The location of the default debug keystore.
      * @throws AndroidLocationException if the location cannot be computed
      */
+    @NonNull
     public static String defaultDebugKeystoreLocation() throws AndroidLocationException {
         //this is guaranteed to either return a non null value (terminated with a platform
         // specific separator), or throw.
@@ -118,7 +119,7 @@ public final class KeystoreHelper {
         commandList.add("-keypass");
         commandList.add(signingConfig.getKeyPassword());
         commandList.add("-keystore");
-        commandList.add(signingConfig.getStoreLocation());
+        commandList.add(signingConfig.getStoreFile().getAbsolutePath());
         commandList.add("-storepass");
         commandList.add(signingConfig.getStorePassword());
         if (signingConfig.getStoreType() != null) {
@@ -200,7 +201,7 @@ public final class KeystoreHelper {
                     signingConfig.getStoreType() != null ?
                             signingConfig.getStoreType() : KeyStore.getDefaultType());
 
-            FileInputStream fis = new FileInputStream(signingConfig.getStoreLocation());
+            FileInputStream fis = new FileInputStream(signingConfig.getStoreFile());
             keyStore.load(fis, signingConfig.getStorePassword().toCharArray());
             fis.close();
             PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(

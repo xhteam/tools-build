@@ -56,6 +56,10 @@ class BuildTest extends BaseTest {
         buildProject("basic")
     }
 
+    void testReportsOnBasic() {
+        runTasksOn("basic", "androidDependencies", "signingReport")
+    }
+
     void testDependencies() {
         buildProject("dependencies")
     }
@@ -66,6 +70,10 @@ class BuildTest extends BaseTest {
 
     void testFlavorLib() {
         buildProject("flavorlib")
+    }
+
+    void testReportsOnFlavorlib() {
+        runTasksOn("flavorlib", "androidDependencies", "signingReport")
     }
 
     void testFlavors() {
@@ -151,6 +159,7 @@ class BuildTest extends BaseTest {
         File project = new File(testDir, name)
         builtProjects.add(name)
 
+        // build the project
         runGradleTasks(sdkDir, project, "clean", "assembleDebug")
 
         return project;

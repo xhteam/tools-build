@@ -25,7 +25,7 @@ public class SigningConfigDslTest extends TestCase {
         SigningConfigDsl debug = new SigningConfigDsl(BuilderConstants.DEBUG);
         SigningConfigDsl foo = new SigningConfigDsl("foo").initWith(debug);
 
-        assertEquals(debug.getStoreLocation(), foo.getStoreLocation());
+        assertEquals(debug.getStoreFile(), foo.getStoreFile());
         assertEquals(debug.getStorePassword(), foo.getStorePassword());
         assertEquals(debug.getKeyAlias(), foo.getKeyAlias());
         assertEquals(debug.getKeyPassword(), foo.getKeyPassword());

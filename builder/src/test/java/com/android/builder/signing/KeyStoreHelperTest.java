@@ -39,7 +39,7 @@ public class KeyStoreHelperTest extends TestCase {
         // create a default signing Config.
         SigningConfig signingConfig = new SigningConfig();
         signingConfig.initDebug();
-        signingConfig.setStoreLocation(keystoreFile.getAbsolutePath());
+        signingConfig.setStoreFile(keystoreFile);
 
         // "now" is just slightly before the key was created
         long now = System.currentTimeMillis();

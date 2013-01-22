@@ -19,6 +19,7 @@ package com.android.builder.signing;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.google.common.base.Objects;
 
+import java.io.File;
 import java.security.KeyStore;
 
 /**
@@ -30,7 +31,7 @@ public class SigningConfig {
     public static final String DFAULT_PASSWORD = "android";
     public static final String DEFAULT_ALIAS = "AndroidDebugKey";
 
-    private String mStoreLocation = null;
+    private File mStoreFile = null;
     private String mStorePassword = null;
     private String mKeyAlias = null;
     private String mKeyPassword = null;
@@ -48,18 +49,18 @@ public class SigningConfig {
      * @throws AndroidLocationException if the debug keystore location cannot be found
      */
     public void initDebug() throws AndroidLocationException {
-        mStoreLocation = KeystoreHelper.defaultDebugKeystoreLocation();
+        mStoreFile = new File(KeystoreHelper.defaultDebugKeystoreLocation());
         mStorePassword = DFAULT_PASSWORD;
         mKeyAlias = DEFAULT_ALIAS;
         mKeyPassword = DFAULT_PASSWORD;
     }
 
-    public String getStoreLocation() {
-        return mStoreLocation;
+    public File getStoreFile() {
+        return mStoreFile;
     }
 
-    public SigningConfig setStoreLocation(String storeLocation) {
-        mStoreLocation = storeLocation;
+    public SigningConfig setStoreFile(File storeFile) {
+        mStoreFile = storeFile;
         return this;
     }
 
@@ -99,7 +100,7 @@ public class SigningConfig {
     }
 
     public boolean isSigningReady() {
-        return mStoreLocation != null &&
+        return mStoreFile != null &&
                 mStorePassword != null &&
                 mKeyAlias != null &&
                 mKeyPassword != null;
@@ -121,9 +122,9 @@ public class SigningConfig {
                 !mKeyPassword.equals(that.mKeyPassword) :
                 that.mKeyPassword != null)
             return false;
-        if (mStoreLocation != null ?
-                !mStoreLocation.equals(that.mStoreLocation) :
-                that.mStoreLocation != null)
+        if (mStoreFile != null ?
+                !mStoreFile.equals(that.mStoreFile) :
+                that.mStoreFile != null)
             return false;
         if (mStorePassword != null ?
                 !mStorePassword.equals(that.mStorePassword) :
@@ -140,8 +141,8 @@ public class SigningConfig {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + (mStoreLocation != null ?
-                mStoreLocation.hashCode() : 0);
+        result = 31 * result + (mStoreFile != null ?
+                mStoreFile.hashCode() : 0);
         result = 31 * result + (mStorePassword != null ?
                 mStorePassword.hashCode() : 0);
         result = 31 * result + (mKeyAlias != null ? mKeyAlias.hashCode() : 0);
@@ -153,7 +154,7 @@ public class SigningConfig {
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("storeLocation", mStoreLocation)
+                .add("storeFile", mStoreFile.getAbsolutePath())
                 .add("storePassword", mStorePassword)
                 .add("keyAlias", mKeyAlias)
                 .add("keyPassword", mKeyPassword)
