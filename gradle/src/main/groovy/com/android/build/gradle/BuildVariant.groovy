@@ -18,7 +18,7 @@ package com.android.build.gradle
 
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
-import com.android.build.gradle.tasks.AidlCompile
+import com.android.build.gradle.internal.tasks.AidlCompileTask
 import com.android.build.gradle.tasks.Dex
 import com.android.build.gradle.tasks.GenerateBuildConfig
 import com.android.build.gradle.tasks.MergeResources
@@ -128,7 +128,7 @@ public interface BuildVariant {
      * Returns the AIDL compilation task.
      */
     @NonNull
-    AidlCompile getAidlCompile()
+    AidlCompileTask getAidlCompile()
 
     /**
      * Returns the image processing task.
