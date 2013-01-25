@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle
 
+import com.android.SdkConstants
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
@@ -152,6 +153,9 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         // Add a task to process the manifest(s)
         createProcessManifestTask(variant, DIR_BUNDLES)
 
+        // Add a task to compile renderscript files.
+        createRenderscriptTask(variant)
+
         // Add a task to merge the resource folders
         createMergeResourcesTask(variant, "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/res",
                 false /*process9Patch*/)
@@ -186,8 +190,17 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         Copy packageAidl = project.tasks.add("package${variant.name}Aidl", Copy)
         // packageAidl from 3 sources. the order is important to make sure the override works well.
         packageAidl.from(defaultConfigData.sourceSet.aidl.directories,
-                buildTypeData.sourceSet.aidl.directories)
-        packageAidl.into(project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}/aidl"))
+                buildTypeData.sourceSet.aidl.directories).include("**/*.aidl")
+        packageAidl.into(project.file(
+                "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_AIDL"))
+
+        // package the renderscript header files files into the bundle folder
+        Copy packageRenderscript = project.tasks.add("package${variant.name}Renderscript", Copy)
+        // packageAidl from 3 sources. the order is important to make sure the override works well.
+        packageRenderscript.from(defaultConfigData.sourceSet.renderscript.directories,
+                buildTypeData.sourceSet.renderscript.directories).include("**/*.rsh")
+        packageRenderscript.into(project.file(
+                "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_RENDERSCRIPT"))
 
         // package the R symbol text file into the bundle folder
         Copy packageSymbol = project.tasks.add("package${variant.name}Symbols", Copy)
@@ -196,7 +209,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         packageSymbol.into(project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}"))
 
         Zip bundle = project.tasks.add("bundle${variant.name}", Zip)
-        bundle.dependsOn jar, packageAidl, packageSymbol
+        bundle.dependsOn jar, packageAidl, packageSymbol, packageRenderscript
         bundle.setDescription("Assembles a bundle containing the library in ${variant.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
         bundle.extension = BuilderConstants.EXT_LIB_ARCHIVE

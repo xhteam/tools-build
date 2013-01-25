@@ -87,7 +87,8 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
      *
      * @see #incrementalSetup()
      */
-    protected abstract void compileSingleFile(File file, Object data, DependencyFileProcessor dependencyFileProcessor)
+    protected abstract void compileSingleFile(File file, Object data,
+                                              DependencyFileProcessor dependencyFileProcessor)
 
     @Override
     protected void doFullTaskAction() {

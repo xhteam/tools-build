@@ -61,6 +61,11 @@ public interface AndroidDependency extends ManifestDependency, SymbolFileProvide
     File getAidlFolder();
 
     /**
+     * Returns the location of the renderscript import folder.
+     */
+    File getRenderscriptFolder();
+
+    /**
      * Returns the location of the proguard files.
      */
     File getProguardRules();

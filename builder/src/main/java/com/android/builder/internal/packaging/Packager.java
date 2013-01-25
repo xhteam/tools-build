@@ -157,7 +157,7 @@ public final class Packager implements IArchiveBuilder {
 
     private SignedJarBuilder mBuilder = null;
     private final ILogger mLogger;
-    private boolean mDebugJniMode = false;
+    private boolean mJniDebugMode = false;
     private boolean mIsSealed = false;
 
     private final NullZipFilter mNullFilter = new NullZipFilter();
@@ -273,7 +273,7 @@ public final class Packager implements IArchiveBuilder {
     }
 
     /**
-     * Sets the debug mode. In debug mode, when native libraries are present, the packaging
+     * Sets the JNI debug mode. In debug mode, when native libraries are present, the packaging
      * will also include one or more copies of gdbserver in the final APK file.
      *
      * These are used for debugging native code, to ensure that gdbserver is accessible to the
@@ -283,10 +283,10 @@ public final class Packager implements IArchiveBuilder {
      *
      * the gbdserver files are placed in the libs/abi/ folders automatically by the NDK.
      *
-     * @param debugJniMode the debug-jni mode flag.
+     * @param jniDebugMode the jni-debug mode flag.
      */
-    public void setDebugJniMode(boolean debugJniMode) {
-        mDebugJniMode = debugJniMode;
+    public void setJniDebugMode(boolean jniDebugMode) {
+        mJniDebugMode = jniDebugMode;
     }
 
     /**
@@ -401,7 +401,7 @@ public final class Packager implements IArchiveBuilder {
      * @throws DuplicateFileException if a file conflicts with another already added to the APK
      *                                   at the same location inside the APK archive.
      *
-     * @see #setDebugJniMode(boolean)
+     * @see #setJniDebugMode(boolean)
      */
     public void addNativeLibraries(String jniLibLocation)
             throws PackagerException, SealedPackageException, DuplicateFileException {
@@ -435,7 +435,7 @@ public final class Packager implements IArchiveBuilder {
                             // are gdbserver executables
                             if (lib.isFile() &&
                                     (PATTERN_NATIVELIB_EXT.matcher(lib.getName()).matches() ||
-                                            (mDebugJniMode &&
+                                            (mJniDebugMode &&
                                                     SdkConstants.FN_GDBSERVER.equals(
                                                             lib.getName())))) {
                                 String path =

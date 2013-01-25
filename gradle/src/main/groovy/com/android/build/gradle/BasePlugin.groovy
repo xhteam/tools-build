@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.SdkConstants
 import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.LoggerWrapper
@@ -29,7 +28,6 @@ import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.tasks.DependencyReportTask
-import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.build.gradle.internal.tasks.InstallTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.PrepareLibraryTask
@@ -46,6 +44,7 @@ import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ProcessAppManifest
 import com.android.build.gradle.tasks.ProcessTestManifest
+import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
 import com.android.builder.AndroidDependency
@@ -82,7 +81,6 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
 import org.gradle.util.GUtil
-
 /**
  * Base class for all Android plugins
  */
@@ -334,8 +332,37 @@ public abstract class BasePlugin {
         }
     }
 
+    protected void createRenderscriptTask(ApplicationVariant variant) {
+        VariantConfiguration config = variant.config
+
+        def renderscriptTask = project.tasks.add("compile${variant.name}Renderscript",
+                RenderscriptCompile)
+        variant.renderscriptCompileTask = renderscriptTask
+
+        renderscriptTask.dependsOn variant.prepareDependenciesTask
+        renderscriptTask.plugin = this
+        renderscriptTask.variant = variant
+        renderscriptTask.incrementalFolder =
+            project.file("$project.buildDir/incremental/rs/$variant.dirName")
+
+        renderscriptTask.targetApi = config.mergedFlavor.renderscriptTargetApi
+        renderscriptTask.debugBuild = config.buildType.renderscriptDebugBuild
+        renderscriptTask.optimLevel = config.buildType.renderscriptOptimLevel
+
+        renderscriptTask.conventionMapping.sourceDirs = { config.renderscriptSourceList }
+        renderscriptTask.conventionMapping.importDirs = { config.renderscriptImports }
+
+        renderscriptTask.conventionMapping.sourceOutputDir = {
+            project.file("$project.buildDir/source/rs/$variant.dirName")
+        }
+        renderscriptTask.conventionMapping.resOutputDir = {
+            project.file("$project.buildDir/res/rs/$variant.dirName")
+        }
+    }
+
     protected void createMergeResourcesTask(ApplicationVariant variant, boolean process9Patch) {
-        createMergeResourcesTask(variant, "$project.buildDir/res/$variant.dirName", process9Patch)
+        createMergeResourcesTask(variant, "$project.buildDir/res/all/$variant.dirName",
+                process9Patch)
     }
 
     protected void createMergeResourcesTask(ApplicationVariant variant, String location,
@@ -343,6 +370,7 @@ public abstract class BasePlugin {
         def mergeResourcesTask = project.tasks.add("merge${variant.name}Resources", MergeResources)
         variant.mergeResourcesTask = mergeResourcesTask
 
+        mergeResourcesTask.dependsOn variant.renderscriptCompileTask
         mergeResourcesTask.plugin = this
         mergeResourcesTask.variant = variant
         mergeResourcesTask.incrementalFolder =
@@ -350,15 +378,13 @@ public abstract class BasePlugin {
 
         mergeResourcesTask.process9Patch = process9Patch
 
-        mergeResourcesTask.conventionMapping.inputResourceSets = { variant.config.resourceSets }
-        mergeResourcesTask.conventionMapping.rawInputFolders = {
-            IncrementalTask.flattenSourceSets(variant.config.resourceSets)
+        mergeResourcesTask.conventionMapping.inputResourceSets = {
+            variant.config.getResourceSets(variant.renderscriptCompileTask.getResOutputDir())
         }
 
         mergeResourcesTask.conventionMapping.outputDir = {
             project.file(location)
         }
-
     }
 
     protected void createBuildConfigTask(ApplicationVariant variant) {
@@ -504,6 +530,7 @@ public abstract class BasePlugin {
         sourceList.add({ variant.processResourcesTask.sourceOutputDir })
         sourceList.add({ variant.generateBuildConfigTask.sourceOutputDir })
         sourceList.add({ variant.aidlCompileTask.sourceOutputDir })
+        sourceList.add({ variant.renderscriptCompileTask.sourceOutputDir })
 
         if (config.getType() != VariantConfiguration.Type.TEST) {
             sourceList.add(((AndroidSourceSet) config.buildTypeSourceSet).java)
@@ -574,6 +601,9 @@ public abstract class BasePlugin {
 
         // Add a task to process the manifest
         createProcessTestManifestTask(variant, "manifests")
+
+        // Add a task to compile renderscript files.
+        createRenderscriptTask(variant)
 
         // Add a task to merge the resource folders
         createMergeResourcesTask(variant, true /*process9Patch*/)
@@ -690,9 +720,9 @@ public abstract class BasePlugin {
             getOptionalDir(variant.processJavaResources.destinationDir)
         }
 
-        packageApp.conventionMapping.debugJni = { config.buildType.debugJniBuild }
+        packageApp.conventionMapping.jniDebugBuild = { config.buildType.jniDebugBuild }
 
-        SigningConfigDsl sc = config.signingConfig
+        SigningConfigDsl sc = (SigningConfigDsl) config.signingConfig
         packageApp.conventionMapping.signingConfig = { sc }
         if (sc != null) {
             ValidateSigningTask validateSigningTask = validateSigningTaskMap.get(sc)

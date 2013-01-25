@@ -14,6 +14,7 @@ tests/applibtest/*/build
 tests/flavorlib/*/build
 tests/flavorlibWithFailedTests/*/build
 tests/libsTest/*/build
+tests/renderscriptInLib/*/build
 tests/repo/*/build
 /repo
 /out

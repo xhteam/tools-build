@@ -26,7 +26,9 @@ public class BuildType extends BuildConfig {
 
     private final String mName;
     private boolean mDebuggable = false;
-    private boolean mDebugJniBuild = false;
+    private boolean mJniDebugBuild = false;
+    private boolean mRenderscriptDebugBuild = false;
+    private int mRenderscriptOptimLevel = 3;
     private String mPackageNameSuffix = null;
     private String mVersionNameSuffix = null;
     private boolean mRunProguard = false;
@@ -52,13 +54,29 @@ public class BuildType extends BuildConfig {
         return mDebuggable;
     }
 
-    public BuildType setDebugJniBuild(boolean debugJniBuild) {
-        mDebugJniBuild = debugJniBuild;
+    public BuildType setJniDebugBuild(boolean jniDebugBuild) {
+        mJniDebugBuild = jniDebugBuild;
         return this;
     }
 
-    public boolean isDebugJniBuild() {
-        return mDebugJniBuild;
+    public boolean isJniDebugBuild() {
+        return mJniDebugBuild;
+    }
+
+    public boolean isRenderscriptDebugBuild() {
+        return mRenderscriptDebugBuild;
+    }
+
+    public void setRenderscriptDebugBuild(boolean renderscriptDebugBuild) {
+        mRenderscriptDebugBuild = renderscriptDebugBuild;
+    }
+
+    public int getRenderscriptOptimLevel() {
+        return mRenderscriptOptimLevel;
+    }
+
+    public void setRenderscriptOptimLevel(int renderscriptOptimLevel) {
+        mRenderscriptOptimLevel = renderscriptOptimLevel;
     }
 
     public BuildType setPackageNameSuffix(@Nullable String packageNameSuffix) {
@@ -116,8 +134,10 @@ public class BuildType extends BuildConfig {
         BuildType buildType = (BuildType) o;
 
         if (!mName.equals(buildType.mName)) return false;
-        if (mDebugJniBuild != buildType.mDebugJniBuild) return false;
         if (mDebuggable != buildType.mDebuggable) return false;
+        if (mJniDebugBuild != buildType.mJniDebugBuild) return false;
+        if (mRenderscriptDebugBuild != buildType.mRenderscriptDebugBuild) return false;
+        if (mRenderscriptOptimLevel != buildType.mRenderscriptOptimLevel) return false;
         if (mRunProguard != buildType.mRunProguard) return false;
         if (mZipAlign != buildType.mZipAlign) return false;
         if (mPackageNameSuffix != null ?
@@ -141,7 +161,9 @@ public class BuildType extends BuildConfig {
         int result = super.hashCode();
         result = 31 * result + (mName.hashCode());
         result = 31 * result + (mDebuggable ? 1 : 0);
-        result = 31 * result + (mDebugJniBuild ? 1 : 0);
+        result = 31 * result + (mJniDebugBuild ? 1 : 0);
+        result = 31 * result + (mRenderscriptDebugBuild ? 1 : 0);
+        result = 31 * result + mRenderscriptOptimLevel;
         result = 31 * result + (mPackageNameSuffix != null ? mPackageNameSuffix.hashCode() : 0);
         result = 31 * result + (mVersionNameSuffix != null ? mVersionNameSuffix.hashCode() : 0);
         result = 31 * result + (mRunProguard ? 1 : 0);
@@ -155,7 +177,9 @@ public class BuildType extends BuildConfig {
         return Objects.toStringHelper(this)
                 .add("name", mName)
                 .add("debuggable", mDebuggable)
-                .add("debugJniBuild", mDebugJniBuild)
+                .add("jniDebugBuild", mJniDebugBuild)
+                .add("renderscriptDebugBuild", mRenderscriptDebugBuild)
+                .add("renderscriptOptimLevel", mRenderscriptOptimLevel)
                 .add("packageNameSuffix", mPackageNameSuffix)
                 .add("versionNameSuffix", mVersionNameSuffix)
                 .add("runProguard", mRunProguard)

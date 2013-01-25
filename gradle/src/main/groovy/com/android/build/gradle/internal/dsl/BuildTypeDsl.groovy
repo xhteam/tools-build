@@ -34,20 +34,20 @@ public class BuildTypeDsl extends BuildType implements Serializable {
     public void init(SigningConfig debugSigningConfig) {
         if (BuilderConstants.DEBUG.equals(getName())) {
             setDebuggable(true)
-            setDebugJniBuild(true)
+            setJniDebugBuild(true)
             setZipAlign(false)
 
             assert debugSigningConfig != null
             setSigningConfig(debugSigningConfig)
         } else if (BuilderConstants.RELEASE.equals(getName())) {
             setDebuggable(false)
-            setDebugJniBuild(false)
+            setJniDebugBuild(false)
         }
     }
 
     public BuildTypeDsl initWith(BuildType that) {
         setDebuggable(that.isDebuggable())
-        setDebugJniBuild(that.isDebugJniBuild())
+        setJniDebugBuild(that.isJniDebugBuild())
         setPackageNameSuffix(that.getPackageNameSuffix())
         setVersionNameSuffix(that.getVersionNameSuffix())
         setRunProguard(that.isRunProguard())

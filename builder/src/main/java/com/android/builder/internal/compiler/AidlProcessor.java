@@ -59,8 +59,7 @@ public class AidlProcessor implements SourceSearcher.SourceFileProcessor {
     }
 
     @Override
-    public void processFile(File sourceFile)
-            throws IOException, InterruptedException {
+    public void processFile(File sourceFile) throws IOException, InterruptedException {
         ArrayList<String> command = Lists.newArrayList();
 
         command.add(mAidlExecutable);

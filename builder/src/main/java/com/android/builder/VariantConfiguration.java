@@ -486,6 +486,7 @@ public class VariantConfiguration {
         return null;
     }
 
+    @NonNull
     public List<File> getManifestOverlays() {
         List<File> inputs = Lists.newArrayList();
 
@@ -516,7 +517,7 @@ public class VariantConfiguration {
      *
      * @return a list ResourceSet.
      */
-    @NonNull public List<ResourceSet> getResourceSets() {
+    @NonNull public List<ResourceSet> getResourceSets(@Nullable File generatedResFolder) {
         List<ResourceSet> resourceSets = Lists.newArrayList();
 
         // the list of dependency must be reversed to use the right overlay order.
@@ -534,6 +535,9 @@ public class VariantConfiguration {
 
         ResourceSet resourceSet = new ResourceSet(ProductFlavor.MAIN);
         resourceSet.addSources(mainResDirs);
+        if (generatedResFolder != null) {
+            resourceSet.addSource(generatedResFolder);
+        }
         resourceSets.add(resourceSet);
 
         // the list of flavor must be reversed to use the right overlay order.
@@ -558,6 +562,64 @@ public class VariantConfiguration {
         return resourceSets;
     }
 
+    /**
+     * Returns all the renderscript import folder that are outside of the current project.
+     */
+    @NonNull
+    public List<File> getRenderscriptImports() {
+        List<File> list = Lists.newArrayList();
+
+        for (AndroidDependency lib : mFlatLibraries) {
+            File rsLib = lib.getRenderscriptFolder();
+            if (rsLib != null && rsLib.isDirectory()) {
+                list.add(rsLib);
+            }
+        }
+
+        return list;
+    }
+
+    /**
+     * Returns all the renderscript source folder from the main config, the flavors and the
+     * build type.
+     *
+     * @return a list of folders.
+     */
+    @NonNull
+    public List<File> getRenderscriptSourceList() {
+        List<File> sourceList = Lists.newArrayList();
+        sourceList.addAll(mDefaultSourceProvider.getRenderscriptDirectories());
+        if (mType != Type.TEST) {
+            sourceList.addAll(mBuildTypeSourceProvider.getRenderscriptDirectories());
+        }
+
+        if (hasFlavors()) {
+            for (SourceProvider flavorSourceSet : mFlavorSourceProviders) {
+                sourceList.addAll(flavorSourceSet.getRenderscriptDirectories());
+            }
+        }
+
+        return sourceList;
+    }
+
+    /**
+     * Returns all the aidl import folder that are outside of the current project.
+     */
+    @NonNull
+    public List<File> getAidlImports() {
+        List<File> list = Lists.newArrayList();
+
+        for (AndroidDependency lib : mFlatLibraries) {
+            File aidlLib = lib.getAidlFolder();
+            if (aidlLib != null && aidlLib.isDirectory()) {
+                list.add(aidlLib);
+            }
+        }
+
+        return list;
+    }
+
+    @NonNull
     public List<File> getAidlSourceList() {
         List<File> sourceList = Lists.newArrayList();
         sourceList.addAll(mDefaultSourceProvider.getAidlDirectories());
@@ -572,22 +634,6 @@ public class VariantConfiguration {
         }
 
         return sourceList;
-    }
-
-    /**
-     * Returns all the aidl import folder that are outside of the current project.
-     */
-    public List<File> getAidlImports() {
-        List<File> list = Lists.newArrayList();
-
-        for (AndroidDependency lib : mFlatLibraries) {
-            File aidlLib = lib.getAidlFolder();
-            if (aidlLib != null && aidlLib.isDirectory()) {
-                list.add(aidlLib);
-            }
-        }
-
-        return list;
     }
 
     /**

@@ -35,7 +35,9 @@ public class MergeResources extends IncrementalTask {
 
     // fake input to detect changes. Not actually used by the task
     @InputFiles
-    Iterable<File> rawInputFolders
+    Iterable<File> getRawInputFolders() {
+        return IncrementalTask.flattenSourceSets(getInputResourceSets())
+    }
 
     @Input
     boolean process9Patch

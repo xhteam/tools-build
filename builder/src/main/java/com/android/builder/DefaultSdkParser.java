@@ -16,6 +16,7 @@
 
 package com.android.builder;
 
+import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.SdkManager;
@@ -79,7 +80,6 @@ public class DefaultSdkParser implements SdkParser {
             return null;
         }
 
-
         Reader reader = null;
         try {
             reader = new FileReader(new File(platformTools, FN_SOURCE_PROP));
@@ -101,5 +101,35 @@ public class DefaultSdkParser implements SdkParser {
         }
 
         return null;
+    }
+
+    @Override
+    public File getAapt() {
+        File platformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
+        if (!platformTools.isDirectory()) {
+            return null;
+        }
+
+        return new File(platformTools, SdkConstants.FN_AAPT);
+    }
+
+    @Override
+    public File getAidlCompiler() {
+        File platformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
+        if (!platformTools.isDirectory()) {
+            return null;
+        }
+
+        return new File(platformTools, SdkConstants.FN_AIDL);
+    }
+
+    @Override
+    public File getRenderscriptCompiler() {
+        File platformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
+        if (!platformTools.isDirectory()) {
+            return null;
+        }
+
+        return new File(platformTools, SdkConstants.FN_RENDERSCRIPT);
     }
 }

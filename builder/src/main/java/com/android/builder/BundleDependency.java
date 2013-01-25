@@ -96,6 +96,11 @@ public abstract class BundleDependency implements AndroidDependency {
     }
 
     @Override
+    public File getRenderscriptFolder() {
+        return new File(mBundleFolder, SdkConstants.FD_RENDERSCRIPT);
+    }
+
+    @Override
     public File getProguardRules() {
         return new File(mBundleFolder, "proguard.txt");
     }

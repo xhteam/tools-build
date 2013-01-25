@@ -37,6 +37,7 @@ public class ProductFlavor extends BuildConfig {
     private final String mName;
     private int mMinSdkVersion = -1;
     private int mTargetSdkVersion = -1;
+    private int mRenderscriptTargetApi = -1;
     private int mVersionCode = -1;
     private String mVersionName = null;
     private String mPackageName = null;
@@ -123,6 +124,14 @@ public class ProductFlavor extends BuildConfig {
         return mTargetSdkVersion;
     }
 
+    public int getRenderscriptTargetApi() {
+        return mRenderscriptTargetApi;
+    }
+
+    public void setRenderscriptTargetApi(int renderscriptTargetApi) {
+        mRenderscriptTargetApi = renderscriptTargetApi;
+    }
+
     public ProductFlavor setTestPackageName(String testPackageName) {
         mTestPackageName = testPackageName;
         return this;
@@ -160,6 +169,8 @@ public class ProductFlavor extends BuildConfig {
 
         flavor.mMinSdkVersion = chooseInt(mMinSdkVersion, base.mMinSdkVersion);
         flavor.mTargetSdkVersion = chooseInt(mTargetSdkVersion, base.mTargetSdkVersion);
+        flavor.mRenderscriptTargetApi = chooseInt(mRenderscriptTargetApi,
+                base.mRenderscriptTargetApi);
 
         flavor.mVersionCode = chooseInt(mVersionCode, base.mVersionCode);
         flavor.mVersionName = chooseString(mVersionName, base.mVersionName);
@@ -195,6 +206,7 @@ public class ProductFlavor extends BuildConfig {
         if (!mName.equals(that.mName)) return false;
         if (mMinSdkVersion != that.mMinSdkVersion) return false;
         if (mTargetSdkVersion != that.mTargetSdkVersion) return false;
+        if (mRenderscriptTargetApi != that.mRenderscriptTargetApi) return false;
         if (mVersionCode != that.mVersionCode) return false;
         if (mPackageName != null ?
                 !mPackageName.equals(that.mPackageName) :
@@ -223,6 +235,7 @@ public class ProductFlavor extends BuildConfig {
         result = 31 * result + mName.hashCode();
         result = 31 * result + mMinSdkVersion;
         result = 31 * result + mTargetSdkVersion;
+        result = 31 * result + mRenderscriptTargetApi;
         result = 31 * result + mVersionCode;
         result = 31 * result + (mVersionName != null ? mVersionName.hashCode() : 0);
         result = 31 * result + (mPackageName != null ? mPackageName.hashCode() : 0);
@@ -239,6 +252,7 @@ public class ProductFlavor extends BuildConfig {
                 .add("name", mName)
                 .add("minSdkVersion", mMinSdkVersion)
                 .add("targetSdkVersion", mTargetSdkVersion)
+                .add("renderscriptTargetApi", mRenderscriptTargetApi)
                 .add("versionCode", mVersionCode)
                 .add("versionName", mVersionName)
                 .add("packageName", mPackageName)

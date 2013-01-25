@@ -32,6 +32,7 @@ public class ProductFlavorTest extends TestCase {
         mCustom = new ProductFlavor("custom");
         mCustom.setMinSdkVersion(42);
         mCustom.setTargetSdkVersion(43);
+        mCustom.setRenderscriptTargetApi(17);
         mCustom.setVersionCode(44);
         mCustom.setVersionName("42.0");
         mCustom.setPackageName("com.forty.two");
@@ -44,6 +45,7 @@ public class ProductFlavorTest extends TestCase {
 
         assertEquals(42, flavor.getMinSdkVersion());
         assertEquals(43, flavor.getTargetSdkVersion());
+        assertEquals(17, flavor.getRenderscriptTargetApi());
         assertEquals(44, flavor.getVersionCode());
         assertEquals("42.0", flavor.getVersionName());
         assertEquals("com.forty.two", flavor.getPackageName());
@@ -56,6 +58,7 @@ public class ProductFlavorTest extends TestCase {
 
         assertEquals(42, flavor.getMinSdkVersion());
         assertEquals(43, flavor.getTargetSdkVersion());
+        assertEquals(17, flavor.getRenderscriptTargetApi());
         assertEquals(44, flavor.getVersionCode());
         assertEquals("42.0", flavor.getVersionName());
         assertEquals("com.forty.two", flavor.getPackageName());
@@ -68,6 +71,7 @@ public class ProductFlavorTest extends TestCase {
 
         assertEquals(-1, flavor.getMinSdkVersion());
         assertEquals(-1, flavor.getTargetSdkVersion());
+        assertEquals(-1, flavor.getRenderscriptTargetApi());
         assertEquals(-1, flavor.getVersionCode());
         assertNull(flavor.getVersionName());
         assertNull(flavor.getPackageName());
