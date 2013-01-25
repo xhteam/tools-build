@@ -16,16 +16,16 @@
 package com.android.build.gradle.internal
 
 import com.android.build.gradle.BasePlugin
-import com.android.build.gradle.internal.tasks.AidlCompileTask
-import com.android.build.gradle.internal.tasks.DexTask
-import com.android.build.gradle.internal.tasks.GenerateBuildConfigTask
-import com.android.build.gradle.internal.tasks.MergeResourcesTask
-import com.android.build.gradle.internal.tasks.PackageApplicationTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
-import com.android.build.gradle.internal.tasks.ProcessResourcesTask
 import com.android.build.gradle.internal.tasks.TestFlavorTask
-import com.android.build.gradle.internal.tasks.ZipAlignTask
+import com.android.build.gradle.tasks.AidlCompile
+import com.android.build.gradle.tasks.Dex
+import com.android.build.gradle.tasks.GenerateBuildConfig
+import com.android.build.gradle.tasks.MergeResources
+import com.android.build.gradle.tasks.PackageApplication
+import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ProcessManifest
+import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
 import com.android.builder.ProductFlavor
 import com.android.builder.VariantConfiguration
@@ -44,17 +44,17 @@ public abstract class ApplicationVariant {
     PrepareDependenciesTask prepareDependenciesTask
 
     ProcessManifest processManifestTask
-    AidlCompileTask aidlCompileTask
-    MergeResourcesTask mergeResourcesTask
-    ProcessResourcesTask processResourcesTask
-    GenerateBuildConfigTask generateBuildConfigTask
+    AidlCompile aidlCompileTask
+    MergeResources mergeResourcesTask
+    ProcessAndroidResources processResourcesTask
+    GenerateBuildConfig generateBuildConfigTask
 
     JavaCompile javaCompileTask
     Copy processJavaResources
 
-    DexTask dexTask
-    PackageApplicationTask packageApplicationTask
-    ZipAlignTask zipAlignTask
+    Dex dexTask
+    PackageApplication packageApplicationTask
+    ZipAlign zipAlignTask
 
     Zip packageLibTask
 

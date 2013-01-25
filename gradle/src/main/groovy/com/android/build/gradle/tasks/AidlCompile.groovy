@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal.tasks
+package com.android.build.gradle.tasks
 
 import com.android.build.gradle.internal.tasks.DependencyBasedCompileTask
 import com.android.builder.compiling.DependencyFileProcessor
 import com.google.common.collect.Lists
 import org.gradle.api.tasks.InputFiles
+
 /**
  * Task to compile aidl files. Supports incremental update.
  */
-public class AidlCompileTask extends DependencyBasedCompileTask {
+public class AidlCompile extends DependencyBasedCompileTask {
 
     // ----- PRIVATE TASK API -----
 

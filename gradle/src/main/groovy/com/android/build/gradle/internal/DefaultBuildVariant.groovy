@@ -16,13 +16,13 @@
 package com.android.build.gradle.internal
 
 import com.android.build.gradle.BuildVariant
-import com.android.build.gradle.internal.tasks.AidlCompileTask
+import com.android.build.gradle.tasks.AidlCompile
 import com.android.build.gradle.tasks.Dex
 import com.android.build.gradle.tasks.GenerateBuildConfig
 import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
+import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ProcessManifest
-import com.android.build.gradle.tasks.ProcessResources
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
@@ -98,7 +98,7 @@ public class DefaultBuildVariant implements BuildVariant {
     }
 
     @Override
-    AidlCompileTask getAidlCompile() {
+    AidlCompile getAidlCompile() {
         return variant.aidlCompileTask
     }
 
@@ -108,7 +108,7 @@ public class DefaultBuildVariant implements BuildVariant {
     }
 
     @Override
-    ProcessResources getProcessResources() {
+    ProcessAndroidResources getProcessResources() {
         return variant.processResourcesTask
     }
 

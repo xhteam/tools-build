@@ -13,18 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.build.gradle.internal.tasks
+package com.android.build.gradle.tasks
 
 import com.android.build.gradle.internal.dsl.AaptOptionsImpl
-import com.android.build.gradle.tasks.ProcessResources
+import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.builder.SymbolFileProvider
 import com.android.builder.VariantConfiguration
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.OutputFile
 
-public class ProcessResourcesTask extends ProcessResources {
+public class ProcessAndroidResources extends IncrementalTask {
+
+    // ----- PUBLIC TASK API -----
+
+    @InputFile
+    File manifestFile
+
+    @InputDirectory
+    File mergedResFolder
+
+    @OutputDirectory @Optional
+    File sourceOutputDir
+
+    @OutputDirectory @Optional
+    File textSymbolDir
+
+    @OutputFile @Optional
+    File packageFile
+
+    @OutputFile @Optional
+    File proguardFile
+
+    // ----- PRIVATE TASK API -----
 
     @InputDirectory @Optional
     File assetsDir
@@ -60,4 +85,5 @@ public class ProcessResourcesTask extends ProcessResources {
                 getDebuggable(),
                 getAaptOptions())
     }
+
 }

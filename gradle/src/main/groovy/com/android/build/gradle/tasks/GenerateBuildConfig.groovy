@@ -16,10 +16,38 @@
 package com.android.build.gradle.tasks
 
 import com.android.build.gradle.internal.tasks.IncrementalTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
 
-public abstract class GenerateBuildConfig extends IncrementalTask {
+public class GenerateBuildConfig extends IncrementalTask {
+
+    // ----- PUBLIC TASK API -----
 
     @OutputDirectory
     File sourceOutputDir
+
+    // ----- PRIVATE TASK API -----
+
+    @Input
+    String packageName
+
+    @Input
+    boolean debuggable
+
+    @Input
+    List<String> javaLines;
+
+    @Override
+    protected void doFullTaskAction() {
+        // must clear the folder in case the packagename changed, otherwise,
+        // there'll be two classes.
+        File destinationDir = getSourceOutputDir()
+        emptyFolder(destinationDir)
+
+        getBuilder().generateBuildConfig(
+                getPackageName(),
+                isDebuggable(),
+                getJavaLines(),
+                getSourceOutputDir().absolutePath);
+    }
 }

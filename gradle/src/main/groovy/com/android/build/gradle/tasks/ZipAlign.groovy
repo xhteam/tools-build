@@ -16,13 +16,33 @@
 package com.android.build.gradle.tasks
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
+import org.gradle.api.tasks.TaskAction
 
-public abstract class ZipAlign extends DefaultTask {
+public class ZipAlign extends DefaultTask {
+
+    // ----- PUBLIC TASK API -----
+
     @OutputFile
     File outputFile
 
     @InputFile
     File inputFile
+
+    // ----- PRIVATE TASK API -----
+
+    @Input
+    File sdkDir
+
+    @TaskAction
+    void zipAlign() {
+        project.exec {
+            executable = new File(getSdkDir(), "tools${File.separator}zipalign")
+            args '-f', '4'
+            args getInputFile()
+            args getOutputFile()
+        }
+    }
 }
