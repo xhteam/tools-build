@@ -19,13 +19,14 @@ package com.android.builder;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
+import com.android.builder.compiling.DependencyFileProcessor;
 import com.android.builder.internal.BuildConfigGenerator;
 import com.android.builder.internal.CommandLineRunner;
 import com.android.builder.internal.SymbolLoader;
 import com.android.builder.internal.SymbolWriter;
 import com.android.builder.internal.TestManifestGenerator;
 import com.android.builder.internal.compiler.AidlProcessor;
-import com.android.builder.internal.compiler.SourceGenerator;
+import com.android.builder.internal.compiler.SourceSearcher;
 import com.android.builder.internal.packaging.JavaResourceProcessor;
 import com.android.builder.internal.packaging.Packager;
 import com.android.builder.packaging.DuplicateFileException;
@@ -52,6 +53,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -71,7 +73,7 @@ import static com.google.common.base.Preconditions.checkState;
  * {@link #processManifest(java.io.File, java.util.List, java.util.List, int, String, int, int, String)}
  * {@link #processTestManifest(String, int, String, String, java.util.List, String)}
  * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
- * {@link #compileAidl(java.util.List, java.io.File, java.util.List)}
+ * {@link #compileAllAidlFiles(java.util.List, java.io.File, java.util.List, com.android.builder.compiling.DependencyFileProcessor)}
  * {@link #convertByteCode(Iterable, Iterable, String, DexOptions, boolean)}
  * {@link #packageApk(String, String, java.util.List, String, String, boolean, com.android.builder.signing.SigningConfig, String)}
  *
@@ -81,6 +83,13 @@ import static com.google.common.base.Preconditions.checkState;
 public class AndroidBuilder {
 
     private static final FullRevision MIN_PLATFORM_TOOLS_REV = new FullRevision(16, 0, 2);
+
+    private static final DependencyFileProcessor sNoOpDependencyFileProcessor = new DependencyFileProcessor() {
+        @Override
+        public boolean processFile(File dependencyFile) {
+            return true;
+        }
+    };
 
     private final SdkParser mSdkParser;
     private final ILogger mLogger;
@@ -632,24 +641,68 @@ public class AndroidBuilder {
     }
 
     /**
-     * Compiles all the aidl files.
+     * Compiles all the aidl files found in the given source folders.
      *
      * @param sourceFolders all the source folders to find files to compile
      * @param sourceOutputDir the output dir in which to generate the source code
      * @param importFolders import folders
+     * @param dependencyFileProcessor the dependencyFileProcessor to record the dependencies
+     *                                of the compilation.
      * @throws IOException
      * @throws InterruptedException
      */
-    public void compileAidl(@NonNull List<File> sourceFolders,
-                            @NonNull File sourceOutputDir,
-                            @NonNull List<File> importFolders)
-            throws IOException, InterruptedException {
+    public void compileAllAidlFiles(@NonNull List<File> sourceFolders,
+                                    @NonNull File sourceOutputDir,
+                                    @NonNull List<File> importFolders,
+                                    @Nullable DependencyFileProcessor dependencyFileProcessor)
+            throws IOException, InterruptedException, ExecutionException {
         checkState(mTarget != null, "Target not set.");
         checkNotNull(sourceFolders, "sourceFolders cannot be null.");
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
 
-        SourceGenerator compiler = new SourceGenerator(mLogger);
+        @SuppressWarnings("deprecation")
+        String aidlPath = mTarget.getPath(IAndroidTarget.AIDL);
+
+        List<File> fullImportList = Lists.newArrayListWithCapacity(
+                sourceFolders.size() + importFolders.size());
+        fullImportList.addAll(sourceFolders);
+        fullImportList.addAll(importFolders);
+
+        AidlProcessor processor = new AidlProcessor(
+                aidlPath,
+                mTarget.getPath(IAndroidTarget.ANDROID_AIDL),
+                fullImportList,
+                sourceOutputDir,
+                dependencyFileProcessor != null ?
+                        dependencyFileProcessor : sNoOpDependencyFileProcessor,
+                mCmdLineRunner);
+
+        SourceSearcher searcher = new SourceSearcher(sourceFolders, "aidl");
+        searcher.setUseExecutor(true);
+        searcher.search(processor);
+    }
+
+    /**
+     * Compiles the given aidl file.
+     *
+     * @param aidlFile the AIDL file to compile
+     * @param sourceOutputDir the output dir in which to generate the source code
+     * @param importFolders all the import folders, including the source folder.
+     * @param dependencyFileProcessor the dependencyFileProcessor to record the dependencies
+     *                                of the compilation.
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void compileAidlFile(@NonNull File aidlFile,
+                                @NonNull File sourceOutputDir,
+                                @NonNull List<File> importFolders,
+                                @Nullable DependencyFileProcessor dependencyFileProcessor)
+            throws IOException, InterruptedException {
+        checkState(mTarget != null, "Target not set.");
+        checkNotNull(aidlFile, "aidlFile cannot be null.");
+        checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
+        checkNotNull(importFolders, "importFolders cannot be null.");
 
         @SuppressWarnings("deprecation")
         String aidlPath = mTarget.getPath(IAndroidTarget.AIDL);
@@ -658,9 +711,12 @@ public class AndroidBuilder {
                 aidlPath,
                 mTarget.getPath(IAndroidTarget.ANDROID_AIDL),
                 importFolders,
+                sourceOutputDir,
+                dependencyFileProcessor != null ?
+                        dependencyFileProcessor : sNoOpDependencyFileProcessor,
                 mCmdLineRunner);
 
-        compiler.processFiles(processor, sourceFolders, sourceOutputDir);
+        processor.processFile(aidlFile);
     }
 
     /**

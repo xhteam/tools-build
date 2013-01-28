@@ -17,9 +17,8 @@
 package com.android.builder.internal.compiler;
 
 import com.android.annotations.NonNull;
+import com.android.builder.compiling.DependencyFileProcessor;
 import com.android.builder.internal.CommandLineRunner;
-import com.android.builder.internal.compiler.SourceGenerator.DisplayType;
-import com.android.utils.ILogger;
 import com.google.common.collect.Lists;
 
 import java.io.File;
@@ -28,80 +27,63 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * A Source File processor for AIDL files. This compiles each aidl file found by the SourceSearcher.
  */
-public class AidlProcessor implements SourceGenerator.Processor {
+public class AidlProcessor implements SourceSearcher.SourceFileProcessor {
 
+    @NonNull
     private final String mAidlExecutable;
+    @NonNull
     private final String mFrameworkLocation;
+    @NonNull
     private final List<File> mImportFolders;
+    @NonNull
+    private final File mSourceOutputDir;
+    @NonNull
+    private final DependencyFileProcessor mDependencyFileProcessor;
+    @NonNull
     private final CommandLineRunner mRunner;
 
     public AidlProcessor(@NonNull String aidlExecutable,
                          @NonNull String frameworkLocation,
                          @NonNull List<File> importFolders,
+                         @NonNull File sourceOutputDir,
+                         @NonNull DependencyFileProcessor dependencyFileProcessor,
                          @NonNull CommandLineRunner runner) {
         mAidlExecutable = aidlExecutable;
         mFrameworkLocation = frameworkLocation;
         mImportFolders = importFolders;
+        mSourceOutputDir = sourceOutputDir;
+        mDependencyFileProcessor = dependencyFileProcessor;
         mRunner = runner;
     }
 
     @Override
-    public String getSourceFileExtension() {
-        return "aidl";
-    }
-
-    @Override
-    public void process(File filePath, List<File> sourceFolders, File sourceOutputDir,
-                        ILogger logger)
+    public void processFile(File sourceFile)
             throws IOException, InterruptedException {
-
         ArrayList<String> command = Lists.newArrayList();
 
         command.add(mAidlExecutable);
 
         command.add("-p" + mFrameworkLocation);
-        command.add("-o" + sourceOutputDir.getAbsolutePath());
-        // add all the source folders as import in case an aidl file in a source folder
-        // imports a parcelable from another source folder.
-        for (File sourceFolder : sourceFolders) {
-            if (sourceFolder.isDirectory()) {
-                command.add("-I" + sourceFolder.getAbsolutePath());
-            }
-        }
+        command.add("-o" + mSourceOutputDir.getAbsolutePath());
 
         // add all the library aidl folders to access parcelables that are in libraries
         for (File f : mImportFolders) {
             command.add("-I" + f.getAbsolutePath());
         }
 
-        // set auto dependency file creation
-        command.add("-a");
+        // create a temp file for the dependency
+        File depFile = File.createTempFile("aidl", ".d");
+        command.add("-d" + depFile.getAbsolutePath());
 
-        command.add(filePath.getAbsolutePath());
+        command.add(sourceFile.getAbsolutePath());
 
         mRunner.runCmdLine(command);
-    }
 
-    @Override
-    public void displayMessage(ILogger logger, DisplayType type, int count) {
-        switch (type) {
-            case FOUND:
-                logger.info("Found %1$d AIDL files.", count);
-                break;
-            case COMPILING:
-                if (count > 0) {
-                    logger.info("Compiling %1$d AIDL files.", count);
-                } else {
-                    logger.info("No AIDL files to compile.");
-                }
-                break;
-            case REMOVE_OUTPUT:
-                logger.info("Found %1$d obsolete output files to remove.", count);
-                break;
-            case REMOVE_DEP:
-                logger.info("Found %1$d obsolete dependency files to remove.", count);
-                break;
+        // send the dependency file to the processor.
+        if (mDependencyFileProcessor.processFile(depFile)) {
+            depFile.delete();
         }
     }
 }

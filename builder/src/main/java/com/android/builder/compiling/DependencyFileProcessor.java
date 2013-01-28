@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.build.gradle.internal.tasks
 
-import com.android.build.gradle.tasks.ZipAlign
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.TaskAction
+package com.android.builder.compiling;
 
-public class ZipAlignTask extends ZipAlign {
+import java.io.File;
 
-    @Input
-    File sdkDir
+/**
+ * A Class that processes a dependency file.
+ */
+public interface DependencyFileProcessor {
 
-    @TaskAction
-    void zipAlign() {
-        project.exec {
-            executable = new File(getSdkDir(), "tools${File.separator}zipalign")
-            args '-f', '4'
-            args getInputFile()
-            args getOutputFile()
-        }
-    }
+    /**
+     * Processes the dependency file.
+     * @param dependencyFile the dependency file.
+     * @return true if the dependency file can be deleted by the caller.
+     */
+    boolean processFile(File dependencyFile);
 }

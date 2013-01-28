@@ -15,13 +15,22 @@
  */
 package com.android.build.gradle.tasks
 
+import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.tasks.IncrementalTask
+import com.android.builder.packaging.DuplicateFileException
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
+import org.gradle.tooling.BuildException
 
-public abstract class PackageApplication extends IncrementalTask {
+public class PackageApplication extends IncrementalTask {
+
+    // ----- PUBLIC TASK API -----
+
     @InputFile
     File resourceFile
 
@@ -36,4 +45,40 @@ public abstract class PackageApplication extends IncrementalTask {
 
     @OutputFile
     File outputFile
+
+    // ----- PRIVATE TASK API -----
+
+    @InputFiles
+    List<File> packagedJars
+
+    @Input
+    boolean debugJni
+
+    @Nested @Optional
+    SigningConfigDsl signingConfig
+
+    @Override
+    protected void doFullTaskAction() {
+        try {
+            getBuilder().packageApk(
+                    getResourceFile().absolutePath,
+                    getDexFile().absolutePath,
+                    getPackagedJars(),
+                    getJavaResourceDir()?.absolutePath,
+                    getJniDir()?.absolutePath,
+                    getDebugJni(),
+                    getSigningConfig(),
+                    getOutputFile().absolutePath)
+        } catch (DuplicateFileException e) {
+            def logger = getLogger()
+            logger.error("Error: duplicate files during packaging of APK " + getOutputFile().absolutePath)
+            logger.error("\tPath in archive: " + e.archivePath)
+            logger.error("\tOrigin 1: " + e.file1)
+            logger.error("\tOrigin 2: " + e.file2)
+            throw new BuildException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new BuildException(e.getMessage(), e);
+        }
+    }
+
 }

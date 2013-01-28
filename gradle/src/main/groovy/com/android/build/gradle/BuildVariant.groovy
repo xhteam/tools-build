@@ -24,7 +24,7 @@ import com.android.build.gradle.tasks.GenerateBuildConfig
 import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessManifest
-import com.android.build.gradle.tasks.ProcessResources
+import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
@@ -140,7 +140,7 @@ public interface BuildVariant {
      * Returns the Android Resources processing task.
      */
     @NonNull
-    ProcessResources getProcessResources()
+    ProcessAndroidResources getProcessResources()
 
     /**
      * Returns the BuildConfig generation task.

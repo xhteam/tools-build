@@ -13,27 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.build.gradle.internal.tasks
-import com.android.build.gradle.tasks.GenerateBuildConfig
+package com.android.build.gradle.tasks
+
+import com.android.builder.ManifestDependency
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Nested
 
-public class GenerateBuildConfigTask extends GenerateBuildConfig {
+/**
+ * A task that processes the manifest
+ */
+public class ProcessTestManifest extends ProcessManifest {
+
+    // ----- PRIVATE TASK API -----
 
     @Input
-    String packageName
+    String testPackageName
 
     @Input
-    boolean debuggable
+    int minSdkVersion
 
     @Input
-    List<String> javaLines;
+    String testedPackageName
+
+    @Input
+    String instrumentationRunner
+
+    @Nested
+    List<ManifestDependency> libraries
 
     @Override
     protected void doFullTaskAction() {
-        getBuilder().generateBuildConfig(
-                getPackageName(),
-                isDebuggable(),
-                getJavaLines(),
-                getSourceOutputDir().absolutePath);
+        getBuilder().processTestManifest(
+                getTestPackageName(),
+                getMinSdkVersion(),
+                getTestedPackageName(),
+                getInstrumentationRunner(),
+                getLibraries(),
+                getOutManifest().absolutePath)
     }
+
 }

@@ -16,10 +16,52 @@
 package com.android.build.gradle.tasks
 
 import com.android.build.gradle.internal.tasks.IncrementalTask
+import com.android.builder.DexOptions
+import com.android.builder.resources.FileStatus
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile
 
-public abstract class Dex extends IncrementalTask {
+public class Dex extends IncrementalTask {
+
+    // ----- PUBLIC TASK API -----
 
     @OutputFile
     File outputFile
+
+    // ----- PRIVATE TASK API -----
+
+    @InputFiles
+    Iterable<File> sourceFiles
+
+    @InputFiles
+    Iterable<File> libraries
+
+    @Nested
+    DexOptions dexOptions
+
+    @Override
+    protected void doFullTaskAction() {
+        getBuilder().convertByteCode(
+                getSourceFiles(),
+                getLibraries(),
+                getOutputFile().absolutePath,
+                getDexOptions(),
+                false)
+    }
+
+    @Override
+    protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs) {
+        getBuilder().convertByteCode(
+                getSourceFiles(),
+                getLibraries(),
+                getOutputFile().absolutePath,
+                getDexOptions(),
+                true)
+    }
+
+    @Override
+    protected boolean isIncremental() {
+        return dexOptions.incremental
+    }
 }

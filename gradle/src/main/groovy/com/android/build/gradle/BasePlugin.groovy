@@ -27,26 +27,26 @@ import com.android.build.gradle.internal.dependency.DependencyChecker
 import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
-import com.android.build.gradle.internal.tasks.AidlCompileTask
 import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.tasks.DependencyReportTask
-import com.android.build.gradle.internal.tasks.DexTask
-import com.android.build.gradle.internal.tasks.GenerateBuildConfigTask
 import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.build.gradle.internal.tasks.InstallTask
-import com.android.build.gradle.internal.tasks.MergeResourcesTask
-import com.android.build.gradle.internal.tasks.PackageApplicationTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.PrepareLibraryTask
-import com.android.build.gradle.internal.tasks.ProcessManifestTask
-import com.android.build.gradle.internal.tasks.ProcessResourcesTask
-import com.android.build.gradle.internal.tasks.ProcessTestManifestTask
 import com.android.build.gradle.internal.tasks.SigningReportTask
 import com.android.build.gradle.internal.tasks.TestFlavorTask
 import com.android.build.gradle.internal.tasks.TestLibraryTask
 import com.android.build.gradle.internal.tasks.UninstallTask
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
-import com.android.build.gradle.internal.tasks.ZipAlignTask
+import com.android.build.gradle.tasks.AidlCompile
+import com.android.build.gradle.tasks.Dex
+import com.android.build.gradle.tasks.GenerateBuildConfig
+import com.android.build.gradle.tasks.MergeResources
+import com.android.build.gradle.tasks.PackageApplication
+import com.android.build.gradle.tasks.ProcessAndroidResources
+import com.android.build.gradle.tasks.ProcessAppManifest
+import com.android.build.gradle.tasks.ProcessTestManifest
+import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
 import com.android.builder.AndroidDependency
 import com.android.builder.BuilderConstants
@@ -264,7 +264,7 @@ public abstract class BasePlugin {
     protected void createProcessManifestTask(ApplicationVariant variant,
                                                             String manifestOurDir) {
         def processManifestTask = project.tasks.add("process${variant.name}Manifest",
-                ProcessManifestTask)
+                ProcessAppManifest)
         variant.processManifestTask = processManifestTask
         processManifestTask.dependsOn variant.prepareDependenciesTask
 
@@ -304,7 +304,7 @@ public abstract class BasePlugin {
     protected void createProcessTestManifestTask(ApplicationVariant variant,
                                                                     String manifestOurDir) {
         def processTestManifestTask = project.tasks.add("process${variant.name}TestManifest",
-                ProcessTestManifestTask)
+                ProcessTestManifest)
         variant.processManifestTask = processTestManifestTask
         processTestManifestTask.dependsOn variant.prepareDependenciesTask
 
@@ -340,14 +340,13 @@ public abstract class BasePlugin {
 
     protected void createMergeResourcesTask(ApplicationVariant variant, String location,
                                             boolean process9Patch) {
-        def mergeResourcesTask = project.tasks.add("merge${variant.name}Resources",
-                MergeResourcesTask)
+        def mergeResourcesTask = project.tasks.add("merge${variant.name}Resources", MergeResources)
         variant.mergeResourcesTask = mergeResourcesTask
 
         mergeResourcesTask.plugin = this
         mergeResourcesTask.variant = variant
         mergeResourcesTask.incrementalFolder =
-                project.file("$project.buildDir/incremental-mergeResources/$variant.dirName")
+                project.file("$project.buildDir/incremental/mergeResources/$variant.dirName")
 
         mergeResourcesTask.process9Patch = process9Patch
 
@@ -364,7 +363,7 @@ public abstract class BasePlugin {
 
     protected void createBuildConfigTask(ApplicationVariant variant) {
         def generateBuildConfigTask = project.tasks.add(
-                "generate${variant.name}BuildConfig", GenerateBuildConfigTask)
+                "generate${variant.name}BuildConfig", GenerateBuildConfig)
         variant.generateBuildConfigTask = generateBuildConfigTask
         if (variant.config.type == VariantConfiguration.Type.TEST) {
             // in case of a test project, the manifest is generated so we need to depend
@@ -388,13 +387,13 @@ public abstract class BasePlugin {
         }
 
         generateBuildConfigTask.conventionMapping.sourceOutputDir = {
-            project.file("$project.buildDir/source/${variant.dirName}")
+            project.file("$project.buildDir/source/buildConfig/${variant.dirName}")
         }
     }
 
     protected void createProcessResTask(ApplicationVariant variant) {
         def processResources = project.tasks.add("process${variant.name}Resources",
-                ProcessResourcesTask)
+                ProcessAndroidResources)
         variant.processResourcesTask = processResources
         processResources.dependsOn variant.processManifestTask, variant.mergeResourcesTask
 
@@ -427,7 +426,7 @@ public abstract class BasePlugin {
 
         // TODO: unify with generateBuilderConfig, compileAidl, and library packaging somehow?
         processResources.conventionMapping.sourceOutputDir = {
-            project.file("$project.buildDir/source/$variant.dirName")
+            project.file("$project.buildDir/source/r/$variant.dirName")
         }
         processResources.conventionMapping.textSymbolDir = {
             project.file("$project.buildDir/symbols/$variant.dirName")
@@ -450,8 +449,8 @@ public abstract class BasePlugin {
     protected void createProcessJavaResTask(ApplicationVariant variant) {
         VariantConfiguration config = variant.config
 
-        Copy processResources = project.getTasks().add("process${variant.name}JavaRes",
-                ProcessResources.class);
+        Copy processResources = project.tasks.add("process${variant.name}JavaRes",
+                ProcessResources);
         variant.processJavaResources = processResources
 
         // set the input
@@ -474,18 +473,21 @@ public abstract class BasePlugin {
     protected void createAidlTask(ApplicationVariant variant) {
         VariantConfiguration config = variant.config
 
-        def compileTask = project.tasks.add("compile${variant.name}Aidl", AidlCompileTask)
+        def compileTask = project.tasks.add("compile${variant.name}Aidl", AidlCompile)
         variant.aidlCompileTask = compileTask
         variant.aidlCompileTask.dependsOn variant.prepareDependenciesTask
 
         compileTask.plugin = this
         compileTask.variant = variant
+        compileTask.incrementalFolder =
+            project.file("$project.buildDir/incremental/aidl/$variant.dirName")
+
 
         compileTask.conventionMapping.sourceDirs = { config.aidlSourceList }
         compileTask.conventionMapping.importDirs = { config.aidlImports }
 
         compileTask.conventionMapping.sourceOutputDir = {
-            project.file("$project.buildDir/source/$variant.dirName")
+            project.file("$project.buildDir/source/aidl/$variant.dirName")
         }
     }
 
@@ -500,6 +502,9 @@ public abstract class BasePlugin {
         List<Object> sourceList = new ArrayList<Object>();
         sourceList.add(((AndroidSourceSet) config.defaultSourceSet).java)
         sourceList.add({ variant.processResourcesTask.sourceOutputDir })
+        sourceList.add({ variant.generateBuildConfigTask.sourceOutputDir })
+        sourceList.add({ variant.aidlCompileTask.sourceOutputDir })
+
         if (config.getType() != VariantConfiguration.Type.TEST) {
             sourceList.add(((AndroidSourceSet) config.buildTypeSourceSet).java)
         }
@@ -649,14 +654,14 @@ public abstract class BasePlugin {
     protected void addPackageTasks(ApplicationVariant variant, Task assembleTask) {
         // Add a dex task
         def dexTaskName = "dex${variant.name}"
-        def dexTask = project.tasks.add(dexTaskName, DexTask)
+        def dexTask = project.tasks.add(dexTaskName, Dex)
         variant.dexTask = dexTask
         dexTask.dependsOn variant.javaCompileTask
 
         dexTask.plugin = this
         dexTask.variant = variant
         dexTask.incrementalFolder =
-                project.file("$project.buildDir/incremental-dex/$variant.dirName")
+                project.file("$project.buildDir/incremental/dex/$variant.dirName")
 
         dexTask.conventionMapping.libraries = { project.files({ variant.config.packagedJars }) }
         dexTask.conventionMapping.sourceFiles = { variant.javaCompileTask.outputs.files } // this creates a dependency
@@ -667,7 +672,7 @@ public abstract class BasePlugin {
         dexTask.dexOptions = extension.dexOptions
 
         // Add a task to generate application package
-        def packageApp = project.tasks.add("package${variant.name}", PackageApplicationTask)
+        def packageApp = project.tasks.add("package${variant.name}", PackageApplication)
         variant.packageApplicationTask = packageApp
         packageApp.dependsOn variant.processResourcesTask, dexTask, variant.processJavaResources
 
@@ -718,7 +723,7 @@ public abstract class BasePlugin {
         if (signedApk) {
             if (variant.zipAlign) {
                 // Add a task to zip align application package
-                def zipAlignTask = project.tasks.add("zipalign${variant.name}", ZipAlignTask)
+                def zipAlignTask = project.tasks.add("zipalign${variant.name}", ZipAlign)
                 variant.zipAlignTask = zipAlignTask
 
                 zipAlignTask.dependsOn packageApp

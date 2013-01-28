@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.build.gradle.internal.tasks
+package com.android.build.gradle.tasks
 
-import com.android.build.gradle.tasks.ProcessManifest
 import com.android.builder.ManifestDependency
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
@@ -24,8 +23,11 @@ import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
 
 /**
+ * A task that processes the manifest
  */
-public class ProcessManifestTask extends ProcessManifest {
+public class ProcessAppManifest extends ProcessManifest {
+
+    // ----- PRIVATE TASK API -----
 
     @InputFile
     File mainManifest
@@ -60,4 +62,5 @@ public class ProcessManifestTask extends ProcessManifest {
                 getTargetSdkVersion(),
                 getOutManifest().absolutePath)
     }
+
 }

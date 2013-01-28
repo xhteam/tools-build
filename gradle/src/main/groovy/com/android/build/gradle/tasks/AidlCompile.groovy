@@ -16,13 +16,60 @@
 
 package com.android.build.gradle.tasks
 
-import com.android.build.gradle.internal.tasks.IncrementalTask
-import org.gradle.api.tasks.OutputDirectory
+import com.android.build.gradle.internal.tasks.DependencyBasedCompileTask
+import com.android.builder.compiling.DependencyFileProcessor
+import com.google.common.collect.Lists
+import org.gradle.api.tasks.InputFiles
 
 /**
+ * Task to compile aidl files. Supports incremental update.
  */
-public abstract class AidlCompile extends IncrementalTask {
+public class AidlCompile extends DependencyBasedCompileTask {
 
-    @OutputDirectory
-    File sourceOutputDir
+    // ----- PRIVATE TASK API -----
+
+    @InputFiles
+    List<File> sourceDirs
+
+    @InputFiles
+    List<File> importDirs
+
+    @Override
+    protected boolean isIncremental() {
+        return true
+    }
+
+    @Override
+    protected Collection<File> getOutputForIncrementalBuild() {
+        return Collections.singletonList(getSourceOutputDir())
+    }
+
+    @Override
+    protected void compileAllFiles(DependencyFileProcessor dependencyFileProcessor) {
+        getBuilder().compileAllAidlFiles(
+                getSourceDirs(),
+                getSourceOutputDir(),
+                getImportDirs(),
+                dependencyFileProcessor)
+    }
+
+    @Override
+    protected Object incrementalSetup() {
+        List<File> fullImportDir = Lists.newArrayList()
+        fullImportDir.addAll(getImportDirs())
+        fullImportDir.addAll(getSourceDirs())
+
+        return fullImportDir
+    }
+
+    @Override
+    protected void compileSingleFile(File file,Object data,
+                                     DependencyFileProcessor dependencyFileProcessor) {
+        getBuilder().compileAidlFile(
+                file,
+                getSourceOutputDir(),
+                (List<File>)data,
+                dependencyFileProcessor)
+
+    }
 }

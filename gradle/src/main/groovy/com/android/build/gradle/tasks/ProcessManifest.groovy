@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.build.gradle.tasks
-
 import com.android.build.gradle.internal.tasks.IncrementalTask
 import org.gradle.api.tasks.OutputFile
 /**
@@ -22,9 +21,12 @@ import org.gradle.api.tasks.OutputFile
  */
 public abstract class ProcessManifest extends IncrementalTask {
 
+    // ----- PUBLIC TASK API -----
+
     /**
      * The processed Manifest.
      */
     @OutputFile
     File outManifest
+
 }
