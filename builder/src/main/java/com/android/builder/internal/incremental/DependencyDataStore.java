@@ -39,6 +39,7 @@ import java.util.Map;
  *
  * The format is binary and follows the following format:
  *
+ * (Header Tag)(version number: int)
  * (Start Tag)(Main File)[(2ndary Tag)(2ndary File)...][(Output tag)(output file)...]
  * (Start Tag)(Main File)[(2ndary Tag)(2ndary File)...][(Output tag)(output file)...]
  * ...
@@ -47,10 +48,13 @@ import java.util.Map;
  */
 public class DependencyDataStore {
 
+    private static final byte TAG_HEADER = 0x7F;
     private static final byte TAG_START = 0x70;
     private static final byte TAG_2NDARY_FILE = 0x71;
     private static final byte TAG_OUTPUT = 0x73;
     private static final byte TAG_END = 0x77;
+
+    private static final int CURRENT_VERSION = 1;
 
     private final Map<String, DependencyData> mMainFileMap = Maps.newHashMap();
 
@@ -98,10 +102,19 @@ public class DependencyDataStore {
         return mMainFileMap;
     }
 
+    /**
+     * Saves the dependency data to a given file.
+     *
+     * @param file the file to save the data to.
+     * @throws IOException
+     */
     public void saveTo(File file) throws IOException {
         FileOutputStream fos = new FileOutputStream(file);
 
         try {
+            fos.write(TAG_HEADER);
+            writeInt(fos, CURRENT_VERSION);
+
             for (DependencyData data : getData()) {
                 fos.write(TAG_START);
                 writePath(fos, data.getMainFile());
@@ -125,6 +138,13 @@ public class DependencyDataStore {
         byte[] pathBuffer = null;
     }
 
+    /**
+     * Loads the dependency data from the given file.
+     *
+     * @param file the file to load the data from.
+     * @return a map of file-> list of impacted dependency data.
+     * @throws IOException
+     */
     public Multimap<String, DependencyData> loadFrom(File file) throws IOException {
         Multimap<String, DependencyData> inputMap = ArrayListMultimap.create();
 
@@ -133,11 +153,21 @@ public class DependencyDataStore {
         //  reusable buffer
         ReusableBuffer buffers = new ReusableBuffer();
 
+        // read the header
+        if (readByte(fis, buffers) != TAG_HEADER) {
+            throw new IllegalStateException("Wrong first byte on " + file.getAbsolutePath());
+        }
+
+        int version = readInt(fis, buffers);
+        if (version != CURRENT_VERSION) {
+            throw new IOException("Unsupported file version: " + version);
+        }
+
         try {
             // just read the first byte since it should be the TAG_START
             byte currentTag = readByte(fis, buffers);
             if (currentTag != TAG_START) {
-                throw new IllegalStateException("Wrong first byte on " + file.getAbsolutePath());
+                throw new IllegalStateException("Wrong first tag on " + file.getAbsolutePath());
             }
 
             DependencyData currentData = new DependencyData();
@@ -175,13 +205,16 @@ public class DependencyDataStore {
         }
     }
 
+    private void writeInt(FileOutputStream fos, int value) throws IOException {
+        ByteBuffer b = ByteBuffer.allocate(4);
+        b.putInt(value);
+        fos.write(b.array());
+    }
+
     private void writePath(FileOutputStream fos, String path) throws IOException {
         byte[] pathBytes = path.getBytes(Charsets.UTF_8);
 
-        ByteBuffer b = ByteBuffer.allocate(4);
-        b.putInt(pathBytes.length);
-        fos.write(b.array());
-
+        writeInt(fos, pathBytes.length);
         fos.write(pathBytes);
     }
 
@@ -194,7 +227,7 @@ public class DependencyDataStore {
         return buffers.intBuffer[0];
     }
 
-    private String readPath(FileInputStream fis, ReusableBuffer buffers) throws IOException {
+    private int readInt(FileInputStream fis, ReusableBuffer buffers) throws IOException {
         int read = fis.read(buffers.intBuffer);
 
         // there must always be 4 bytes for the path length
@@ -204,13 +237,17 @@ public class DependencyDataStore {
 
         // get the int value.
         ByteBuffer b = ByteBuffer.wrap(buffers.intBuffer);
-        int length = b.getInt();
+        return b.getInt();
+    }
+
+    private String readPath(FileInputStream fis, ReusableBuffer buffers) throws IOException {
+        int length = readInt(fis, buffers);
 
         if (buffers.pathBuffer == null || buffers.pathBuffer.length < length) {
             buffers.pathBuffer = new byte[length];
         }
 
-        read = fis.read(buffers.pathBuffer, 0, length);
+        int read = fis.read(buffers.pathBuffer, 0, length);
         if (read != length) {
             throw new IOException("Failed to read path");
         }
