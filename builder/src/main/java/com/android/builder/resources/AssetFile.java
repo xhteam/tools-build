@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,23 @@
 package com.android.builder.resources;
 
 import com.android.annotations.NonNull;
-import com.google.common.collect.ListMultimap;
+
+import java.io.File;
 
 /**
- * A Resource Map able to provide a {@link ListMultimap} of Resources where the keys are
- * the value returned by {@link Resource#getKey()}
+ * Represents a file in an asset folder.
  */
-interface ResourceMap {
+class AssetFile extends DataFile<AssetItem> {
 
     /**
-     * Returns the number of resources.
-     * @return the number of resources.
+     * Creates a resource file with a single resource item.
+     *
+     * The source file is set on the item with {@link AssetItem#setSource(DataFile)}
+     *
+     * @param file the File
+     * @param item the resource item
      */
-    int size();
-
-    /**
-     * a Multi map of (key, resource) where key is the result of
-     * {@link com.android.builder.resources.Resource#getKey()}
-     * @return a non null map
-     */
-    @NonNull
-    ListMultimap<String, Resource> getResourceMap();
+    AssetFile(@NonNull File file, @NonNull AssetItem item) {
+        super(file, item);
+    }
 }

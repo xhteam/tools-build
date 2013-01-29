@@ -44,7 +44,7 @@ import static com.android.SdkConstants.TAG_ITEM;
 /**
  * Parser for "values" files.
  *
- * This parses the file and returns a list of {@link Resource} object.
+ * This parses the file and returns a list of {@link ResourceItem} object.
  */
 class ValueResourceParser {
 
@@ -59,13 +59,13 @@ class ValueResourceParser {
     }
 
     /**
-     * Parses the file and returns a list of {@link Resource} objects.
+     * Parses the file and returns a list of {@link ResourceItem} objects.
      * @return a list of resources.
      *
      * @throws IOException
      */
     @NonNull
-    List<Resource> parseFile() throws IOException {
+    List<ResourceItem> parseFile() throws IOException {
         Document document = parseDocument(mFile);
 
         // get the root node
@@ -75,7 +75,7 @@ class ValueResourceParser {
         }
         NodeList nodes = rootNode.getChildNodes();
 
-        List<Resource> resources = Lists.newArrayListWithExpectedSize(nodes.getLength());
+        List<ResourceItem> resources = Lists.newArrayListWithExpectedSize(nodes.getLength());
 
         for (int i = 0, n = nodes.getLength(); i < n; i++) {
             Node node = nodes.item(i);
@@ -84,7 +84,7 @@ class ValueResourceParser {
                 continue;
             }
 
-            Resource resource = getResource(node);
+            ResourceItem resource = getResource(node);
             if (resource != null) {
                 resources.add(resource);
             }
@@ -94,23 +94,23 @@ class ValueResourceParser {
     }
 
     /**
-     * Returns a new Resource object for a given node.
+     * Returns a new ResourceItem object for a given node.
      * @param node the node representing the resource.
-     * @return a Resource object or null.
+     * @return a ResourceItem object or null.
      */
-    static Resource getResource(Node node) {
+    static ResourceItem getResource(Node node) {
         ResourceType type = getType(node);
         String name = getName(node);
 
         if (type != null && name != null) {
-            return new Resource(name, type, node);
+            return new ResourceItem(name, type, node);
         }
 
         return null;
     }
 
     /**
-     * Returns the type of the Resource based on a node's attributes.
+     * Returns the type of the ResourceItem based on a node's attributes.
      * @param node the node
      * @return the ResourceType or null if it could not be inferred.
      */

@@ -21,6 +21,7 @@ import com.android.build.gradle.internal.tasks.TestFlavorTask
 import com.android.build.gradle.tasks.AidlCompile
 import com.android.build.gradle.tasks.Dex
 import com.android.build.gradle.tasks.GenerateBuildConfig
+import com.android.build.gradle.tasks.MergeAssets
 import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessAndroidResources
@@ -48,6 +49,7 @@ public abstract class ApplicationVariant {
     RenderscriptCompile renderscriptCompileTask
     AidlCompile aidlCompileTask
     MergeResources mergeResourcesTask
+    MergeAssets mergeAssetsTask
     ProcessAndroidResources processResourcesTask
     GenerateBuildConfig generateBuildConfigTask
 

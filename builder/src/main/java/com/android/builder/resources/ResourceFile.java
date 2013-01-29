@@ -18,38 +18,33 @@ package com.android.builder.resources;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.google.common.collect.Maps;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import java.io.File;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Represents a file in a resource folders.
  *
  * It contains a link to the {@link File}, the qualifier string (which is the name of the folder
- * after the first '-' character), a list of {@link Resource} and a type.
+ * after the first '-' character), a list of {@link ResourceItem} and a type.
  *
  * The type of the file is based on whether the file is located in a values folder (FileType.MULTI)
  * or in another folder (FileType.SINGLE).
  */
-class ResourceFile {
+class ResourceFile extends DataFile<ResourceItem> {
 
-    static enum FileType {
-        SINGLE, MULTI
-    }
+    static final String ATTR_QUALIFIER = "qualifiers";
+    static final String ATTR_TYPE = "type";
 
-    private final FileType mType;
-    private final File mFile;
-    private final Map<String, Resource> mItems;
     private final String mQualifiers;
 
     /**
      * Creates a resource file with a single resource item.
      *
-     * The source file is set on the item with {@link Resource#setSource(ResourceFile)}
+     * The source file is set on the item with {@link ResourceItem#setSource(ResourceFile)}
      *
      * The type of the ResourceFile will by {@link FileType#SINGLE}.
      *
@@ -57,19 +52,15 @@ class ResourceFile {
      * @param item the resource item
      * @param qualifiers the qualifiers.
      */
-    ResourceFile(@NonNull File file, @NonNull Resource item, @Nullable String qualifiers) {
-        mType = FileType.SINGLE;
-        mFile = file;
+    ResourceFile(@NonNull File file, @NonNull ResourceItem item, @Nullable String qualifiers) {
+        super(file, item);
         mQualifiers = qualifiers;
-
-        item.setSource(this);
-        mItems = Collections.singletonMap(item.getKey(), item);
     }
 
     /**
      * Creates a resource file with a list of resource items.
      *
-     * The source file is set on the items with {@link Resource#setSource(ResourceFile)}
+     * The source file is set on the items with {@link ResourceItem#setSource(ResourceFile)}
      *
      * The type of the ResourceFile will by {@link FileType#MULTI}.
      *
@@ -77,52 +68,19 @@ class ResourceFile {
      * @param items the resource items
      * @param qualifiers the qualifiers.
      */
-    ResourceFile(@NonNull File file, @NonNull List<Resource> items, @Nullable String qualifiers) {
-        mType = FileType.MULTI;
-        mFile = file;
+    ResourceFile(@NonNull File file, @NonNull List<ResourceItem> items,
+                 @Nullable String qualifiers) {
+        super(file, items);
         mQualifiers = qualifiers;
-
-        mItems = Maps.newHashMapWithExpectedSize(items.size());
-        for (Resource item : items) {
-            item.setSource(this);
-            mItems.put(item.getKey(), item);
-        }
     }
-
-    @NonNull
-    FileType getType() {
-        return mType;
-    }
-
-    @NonNull
-    File getFile() {
-        return mFile;
-    }
-
     @Nullable
     String getQualifiers() {
         return mQualifiers;
     }
 
-    Resource getItem() {
-        assert mItems.size() == 1;
-        return mItems.values().iterator().next();
-    }
-
-    @NonNull
-    Collection<Resource> getItems() {
-        return mItems.values();
-    }
-
-    @NonNull
-    Map<String, Resource> getItemMap() {
-        return mItems;
-    }
-
-    void addItems(Collection<Resource> items) {
-        for (Resource item : items) {
-            mItems.put(item.getKey(), item);
-            item.setSource(this);
-        }
+    @Override
+    void addExtraAttributes(Document document, Node node, String namespaceUri) {
+        NodeUtils.addAttribute(document, node, namespaceUri, ATTR_QUALIFIER,
+                getQualifiers());
     }
 }

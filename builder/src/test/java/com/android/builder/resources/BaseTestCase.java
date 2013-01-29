@@ -16,19 +16,27 @@
 
 package com.android.builder.resources;
 
+import com.google.common.base.Charsets;
 import com.google.common.collect.ListMultimap;
+import com.google.common.io.Files;
 import junit.framework.TestCase;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import java.util.regex.Matcher;
 
 public abstract class BaseTestCase extends TestCase {
 
-    protected void verifyResourceExists(ResourceMap resourceMap, String... resourceKeys) {
-        ListMultimap<String, Resource> map = resourceMap.getResourceMap();
+    protected void verifyResourceExists(DataMap<? extends DataItem> dataMap,
+                                        String... dataItemKeys) {
+        ListMultimap<String, ? extends DataItem> map = dataMap.getDataMap();
 
-        for (String resKey : resourceKeys) {
-            List<Resource> resources = map.get(resKey);
-            assertTrue("resource '" + resKey + "' is missing!", resources.size() > 0);
+        for (String resKey : dataItemKeys) {
+            List<? extends DataItem> items = map.get(resKey);
+            assertTrue("resource '" + resKey + "' is missing!", items.size() > 0);
         }
     }
 
@@ -39,26 +47,98 @@ public abstract class BaseTestCase extends TestCase {
      * the same number of items, otherwise it'll only checks that each resource key is present
      * in both maps.
      *
-     * @param resourceMap1 the first resource Map
-     * @param resourceMap2 the second resource Map
+     * @param dataMap1 the first resource Map
+     * @param dataMap2 the second resource Map
      * @param fullCompare whether a full compare is requested.
      */
-    protected void compareResourceMaps(ResourceMap resourceMap1, ResourceMap resourceMap2,
+    protected void compareResourceMaps(DataMap<? extends DataItem> dataMap1,
+                                       DataMap<? extends DataItem> dataMap2,
                                        boolean fullCompare) {
-        assertEquals(resourceMap1.size(), resourceMap2.size());
+        assertEquals(dataMap1.size(), dataMap2.size());
 
         // compare the resources are all the same
-        ListMultimap<String, Resource> map1 = resourceMap1.getResourceMap();
-        ListMultimap<String, Resource> map2 = resourceMap2.getResourceMap();
+        ListMultimap<String, ? extends DataItem> map1 = dataMap1.getDataMap();
+        ListMultimap<String, ? extends DataItem> map2 = dataMap2.getDataMap();
         for (String key : map1.keySet()) {
-            List<Resource> items1 = map1.get(key);
-            List<Resource> items2 = map2.get(key);
+            List<? extends DataItem> items1 = map1.get(key);
+            List<? extends DataItem> items2 = map2.get(key);
             if (fullCompare) {
                 assertEquals("Wrong size for " + key, items1.size(), items2.size());
             } else {
                 boolean map1HasItem = items1.size() > 0;
                 boolean map2HasItem = items2.size() > 0;
                 assertEquals("resource " + key + " missing from one map", map1HasItem, map2HasItem);
+            }
+        }
+    }
+
+    protected static void checkImageColor(File file, int expectedColor) throws IOException {
+        assertTrue("File '" + file.getAbsolutePath() + "' does not exist.", file.isFile());
+
+        BufferedImage image = ImageIO.read(file);
+        int rgb = image.getRGB(0, 0);
+        assertEquals(String.format("Expected: 0x%08X, actual: 0x%08X for file %s",
+                expectedColor, rgb, file),
+                expectedColor, rgb);
+    }
+
+    /**
+     * Returns a folder containing a merger blob data for the given test data folder.
+     *
+     * This is to work around the fact that the merger blob data contains full path, but we don't
+     * know where this project is located on the drive. This rewrites the blob to contain the
+     * actual folder.
+     * (The blobs written in the test data contains placeholders for the path root and path
+     * separators)
+     *
+     * @param folder
+     * @return
+     * @throws java.io.IOException
+     */
+    protected static File getMergedBlobFolder(File folder) throws IOException {
+        File originalMerger = new File(folder, AssetMerger.FN_MERGER_XML);
+
+        String content = Files.toString(originalMerger, Charsets.UTF_8);
+
+        // search and replace $TOP$ with the root and $SEP$ with the platform separator.
+        content = content.replaceAll(
+                "\\$TOP\\$", Matcher.quoteReplacement(folder.getAbsolutePath())).
+                replaceAll("\\$SEP\\$", Matcher.quoteReplacement(File.separator));
+
+        File tempFolder = Files.createTempDir();
+        Files.write(content, new File(tempFolder, AssetMerger.FN_MERGER_XML), Charsets.UTF_8);
+
+        return tempFolder;
+    }
+
+    /**
+     * Post {@link #getMergedBlobFolder(java.io.File)} check. After the DataMerger is created
+     * from the file generated, this checks that the file replacement works and all the files are
+     * where they are supposed to be.
+     *
+     * @param dataMerger
+     */
+    protected void checkSourceFolders(
+            DataMerger<? extends DataItem, ? extends DataFile, ? extends DataSet> dataMerger) {
+
+        // Loop on all the data sets.
+        for (DataSet set : dataMerger.getDataSets()) {
+            // get the source files and verify they exists.
+            List<File> files = set.getSourceFiles();
+            for (File file : files) {
+                assertTrue(file.isDirectory());
+            }
+
+            // for each source file, also check that the files inside are in fact inside
+            // them. We don't check if those files are there though because the tests could
+            // be testing with missing files to simulate updates.
+            ListMultimap<String, ? extends DataItem> itemMap = set.getDataMap();
+
+            for (DataItem item : itemMap.values()) {
+                DataFile dataFile = item.getSource();
+                File file = dataFile.getFile();
+
+                assertNotNull(set.findMatchingSourceFile(file));
             }
         }
     }

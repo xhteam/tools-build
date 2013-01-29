@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merger>
-    <resourceSet config="main">
+    <dataSet config="main">
         <source path="$TOP$$SEP$main">
             <file path="$TOP$$SEP$main$SEP$values$SEP$values.xml" qualifiers="">
                 <string name="untouched">untouched</string>
@@ -12,8 +12,8 @@
                 <string name="removed">removed</string>
             </file>
         </source>
-    </resourceSet>
-    <resourceSet config="overlay">
+    </dataSet>
+    <dataSet config="overlay">
         <source path="$TOP$$SEP$overlay" />
-    </resourceSet>
+    </dataSet>
 </merger>

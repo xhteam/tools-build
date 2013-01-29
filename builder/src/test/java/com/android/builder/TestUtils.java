@@ -34,15 +34,25 @@ public class TestUtils {
      * Note that this folder is relative to the root project which is where gradle
      * sets the current working dir when running the tests.
      *
-     * If you need a full folder path, use {@link #getCanonicalRoot(String)}.
+     * If you need a full folder path, use {@link #getCanonicalRoot(String...)}.
      *
-     * @param name the name of the subfolder.
+     * @param names the names of the subfolders.
+     *
      * @return a File
      */
-    public static File getRoot(String name) {
-        File root = new File("src/test/resources/testData/" + name);
-        TestCase.assertTrue("Test folder '" + name + "' does not exist!",
-                root.isDirectory());
+    public static File getRoot(String... names) {
+        File root = null;
+        for (String name : names) {
+            if (root == null) {
+                root = new File("src/test/resources/testData/" + name);
+            } else {
+                root = new File(root, name);
+            }
+
+            TestCase.assertTrue("Test folder '" + name + "' does not exist!",
+                    root.isDirectory());
+
+        }
 
         return root;
     }
@@ -53,11 +63,12 @@ public class TestUtils {
      * The full path is canonized.
      * This is basically ".../src/test/resources/testData/$name".
      *
-     * @param name the name of the subfolder.
+     * @param names the names of the subfolders.
+     *
      * @return a File
      */
-    public static File getCanonicalRoot(String name) throws IOException {
-        File root = getRoot(name);
+    public static File getCanonicalRoot(String... names) throws IOException {
+        File root = getRoot(names);
         return root.getCanonicalFile();
     }
 }
