@@ -32,6 +32,8 @@ import java.util.concurrent.Callable
  */
 public abstract class DependencyBasedCompileTask extends IncrementalTask {
 
+    private static final String DEPENDENCY_STORE = "dependency.store";
+
     // ----- PUBLIC TASK API -----
 
     @OutputDirectory
@@ -105,14 +107,13 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
         DependencyDataStore store = new DependencyDataStore()
         store.addData(dataList)
 
-        File storeFile = new File(getIncrementalFolder(), "dependency.store")
-        store.saveTo(storeFile)
+        store.saveTo(new File(getIncrementalFolder(), DEPENDENCY_STORE))
     }
 
     @Override
     protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs) {
 
-        File incrementalData = new File(getIncrementalFolder(), "dependency.store")
+        File incrementalData = new File(getIncrementalFolder(), DEPENDENCY_STORE)
         DependencyDataStore store = new DependencyDataStore()
         Multimap<String, DependencyData> inputMap
         try {
