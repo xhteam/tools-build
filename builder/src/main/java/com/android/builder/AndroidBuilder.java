@@ -16,6 +16,7 @@
 
 package com.android.builder;
 
+import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
@@ -26,6 +27,8 @@ import com.android.builder.internal.SymbolLoader;
 import com.android.builder.internal.SymbolWriter;
 import com.android.builder.internal.TestManifestGenerator;
 import com.android.builder.internal.compiler.AidlProcessor;
+import com.android.builder.internal.compiler.LeafFolderProcessor;
+import com.android.builder.internal.compiler.RenderscriptProcessor;
 import com.android.builder.internal.compiler.SourceSearcher;
 import com.android.builder.internal.packaging.JavaResourceProcessor;
 import com.android.builder.internal.packaging.Packager;
@@ -517,10 +520,12 @@ public class AndroidBuilder {
         // launch aapt: create the command line
         ArrayList<String> command = Lists.newArrayList();
 
-        @SuppressWarnings("deprecation")
-        String aaptPath = mTarget.getPath(IAndroidTarget.AAPT);
+        File aapt = mSdkParser.getAapt();
+        if (aapt == null || !aapt.isFile()) {
+            throw new IllegalStateException(String.valueOf("aapt is missing"));
+        }
 
-        command.add(aaptPath);
+        command.add(aapt.getAbsolutePath());
         command.add("package");
 
         if (mVerboseExec) {
@@ -661,8 +666,10 @@ public class AndroidBuilder {
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
 
-        @SuppressWarnings("deprecation")
-        String aidlPath = mTarget.getPath(IAndroidTarget.AIDL);
+        File aidl = mSdkParser.getAidlCompiler();
+        if (aidl == null || !aidl.isFile()) {
+            throw new IllegalStateException(String.valueOf("aidl is missing"));
+        }
 
         List<File> fullImportList = Lists.newArrayListWithCapacity(
                 sourceFolders.size() + importFolders.size());
@@ -670,7 +677,7 @@ public class AndroidBuilder {
         fullImportList.addAll(importFolders);
 
         AidlProcessor processor = new AidlProcessor(
-                aidlPath,
+                aidl.getAbsolutePath(),
                 mTarget.getPath(IAndroidTarget.ANDROID_AIDL),
                 fullImportList,
                 sourceOutputDir,
@@ -688,7 +695,7 @@ public class AndroidBuilder {
      *
      * @param aidlFile the AIDL file to compile
      * @param sourceOutputDir the output dir in which to generate the source code
-     * @param importFolders all the import folders, including the source folder.
+     * @param importFolders all the import folders, including the source folders.
      * @param dependencyFileProcessor the dependencyFileProcessor to record the dependencies
      *                                of the compilation.
      * @throws IOException
@@ -704,11 +711,13 @@ public class AndroidBuilder {
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
 
-        @SuppressWarnings("deprecation")
-        String aidlPath = mTarget.getPath(IAndroidTarget.AIDL);
+        File aidl = mSdkParser.getAidlCompiler();
+        if (aidl == null || !aidl.isFile()) {
+            throw new IllegalStateException(String.valueOf("aidl is missing"));
+        }
 
         AidlProcessor processor = new AidlProcessor(
-                aidlPath,
+                aidl.getAbsolutePath(),
                 mTarget.getPath(IAndroidTarget.ANDROID_AIDL),
                 importFolders,
                 sourceOutputDir,
@@ -717,6 +726,179 @@ public class AndroidBuilder {
                 mCmdLineRunner);
 
         processor.processFile(aidlFile);
+    }
+
+    /**
+     * Compiles all the renderscript files found in the given source folders.
+     *
+     * @param sourceFolders all the source folders to find files to compile
+     * @param importFolders all the import folders.
+     * @param sourceOutputDir the output dir in which to generate the source code
+     * @param resOutputDir the output dir in which to generate the bitcode file
+     * @param targetApi the target api
+     * @param debugBuild whether the build is debug
+     * @param optimLevel the optimization level
+     * @param dependencyFileProcessor the dependencyFileProcessor to record the dependencies
+     *                                of the compilation.
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void compileAllRenderscriptFiles(@NonNull List<File> sourceFolders,
+                                            @NonNull List<File> importFolders,
+                                            @NonNull File sourceOutputDir,
+                                            @NonNull File resOutputDir,
+                                            int targetApi,
+                                            boolean debugBuild,
+                                            int optimLevel,
+                                            @Nullable DependencyFileProcessor dependencyFileProcessor)
+            throws IOException, InterruptedException, ExecutionException {
+        checkState(mTarget != null, "Target not set.");
+        checkNotNull(sourceFolders, "sourceFolders cannot be null.");
+        checkNotNull(importFolders, "importFolders cannot be null.");
+        checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
+        checkNotNull(resOutputDir, "resOutputDir cannot be null.");
+
+        File renderscript = mSdkParser.getRenderscriptCompiler();
+        if (renderscript == null || !renderscript.isFile()) {
+            throw new IllegalStateException(String.valueOf("llvm-rs-cc is missing"));
+        }
+
+        List<File> fullImportList = Lists.newArrayListWithCapacity(importFolders.size() + 2);
+        fullImportList.addAll(importFolders);
+
+        @SuppressWarnings("deprecation")
+        String rsPath = mTarget.getPath(IAndroidTarget.ANDROID_RS);
+        fullImportList.add(new File(rsPath));
+
+        @SuppressWarnings("deprecation")
+        String rsClangPath = mTarget.getPath(IAndroidTarget.ANDROID_RS_CLANG);
+        fullImportList.add(new File(rsClangPath));
+
+        // the renderscript compiler doesn't expect the top res folder,
+        // but the raw folder directly.
+        File rawFolder = new File(resOutputDir, SdkConstants.FD_RES_RAW);
+
+        RenderscriptProcessor processor = new RenderscriptProcessor(
+                renderscript.getAbsolutePath(),
+                fullImportList,
+                sourceOutputDir.getAbsolutePath(),
+                rawFolder.getAbsolutePath(),
+                targetApi,
+                debugBuild,
+                optimLevel,
+                dependencyFileProcessor != null ?
+                        dependencyFileProcessor : sNoOpDependencyFileProcessor,
+                mCmdLineRunner);
+
+        SourceSearcher searcher = new SourceSearcher(sourceFolders, "rs", "fs");
+        searcher.setUseExecutor(true);
+        searcher.search(processor);
+    }
+
+
+    /**
+     * Computes and returns the leaf folders based on a given file extension.
+     *
+     * This looks through all the given root import folders, and recursively search for leaf
+     * folders containing files matching the given extensions. All the leaf folders are gathered
+     * and returned in the list.
+     *
+     * @param extension the extension to search for.
+     * @param importFolders an array of list of root folders.
+     * @return a list of leaf folder, never null.
+     */
+    @NonNull
+    public List<File> getLeafFolders(@NonNull String extension, List<File>... importFolders) {
+        List<File> results = Lists.newArrayList();
+
+        if (importFolders != null) {
+            for (List<File> folders : importFolders) {
+                SourceSearcher searcher = new SourceSearcher(folders, extension);
+                searcher.setUseExecutor(false);
+                LeafFolderProcessor processor = new LeafFolderProcessor();
+                try {
+                    searcher.search(processor);
+                } catch (InterruptedException e) {
+                    // wont happen as we're not using the executor, and our processor
+                    // doesn't throw those.
+                } catch (ExecutionException e) {
+                    // wont happen as we're not using the executor, and our processor
+                    // doesn't throw those.
+                } catch (IOException e) {
+                    // wont happen as we're not using the executor, and our processor
+                    // doesn't throw those.
+                }
+
+                results.addAll(processor.getFolders());
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Compiles the given renderscript file.
+     *
+     * @param renderscriptFile the renderscript file to compile
+     * @param importFolders all the import folders.
+     * @param sourceOutputDir the output dir in which to generate the source code
+     * @param resOutputDir the output dir in which to generate the bitcode file
+     * @param targetApi the target api
+     * @param debugBuild whether the build is debug
+     * @param optimLevel the optimization level
+     * @param dependencyFileProcessor the dependencyFileProcessor to record the dependencies
+     *                                of the compilation.
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void compileRenderscriptFile(@NonNull File renderscriptFile,
+                                        @NonNull List<File> importFolders,
+                                        @NonNull File sourceOutputDir,
+                                        @NonNull File resOutputDir,
+                                        int targetApi,
+                                        boolean debugBuild,
+                                        int optimLevel,
+                                        @Nullable DependencyFileProcessor dependencyFileProcessor)
+            throws IOException, InterruptedException {
+        checkState(mTarget != null, "Target not set.");
+        checkNotNull(renderscriptFile, "renderscriptFile cannot be null.");
+        checkNotNull(importFolders, "importFolders cannot be null.");
+        checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
+        checkNotNull(resOutputDir, "resOutputDir cannot be null.");
+
+        File renderscript = mSdkParser.getRenderscriptCompiler();
+        if (renderscript == null || !renderscript.isFile()) {
+            throw new IllegalStateException(String.valueOf("llvm-rs-cc is missing"));
+        }
+
+        List<File> fullImportList = Lists.newArrayListWithCapacity(importFolders.size() + 2);
+        fullImportList.addAll(importFolders);
+
+        @SuppressWarnings("deprecation")
+        String rsPath = mTarget.getPath(IAndroidTarget.ANDROID_RS);
+        fullImportList.add(new File(rsPath));
+
+        @SuppressWarnings("deprecation")
+        String rsClangPath = mTarget.getPath(IAndroidTarget.ANDROID_RS_CLANG);
+        fullImportList.add(new File(rsClangPath));
+
+        // the renderscript compiler doesn't expect the top res folder,
+        // but the raw folder directly.
+        File rawFolder = new File(resOutputDir, SdkConstants.FD_RES_RAW);
+
+        RenderscriptProcessor processor = new RenderscriptProcessor(
+                renderscript.getAbsolutePath(),
+                fullImportList,
+                sourceOutputDir.getAbsolutePath(),
+                rawFolder.getAbsolutePath(),
+                targetApi,
+                debugBuild,
+                optimLevel,
+                dependencyFileProcessor != null ?
+                        dependencyFileProcessor : sNoOpDependencyFileProcessor,
+                mCmdLineRunner);
+
+        processor.processFile(renderscriptFile);
     }
 
     /**
@@ -802,7 +984,7 @@ public class AndroidBuilder {
      * @param packagedJars the jars that are packaged (libraries + jar dependencies)
      * @param javaResourcesLocation the processed Java resource folder
      * @param jniLibsLocation the location of the compiled JNI libraries
-     * @param debugJni whether the app should include jni debug data
+     * @param jniDebugBuild whether the app should include jni debug data
      * @param signingConfig the signing configuration
      * @param outApkLocation location of the APK.
      * @throws DuplicateFileException
@@ -819,7 +1001,7 @@ public class AndroidBuilder {
             @NonNull List<File> packagedJars,
             @Nullable String javaResourcesLocation,
             @Nullable String jniLibsLocation,
-            boolean debugJni,
+            boolean jniDebugBuild,
             @Nullable SigningConfig signingConfig,
             @NonNull String outApkLocation) throws DuplicateFileException, FileNotFoundException,
             KeytoolException, PackagerException, SigningException {
@@ -841,7 +1023,7 @@ public class AndroidBuilder {
                     outApkLocation, androidResPkgLocation, classesDexLocation,
                     certificateInfo, mLogger);
 
-            packager.setDebugJniMode(debugJni);
+            packager.setJniDebugMode(jniDebugBuild);
 
             // figure out conflicts!
             JavaResourceProcessor resProcessor = new JavaResourceProcessor(packager);

@@ -43,7 +43,7 @@ public class BuildTypeDslTest extends BaseTest {
         BuildType type = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
 
         assertTrue(type.isDebuggable());
-        assertTrue(type.isDebugJniBuild());
+        assertTrue(type.isJniDebugBuild());
         assertNotNull(type.getSigningConfig());
         assertTrue(type.getSigningConfig().isSigningReady());
     }
@@ -63,7 +63,7 @@ public class BuildTypeDslTest extends BaseTest {
         BuildType type = plugin.buildTypes.get(BuilderConstants.RELEASE).buildType
 
         assertFalse(type.isDebuggable());
-        assertFalse(type.isDebugJniBuild());
+        assertFalse(type.isJniDebugBuild());
     }
 
     public void testInitWith() {
@@ -94,7 +94,7 @@ public class BuildTypeDslTest extends BaseTest {
         BuildType fooType = plugin.buildTypes.get("foo").buildType
 
         assertEquals(debugType.isDebuggable(),         fooType.isDebuggable())
-        assertEquals(debugType.isDebugJniBuild(),      fooType.isDebugJniBuild())
+        assertEquals(debugType.isJniDebugBuild(),      fooType.isJniDebugBuild())
         assertEquals(debugType.isZipAlign(),           fooType.isZipAlign())
         assertEquals(debugType.getVersionNameSuffix(), fooType.getVersionNameSuffix())
         assertEquals(debugType.getSigningConfig(),     fooType.getSigningConfig())

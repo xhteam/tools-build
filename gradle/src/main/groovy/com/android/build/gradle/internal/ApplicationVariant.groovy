@@ -25,6 +25,7 @@ import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ProcessManifest
+import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
 import com.android.builder.ProductFlavor
@@ -44,6 +45,7 @@ public abstract class ApplicationVariant {
     PrepareDependenciesTask prepareDependenciesTask
 
     ProcessManifest processManifestTask
+    RenderscriptCompile renderscriptCompileTask
     AidlCompile aidlCompileTask
     MergeResources mergeResourcesTask
     ProcessAndroidResources processResourcesTask

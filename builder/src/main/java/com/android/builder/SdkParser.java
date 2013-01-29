@@ -21,6 +21,8 @@ import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.utils.ILogger;
 
+import java.io.File;
+
 /**
  * A parser able to parse the SDK and return valuable information to the build system.
  *
@@ -50,4 +52,19 @@ public interface SdkParser {
      * @return the FullRevision or null if the revision couldn't not be found
      */
     FullRevision getPlatformToolsRevision();
+
+    /**
+     * Returns the location of the aapt tool.
+     */
+    File getAapt();
+
+    /**
+     * Returns the location of the aidl compiler.
+     */
+    File getAidlCompiler();
+
+    /**
+     * Returns the location of the renderscript compiler.
+     */
+    File getRenderscriptCompiler();
 }

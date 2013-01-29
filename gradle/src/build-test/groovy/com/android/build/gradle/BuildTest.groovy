@@ -98,7 +98,7 @@ class BuildTest extends BaseTest {
 
     void testOverlay1() {
         File project = buildProject("overlay1")
-        File drawableOutput = new File(project, "build/res/debug/drawable" )
+        File drawableOutput = new File(project, "build/res/all/debug/drawable" )
 
         checkImageColor(drawableOutput, "no_overlay.png", (int) 0xFF00FF00)
         checkImageColor(drawableOutput, "type_overlay.png", (int) 0xFF00FF00)
@@ -106,7 +106,7 @@ class BuildTest extends BaseTest {
 
     void testOverlay2() {
         File project = buildProject("overlay2")
-        File drawableOutput = new File(project, "build/res/one/debug/drawable" )
+        File drawableOutput = new File(project, "build/res/all/one/debug/drawable" )
 
         checkImageColor(drawableOutput, "no_overlay.png", (int) 0xFF00FF00)
         checkImageColor(drawableOutput, "type_overlay.png", (int) 0xFF00FF00)
@@ -114,11 +114,19 @@ class BuildTest extends BaseTest {
         checkImageColor(drawableOutput, "type_flavor_overlay.png", (int) 0xFF00FF00)
     }
 
-    void testRepo() {
-        // this is not an actual project, but we add it so that the catch-all below doesn't
-        // try to build it again
-        builtProjects.add("repo")
+    void testRenderscript() {
+        buildProject("renderscript")
+    }
 
+    void testRenderscriptInLib() {
+        buildProject("renderscriptInLib")
+    }
+
+    void testRenderscriptMultiSrc() {
+        buildProject("renderscriptMultiSrc")
+    }
+
+    void testRepo() {
         File repo = new File(testDir, "repo")
 
         try {
@@ -158,6 +166,11 @@ class BuildTest extends BaseTest {
     private File buildProject(String name) {
         File project = new File(testDir, name)
         builtProjects.add(name)
+
+        File buildGradle = new File(project, "build.gradle")
+        if (!buildGradle.isFile()) {
+            return null
+        }
 
         // build the project
         runGradleTasks(sdkDir, project, "clean", "assembleDebug")

@@ -1,0 +1,13 @@
+apply plugin: 'android'
+
+android {
+    target "android-17"
+
+    defaultConfig {
+        renderscriptTargetApi = 11
+    }
+}
+
+dependencies {
+    compile project(':lib')
+}

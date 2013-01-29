@@ -1,0 +1,20 @@
+//
+// A basic Android application that follows all the conventions
+//
+buildscript {
+    repositories {
+        maven { url '../../repo' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.3-SNAPSHOT'
+    }
+}
+apply plugin: 'android'
+
+android {
+    target "android-17"
+
+    defaultConfig {
+        renderscriptTargetApi = 11
+    }
+}

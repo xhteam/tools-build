@@ -52,7 +52,7 @@ public class PackageApplication extends IncrementalTask {
     List<File> packagedJars
 
     @Input
-    boolean debugJni
+    boolean jniDebugBuild
 
     @Nested @Optional
     SigningConfigDsl signingConfig
@@ -66,7 +66,7 @@ public class PackageApplication extends IncrementalTask {
                     getPackagedJars(),
                     getJavaResourceDir()?.absolutePath,
                     getJniDir()?.absolutePath,
-                    getDebugJni(),
+                    getJniDebugBuild(),
                     getSigningConfig(),
                     getOutputFile().absolutePath)
         } catch (DuplicateFileException e) {
