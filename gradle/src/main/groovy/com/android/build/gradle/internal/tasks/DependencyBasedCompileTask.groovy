@@ -82,6 +82,11 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
     protected abstract Object incrementalSetup()
 
     /**
+     * Returns whether each changed file can be processed in parallel.
+     */
+    protected abstract boolean supportsParallelization()
+
+    /**
      * Compiles a single file.
      * @param file the file to compile.
      * @param data the data returned by {@link #incrementalSetup()}
@@ -91,6 +96,33 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
      */
     protected abstract void compileSingleFile(File file, Object data,
                                               DependencyFileProcessor dependencyFileProcessor)
+
+    /**
+     * Small wrapper around an optional WaitableExecutor.
+     */
+    private static final class ExecutorWrapper {
+        WaitableExecutor executor = null
+
+        ExecutorWrapper(boolean useExecutor) {
+            if (useExecutor) {
+                executor = new WaitableExecutor();
+            }
+        }
+
+        void execute(Callable callable) throws Exception {
+            if (executor != null) {
+                executor.execute(callable)
+            } else {
+                callable.call()
+            }
+        }
+
+        void waitForTasks() {
+            if (executor != null) {
+                executor.waitForTasks()
+            }
+        }
+    }
 
     @Override
     protected void doFullTaskAction() {
@@ -129,7 +161,7 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
         final DepFileProcessor processor = new DepFileProcessor()
 
         // use an executor to parallelize the compilation of multiple files.
-        WaitableExecutor executor = new WaitableExecutor()
+        ExecutorWrapper executor = new ExecutorWrapper(supportsParallelization())
 
         Map<String,DependencyData> mainFileMap = store.getMainFileMap()
 

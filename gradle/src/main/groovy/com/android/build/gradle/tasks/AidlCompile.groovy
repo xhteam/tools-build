@@ -40,6 +40,11 @@ public class AidlCompile extends DependencyBasedCompileTask {
     }
 
     @Override
+    protected boolean supportsParallelization() {
+        return true
+    }
+
+    @Override
     protected Collection<File> getOutputForIncrementalBuild() {
         return Collections.singletonList(getSourceOutputDir())
     }

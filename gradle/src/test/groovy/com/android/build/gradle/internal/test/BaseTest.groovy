@@ -16,7 +16,6 @@
 
 package com.android.build.gradle.internal.test
 
-import com.android.build.gradle.BasePlugin
 import com.android.sdklib.internal.project.ProjectProperties
 import com.android.sdklib.internal.project.ProjectPropertiesWorkingCopy
 import junit.framework.TestCase
@@ -110,15 +109,16 @@ public abstract class BaseTest extends TestCase {
         return (File) localProp.file
     }
 
-    protected File runTasksOn(String name, String... tasks) {
+    protected File runTasksOn(String name, String gradleVersion, String... tasks) {
         File project = new File(testDir, name)
 
-        runGradleTasks(sdkDir, project, tasks)
+        runGradleTasks(sdkDir, gradleVersion, project, tasks)
 
         return project;
     }
 
-    protected static void runGradleTasks(File sdkDir, File project, String... tasks) {
+    protected static void runGradleTasks(File sdkDir, String gradleVersion,
+                                         File project, String... tasks) {
         File localProp = createLocalProp(project, sdkDir)
 
         try {
@@ -126,7 +126,7 @@ public abstract class BaseTest extends TestCase {
             GradleConnector connector = GradleConnector.newConnector()
 
             ProjectConnection connection = connector
-                    .useGradleVersion(BasePlugin.GRADLE_MIN_VERSION)
+                    .useGradleVersion(gradleVersion)
                     .forProjectDirectory(project)
                     .connect()
 
@@ -136,4 +136,18 @@ public abstract class BaseTest extends TestCase {
         }
     }
 
+    protected static void deleteFolder(File folder) {
+        File[] files = folder.listFiles()
+        if (files != null && files.length > 0) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    deleteFolder(file)
+                } else {
+                    file.delete()
+                }
+            }
+        }
+
+        folder.delete()
+    }
 }
