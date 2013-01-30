@@ -53,6 +53,11 @@ public class RenderscriptCompile extends DependencyBasedCompileTask {
     }
 
     @Override
+    protected boolean supportsParallelization() {
+        return false
+    }
+
+    @Override
     protected Collection<File> getOutputForIncrementalBuild() {
         return Collections.singletonList(getSourceOutputDir())
     }

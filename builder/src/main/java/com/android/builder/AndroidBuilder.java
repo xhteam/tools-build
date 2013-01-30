@@ -791,7 +791,7 @@ public class AndroidBuilder {
                 mCmdLineRunner);
 
         SourceSearcher searcher = new SourceSearcher(sourceFolders, "rs", "fs");
-        searcher.setUseExecutor(true);
+        searcher.setUseExecutor(false);
         searcher.search(processor);
     }
 
