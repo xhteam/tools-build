@@ -5,5 +5,5 @@ dependencies {
 }
 
 android {
-    target = "android-15"
+    compileSdkVersion 15
 }

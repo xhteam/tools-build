@@ -1,16 +1,28 @@
 0.3
 
-* Requires Gradle 1.3. Runtime check will ensure this.
-* Requires Android Platform Tools 16.0.2+. Runtime check will ensure this.
-* Default Java compile target set to 1.6.
-* API to manipulate Build Variants
-* Support for multi resource folders. See 'multires' sample
-* versionName suffix in build type.
-* Improved DSL to setup signing info.
-* new API to relocate full sourceSet. See 'migrated' sample.
-* Running tests on device now breaks the build if any test fails, and create a nice report, for each flavor/project, but also aggregated.
-* New plugin 'android-reporting' to aggregate android test results accross projects. See 'flavorlib' sample.
-* Tests now runs on all connected devices in parallel.
+* System requirements:
+   - Gradle 1.3+ (tested on 1.3/1.4)
+   - Android Platform Tools 16.0.2+
+* New Features:
+   - Renderscript support.
+   - Support for multi resource folders. See 'multires' sample.
+      * PNG crunch is now done incrementally and in parallel.
+   - Support for multi asset folders.
+   - Support for asset folders in Library Projects.
+   - API to manipulate Build Variants.
+   - Support for versionName suffix provided by the BuildType.
+   - Testing
+      * Tests now runs on all connected devices in parallel.
+      * Running tests on device now breaks the build if any test fails.
+      * Generate an HTML report for each flavor/project, but also aggregated.
+      * New plugin 'android-reporting' to aggregate android test results across projects. See 'flavorlib' sample.
+   - Improved DSL:
+      * replaced android.target with android.compileSdkVersion to make it less confusing vs min/targetSdkVersion
+      * signing information now a SigningConfig object reusable across BuildType and ProductFlavor
+      * ability to relocated a full sourceSet. See 'migrated' sample.
+* Fixes:
+   - Default Java compile target set to 1.6.
+   - Fix generation of R classes in case libraries share same package name as the app project.
 
 0.2
 

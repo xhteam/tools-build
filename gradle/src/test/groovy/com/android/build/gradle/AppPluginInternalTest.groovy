@@ -44,7 +44,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
         }
 
         AppPlugin plugin = AppPlugin.pluginHolder.plugin
@@ -76,7 +76,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             signingConfigs {
                 fakeConfig {
@@ -119,7 +119,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
             testBuildType "staging"
 
             buildTypes {
@@ -158,7 +158,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             productFlavors {
                 flavor1 {
@@ -193,7 +193,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             flavorGroups   "group1", "group2"
 
@@ -252,7 +252,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             signingConfigs {
                 one {
@@ -358,7 +358,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             signingConfigs {
                 debug {
@@ -383,7 +383,7 @@ public class AppPluginInternalTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             signingConfigs {
                 foo.initWith(owner.signingConfigs.debug)

@@ -18,9 +18,9 @@ public class MainActivity extends Activity {
         setContentView(R.layout.main);
 
         // some random code to test dependencies on util and guava
-       Person p = new Person("foo");
-       List<Person> persons = Lists.newArrayList();
-       persons.add(p);
+        Person p = new Person("foo");
+        List<Person> persons = Lists.newArrayList();
+        persons.add(p);
     }
 
     public void sendMessage(View view) {

@@ -525,7 +525,7 @@ public class AndroidBuilder {
 
         File aapt = mSdkParser.getAapt();
         if (aapt == null || !aapt.isFile()) {
-            throw new IllegalStateException(String.valueOf("aapt is missing"));
+            throw new IllegalStateException("aapt is missing");
         }
 
         command.add(aapt.getAbsolutePath());
@@ -698,7 +698,7 @@ public class AndroidBuilder {
 
         File aidl = mSdkParser.getAidlCompiler();
         if (aidl == null || !aidl.isFile()) {
-            throw new IllegalStateException(String.valueOf("aidl is missing"));
+            throw new IllegalStateException("aidl is missing");
         }
 
         List<File> fullImportList = Lists.newArrayListWithCapacity(
@@ -743,7 +743,7 @@ public class AndroidBuilder {
 
         File aidl = mSdkParser.getAidlCompiler();
         if (aidl == null || !aidl.isFile()) {
-            throw new IllegalStateException(String.valueOf("aidl is missing"));
+            throw new IllegalStateException("aidl is missing");
         }
 
         AidlProcessor processor = new AidlProcessor(
@@ -792,7 +792,7 @@ public class AndroidBuilder {
 
         File renderscript = mSdkParser.getRenderscriptCompiler();
         if (renderscript == null || !renderscript.isFile()) {
-            throw new IllegalStateException(String.valueOf("llvm-rs-cc is missing"));
+            throw new IllegalStateException("llvm-rs-cc is missing");
         }
 
         // gather the files to compile
@@ -927,9 +927,12 @@ public class AndroidBuilder {
         // launch dx: create the command line
         ArrayList<String> command = Lists.newArrayList();
 
-        @SuppressWarnings("deprecation")
-        String dxPath = mTarget.getPath(IAndroidTarget.DX);
-        command.add(dxPath);
+        File dx = mSdkParser.getDx();
+        if (dx == null || !dx.isFile()) {
+            throw new IllegalStateException("dx is missing");
+        }
+
+        command.add(dx.getAbsolutePath());
 
         command.add("--dex");
 

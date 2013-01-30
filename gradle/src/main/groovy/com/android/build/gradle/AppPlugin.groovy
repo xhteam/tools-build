@@ -514,6 +514,6 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
     @Override
     protected String getTarget() {
-        return extension.target;
+        return extension.compileSdkVersion;
     }
 }

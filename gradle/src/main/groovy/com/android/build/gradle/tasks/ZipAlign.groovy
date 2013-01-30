@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 package com.android.build.gradle.tasks
-
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
@@ -33,13 +31,13 @@ public class ZipAlign extends DefaultTask {
 
     // ----- PRIVATE TASK API -----
 
-    @Input
-    File sdkDir
+    @InputFile
+    File zipAlignExe
 
     @TaskAction
     void zipAlign() {
         project.exec {
-            executable = new File(getSdkDir(), "tools${File.separator}zipalign")
+            executable = getZipAlignExe()
             args '-f', '4'
             args getInputFile()
             args getOutputFile()
