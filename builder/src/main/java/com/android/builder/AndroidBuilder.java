@@ -27,8 +27,8 @@ import com.android.builder.internal.SymbolLoader;
 import com.android.builder.internal.SymbolWriter;
 import com.android.builder.internal.TestManifestGenerator;
 import com.android.builder.internal.compiler.AidlProcessor;
-import com.android.builder.internal.compiler.LeafFolderProcessor;
-import com.android.builder.internal.compiler.RenderscriptProcessor;
+import com.android.builder.internal.compiler.FileGatherer;
+import com.android.builder.internal.compiler.LeafFolderGatherer;
 import com.android.builder.internal.compiler.SourceSearcher;
 import com.android.builder.internal.packaging.JavaResourceProcessor;
 import com.android.builder.internal.packaging.Packager;
@@ -731,6 +731,11 @@ public class AndroidBuilder {
     /**
      * Compiles all the renderscript files found in the given source folders.
      *
+     * Right now this is the only way to compile them as the renderscript compiler requires all
+     * renderscript files to be passed for all compilation.
+     *
+     * Therefore whenever a renderscript file or header changes, all must be recompiled.
+     *
      * @param sourceFolders all the source folders to find files to compile
      * @param importFolders all the import folders.
      * @param sourceOutputDir the output dir in which to generate the source code
@@ -738,8 +743,6 @@ public class AndroidBuilder {
      * @param targetApi the target api
      * @param debugBuild whether the build is debug
      * @param optimLevel the optimization level
-     * @param dependencyFileProcessor the dependencyFileProcessor to record the dependencies
-     *                                of the compilation.
      * @throws IOException
      * @throws InterruptedException
      */
@@ -749,8 +752,7 @@ public class AndroidBuilder {
                                             @NonNull File resOutputDir,
                                             int targetApi,
                                             boolean debugBuild,
-                                            int optimLevel,
-                                            @Nullable DependencyFileProcessor dependencyFileProcessor)
+                                            int optimLevel)
             throws IOException, InterruptedException, ExecutionException {
         checkState(mTarget != null, "Target not set.");
         checkNotNull(sourceFolders, "sourceFolders cannot be null.");
@@ -763,38 +765,72 @@ public class AndroidBuilder {
             throw new IllegalStateException(String.valueOf("llvm-rs-cc is missing"));
         }
 
-        List<File> fullImportList = Lists.newArrayListWithCapacity(importFolders.size() + 2);
-        fullImportList.addAll(importFolders);
+        // gather the files to compile
+        FileGatherer fileGatherer = new FileGatherer();
+        SourceSearcher searcher = new SourceSearcher(sourceFolders, "rs", "fs");
+        searcher.setUseExecutor(false);
+        searcher.search(fileGatherer);
+
+        List<File> renderscriptFiles = fileGatherer.getFiles();
+
+        if (renderscriptFiles.isEmpty()) {
+            return;
+        }
 
         @SuppressWarnings("deprecation")
         String rsPath = mTarget.getPath(IAndroidTarget.ANDROID_RS);
-        fullImportList.add(new File(rsPath));
 
         @SuppressWarnings("deprecation")
         String rsClangPath = mTarget.getPath(IAndroidTarget.ANDROID_RS_CLANG);
-        fullImportList.add(new File(rsClangPath));
 
         // the renderscript compiler doesn't expect the top res folder,
         // but the raw folder directly.
         File rawFolder = new File(resOutputDir, SdkConstants.FD_RES_RAW);
 
-        RenderscriptProcessor processor = new RenderscriptProcessor(
-                renderscript.getAbsolutePath(),
-                fullImportList,
-                sourceOutputDir.getAbsolutePath(),
-                rawFolder.getAbsolutePath(),
-                targetApi,
-                debugBuild,
-                optimLevel,
-                dependencyFileProcessor != null ?
-                        dependencyFileProcessor : sNoOpDependencyFileProcessor,
-                mCmdLineRunner);
 
-        SourceSearcher searcher = new SourceSearcher(sourceFolders, "rs", "fs");
-        searcher.setUseExecutor(false);
-        searcher.search(processor);
+        // compile all the files in a single pass
+        ArrayList<String> command = Lists.newArrayList();
+
+        command.add(renderscript.getAbsolutePath());
+
+        if (debugBuild) {
+            command.add("-g");
+        }
+
+        command.add("-O");
+        command.add(Integer.toString(optimLevel));
+
+        // add all import paths
+        command.add("-I");
+        command.add(rsPath);
+        command.add("-I");
+        command.add(rsClangPath);
+
+        for (File importPath : importFolders) {
+            if (importPath.isDirectory()) {
+                command.add("-I");
+                command.add(importPath.getAbsolutePath());
+            }
+        }
+
+        // source output
+        command.add("-p");
+        command.add(sourceOutputDir.getAbsolutePath());
+
+        // res output
+        command.add("-o");
+        command.add(rawFolder.getAbsolutePath());
+
+        command.add("-target-api");
+        command.add(Integer.toString(targetApi < 11 ? 11 : targetApi));
+
+        // input files
+        for (File sourceFile : renderscriptFiles) {
+            command.add(sourceFile.getAbsolutePath());
+        }
+
+        mCmdLineRunner.runCmdLine(command);
     }
-
 
     /**
      * Computes and returns the leaf folders based on a given file extension.
@@ -815,7 +851,7 @@ public class AndroidBuilder {
             for (List<File> folders : importFolders) {
                 SourceSearcher searcher = new SourceSearcher(folders, extension);
                 searcher.setUseExecutor(false);
-                LeafFolderProcessor processor = new LeafFolderProcessor();
+                LeafFolderGatherer processor = new LeafFolderGatherer();
                 try {
                     searcher.search(processor);
                 } catch (InterruptedException e) {
@@ -834,71 +870,6 @@ public class AndroidBuilder {
         }
 
         return results;
-    }
-
-    /**
-     * Compiles the given renderscript file.
-     *
-     * @param renderscriptFile the renderscript file to compile
-     * @param importFolders all the import folders.
-     * @param sourceOutputDir the output dir in which to generate the source code
-     * @param resOutputDir the output dir in which to generate the bitcode file
-     * @param targetApi the target api
-     * @param debugBuild whether the build is debug
-     * @param optimLevel the optimization level
-     * @param dependencyFileProcessor the dependencyFileProcessor to record the dependencies
-     *                                of the compilation.
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    public void compileRenderscriptFile(@NonNull File renderscriptFile,
-                                        @NonNull List<File> importFolders,
-                                        @NonNull File sourceOutputDir,
-                                        @NonNull File resOutputDir,
-                                        int targetApi,
-                                        boolean debugBuild,
-                                        int optimLevel,
-                                        @Nullable DependencyFileProcessor dependencyFileProcessor)
-            throws IOException, InterruptedException {
-        checkState(mTarget != null, "Target not set.");
-        checkNotNull(renderscriptFile, "renderscriptFile cannot be null.");
-        checkNotNull(importFolders, "importFolders cannot be null.");
-        checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
-        checkNotNull(resOutputDir, "resOutputDir cannot be null.");
-
-        File renderscript = mSdkParser.getRenderscriptCompiler();
-        if (renderscript == null || !renderscript.isFile()) {
-            throw new IllegalStateException(String.valueOf("llvm-rs-cc is missing"));
-        }
-
-        List<File> fullImportList = Lists.newArrayListWithCapacity(importFolders.size() + 2);
-        fullImportList.addAll(importFolders);
-
-        @SuppressWarnings("deprecation")
-        String rsPath = mTarget.getPath(IAndroidTarget.ANDROID_RS);
-        fullImportList.add(new File(rsPath));
-
-        @SuppressWarnings("deprecation")
-        String rsClangPath = mTarget.getPath(IAndroidTarget.ANDROID_RS_CLANG);
-        fullImportList.add(new File(rsClangPath));
-
-        // the renderscript compiler doesn't expect the top res folder,
-        // but the raw folder directly.
-        File rawFolder = new File(resOutputDir, SdkConstants.FD_RES_RAW);
-
-        RenderscriptProcessor processor = new RenderscriptProcessor(
-                renderscript.getAbsolutePath(),
-                fullImportList,
-                sourceOutputDir.getAbsolutePath(),
-                rawFolder.getAbsolutePath(),
-                targetApi,
-                debugBuild,
-                optimLevel,
-                dependencyFileProcessor != null ?
-                        dependencyFileProcessor : sNoOpDependencyFileProcessor,
-                mCmdLineRunner);
-
-        processor.processFile(renderscriptFile);
     }
 
     /**

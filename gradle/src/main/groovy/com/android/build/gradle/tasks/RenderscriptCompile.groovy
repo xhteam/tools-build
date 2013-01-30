@@ -15,17 +15,20 @@
  */
 
 package com.android.build.gradle.tasks
-import com.android.build.gradle.internal.tasks.DependencyBasedCompileTask
-import com.android.builder.compiling.DependencyFileProcessor
+import com.android.build.gradle.internal.tasks.BaseTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 /**
  * Task to compile Renderscript files. Supports incremental update.
  */
-public class RenderscriptCompile extends DependencyBasedCompileTask {
+public class RenderscriptCompile extends BaseTask {
 
     // ----- PUBLIC TASK API -----
+
+    @OutputDirectory
+    File sourceOutputDir
 
     @OutputDirectory
     File resOutputDir
@@ -47,54 +50,27 @@ public class RenderscriptCompile extends DependencyBasedCompileTask {
     @Input
     boolean debugBuild
 
-    @Override
-    protected boolean isIncremental() {
-        return true
-    }
+    @TaskAction
+    void taskAction() {
+        // this is full run (always), clean the previous outputs
+        File sourceDestDir = getSourceOutputDir()
+        emptyFolder(sourceDestDir)
 
-    @Override
-    protected boolean supportsParallelization() {
-        return false
-    }
+        File resDestDir = getResOutputDir()
+        emptyFolder(resDestDir)
 
-    @Override
-    protected Collection<File> getOutputForIncrementalBuild() {
-        return Collections.singletonList(getSourceOutputDir())
-    }
-
-    @Override
-    protected void compileAllFiles(DependencyFileProcessor dependencyFileProcessor) {
-
+        // get the import folders. If the .rsh files are not directly under the import folders,
+        // we need to get the leaf folders, as this is what llvm-rs-cc expects.
         List<File> importFolders = getBuilder().getLeafFolders("rsh",
                 getImportDirs(), getSourceDirs())
 
         getBuilder().compileAllRenderscriptFiles(
                 getSourceDirs(),
                 importFolders,
-                getSourceOutputDir(),
-                getResOutputDir(),
+                sourceDestDir,
+                resDestDir,
                 getTargetApi(),
                 getDebugBuild(),
-                getOptimLevel(),
-                dependencyFileProcessor)
-    }
-
-    @Override
-    protected Object incrementalSetup() {
-        return getBuilder().getLeafFolders("rsh", getImportDirs(), getSourceDirs())
-    }
-
-    @Override
-    protected void compileSingleFile(File file,Object data,
-                                     DependencyFileProcessor dependencyFileProcessor) {
-        getBuilder().compileRenderscriptFile(
-                file,
-                (List<File>) data,
-                getSourceOutputDir(),
-                getResOutputDir(),
-                getTargetApi(),
-                getDebugBuild(),
-                getOptimLevel(),
-                dependencyFileProcessor)
+                getOptimLevel())
     }
 }

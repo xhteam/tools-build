@@ -16,25 +16,24 @@
 
 package com.android.builder.internal.compiler;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Set;
+import java.util.List;
 
 /**
- * Source Searcher processor, gathering a list of folders containing processed source files.
+ * Source Searcher processor, gathering a list of all the files found by the SourceSearcher.
  */
-public class LeafFolderProcessor implements SourceSearcher.SourceFileProcessor {
-
-    private final Set<File> mFolders = Sets.newHashSet();
+public class FileGatherer implements SourceSearcher.SourceFileProcessor {
+    private final List<File> mFiles = Lists.newArrayList();
 
     @Override
     public void processFile(File sourceFile) throws IOException, InterruptedException {
-        mFolders.add(sourceFile.getParentFile());
+        mFiles.add(sourceFile);
     }
 
-    public Set<File> getFolders() {
-        return mFolders;
+    public List<File> getFiles() {
+        return mFiles;
     }
 }

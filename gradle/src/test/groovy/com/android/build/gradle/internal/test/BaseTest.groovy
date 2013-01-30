@@ -129,8 +129,11 @@ public abstract class BaseTest extends TestCase {
                     .useGradleVersion(gradleVersion)
                     .forProjectDirectory(project)
                     .connect()
-
-            connection.newBuild().forTasks(tasks).run()
+            try {
+                connection.newBuild().forTasks(tasks).withArguments("-i").run()
+            } finally {
+                connection.close()
+            }
         } finally {
             localProp.delete()
         }
