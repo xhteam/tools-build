@@ -36,6 +36,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.tooling.BuildException
 
 import javax.inject.Inject
 
@@ -145,6 +146,11 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         variantConfig.setJarDependencies(jars)
         variantConfig.setAndroidDependencies(libs)
 
+        String packageName = variantConfig.getPackageFromManifest()
+        if (packageName == null) {
+            throw new BuildException("Failed to read manifest")
+        }
+
         ProductionAppVariant variant = new ProductionAppVariant(variantConfig)
         variants.add(variant)
 
@@ -182,9 +188,10 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
 
         jar.destinationDir = project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}")
         jar.archiveName = "classes.jar"
-        String packageName = variantConfig.getPackageFromManifest().replace('.', '/');
+        packageName = packageName.replace('.', '/');
         jar.exclude(packageName + "/R.class")
         jar.exclude(packageName + "/R\$*.class")
+        jar.exclude(packageName + "/BuildConfig.class")
 
         // package the aidl files into the bundle folder
         Copy packageAidl = project.tasks.add("package${variant.name}Aidl", Copy)

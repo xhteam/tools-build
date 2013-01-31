@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.tests.libstest.app;
+package com.android.tests.libstest.lib2;
 
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.widget.TextView;
+
+import com.android.tests.libstest.lib2.R;
 
 /**
  * An example of an {@link ActivityInstrumentationTestCase2} of a specific activity {@link Focus2}.
@@ -37,43 +39,27 @@ import android.widget.TextView;
  * See {@link com.example.android.apis.AllTests} for documentation on running
  * all tests and individual tests in this application.
  */
-public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActivity> {
+public class MainActivity2bTest extends ActivityInstrumentationTestCase2<MainActivity2b> {
 
-    private TextView mAppTextView1;
-    private TextView mAppTextView2;
-    private TextView mLib1TextView1;
-    private TextView mLib1TextView2;
-    private TextView mLib2TextView1;
-    private TextView mLib2TextView2;
-    private TextView mLib2bTextView1;
-    private TextView mLib2bTextView2;
-    private TextView mLibappTextView1;
-    private TextView mLibappTextView2;
+    private TextView mTextView1;
+    private TextView mTextView2;
 
     /**
      * Creates an {@link ActivityInstrumentationTestCase2} that tests the {@link Focus2} activity.
      */
-    public MainActivityTest() {
-        super(MainActivity.class);
+    public MainActivity2bTest() {
+        super(MainActivity2b.class);
     }
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        final MainActivity a = getActivity();
+        final MainActivity2b a = getActivity();
         // ensure a valid handle to the activity has been returned
         assertNotNull(a);
         
-        mAppTextView1 = (TextView) a.findViewById(R.id.app_text1);
-        mAppTextView2 = (TextView) a.findViewById(R.id.app_text1);
-        mLib1TextView1 = (TextView) a.findViewById(R.id.lib1_text1);
-        mLib1TextView2 = (TextView) a.findViewById(R.id.lib1_text2);
-        mLib2TextView1 = (TextView) a.findViewById(R.id.lib2_text1);
-        mLib2TextView2 = (TextView) a.findViewById(R.id.lib2_text2);
-        mLib2bTextView1 = (TextView) a.findViewById(R.id.lib2b_text1);
-        mLib2bTextView2 = (TextView) a.findViewById(R.id.lib2b_text2);
-        mLibappTextView1 = (TextView) a.findViewById(R.id.libapp_text1);
-        mLibappTextView2 = (TextView) a.findViewById(R.id.libapp_text2);
+        mTextView1 = (TextView) a.findViewById(R.id.lib2b_text1);
+        mTextView2 = (TextView) a.findViewById(R.id.lib2b_text2);
     }
 
     /**
@@ -84,33 +70,17 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
      */
     @MediumTest
     public void testPreconditions() {
-        assertNotNull(mAppTextView1);
-        assertNotNull(mAppTextView2);
-        assertNotNull(mLib1TextView1);
-        assertNotNull(mLib1TextView2);
-        assertNotNull(mLib2TextView1);
-        assertNotNull(mLib2TextView2);
-        assertNotNull(mLib2bTextView1);
-        assertNotNull(mLib2bTextView2);
-        assertNotNull(mLibappTextView1);
-        assertNotNull(mLibappTextView2);
+        assertNotNull(mTextView1);
+        assertNotNull(mTextView2);
     }
 
     @MediumTest
     public void testAndroidStrings() {
-        assertEquals(mAppTextView1.getText(), "SUCCESS-APP");
-        assertEquals(mLib1TextView1.getText(), "SUCCESS-LIB1");
-        assertEquals(mLib2TextView1.getText(), "SUCCESS-LIB2");
-        assertEquals(mLib2bTextView1.getText(), "SUCCESS-LIB2b");
-        assertEquals(mLibappTextView1.getText(), "SUCCESS-LIBAPP");
+        assertEquals("SUCCESS-LIB2b", mTextView1.getText());
     }
 
     @MediumTest
     public void testJavaStrings() {
-        assertEquals(mAppTextView2.getText(), "SUCCESS-APP");
-        assertEquals(mLib1TextView2.getText(), "SUCCESS-LIB1");
-        assertEquals(mLib2TextView2.getText(), "SUCCESS-LIB2");
-        assertEquals(mLib2bTextView2.getText(), "SUCCESS-LIB2b");
-        assertEquals(mLibappTextView2.getText(), "SUCCESS-LIBAPP");
+        assertEquals("SUCCESS-LIB2b", mTextView2.getText());
     }
 }

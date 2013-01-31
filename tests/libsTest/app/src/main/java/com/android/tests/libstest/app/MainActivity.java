@@ -5,6 +5,7 @@ import android.os.Bundle;
 
 import com.android.tests.libstest.lib1.Lib1;
 import com.android.tests.libstest.lib2.Lib2;
+import com.android.tests.libstest.lib2.Lib2b;
 
 public class MainActivity extends Activity {
     /** Called when the activity is first created. */
@@ -16,5 +17,7 @@ public class MainActivity extends Activity {
         App.handleTextView(this);
         Lib1.handleTextView(this);
         Lib2.handleTextView(this);
+        Lib2b.handleTextView(this);
+        LibApp.handleTextView(this);
     }
 }
