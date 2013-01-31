@@ -16,6 +16,7 @@ repositories {
 
 dependencies {
     compile 'com.example.android.multiproject:util:1.0'
+    releaseCompile 'com.google.guava:guava:11.0.2'
 }
 
 android {

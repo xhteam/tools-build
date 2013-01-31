@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.SdkConstants
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.DefaultBuildVariant
@@ -38,7 +37,6 @@ import org.gradle.api.tasks.bundling.Zip
 import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
-
 /**
  * Gradle plugin class for 'library' projects.
  */
@@ -73,22 +71,31 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         project.tasks.assemble.dependsOn debugBuildTypeData.assembleTask
         project.tasks.assemble.dependsOn releaseBuildTypeData.assembleTask
 
-        createConfigurations()
+        createConfigurations(releaseSourceSet)
     }
 
-    void createConfigurations() {
-        def debugConfig = project.configurations.add(BuilderConstants.DEBUG)
-        def releaseConfig = project.configurations.add(BuilderConstants.RELEASE)
-        debugConfig.extendsFrom(project.configurations["package"])
-        releaseConfig.extendsFrom(project.configurations["package"])
-        project.configurations["default"].extendsFrom(releaseConfig)
+    void createConfigurations(AndroidSourceSet releaseSourceSet) {
+        // The library artifact is published for the "default" configuration so we make
+        // sure "default" extends from the actual configuration used for building.
+        project.configurations["default"].extendsFrom(
+                project.configurations[mainSourceSet.getPackageConfigurationName()])
+        project.configurations["default"].extendsFrom(
+                project.configurations[releaseSourceSet.getPackageConfigurationName()])
 
-        // Adjust the pom scope mappings
-        // TODO - this should be part of JavaBase plugin. Fix this in Gradle
         project.plugins.withType(MavenPlugin) {
-            project.conf2ScopeMappings.addMapping(300, project.configurations.compile, "runtime")
-            project.conf2ScopeMappings.addMapping(300, project.configurations["package"], "runtime")
-            project.conf2ScopeMappings.addMapping(300, releaseConfig, "runtime")
+            project.conf2ScopeMappings.addMapping(300,
+                    project.configurations[mainSourceSet.getCompileConfigurationName()],
+                    "compile")
+            project.conf2ScopeMappings.addMapping(300,
+                    project.configurations[releaseSourceSet.getCompileConfigurationName()],
+                    "compile")
+            // TODO -- figure out the package configuration
+//            project.conf2ScopeMappings.addMapping(300,
+//                    project.configurations[mainSourceSet.getPackageConfigurationName()],
+//                    "runtime")
+//            project.conf2ScopeMappings.addMapping(300,
+//                    project.configurations[releaseSourceSet.getPackageConfigurationName()],
+//                    "runtime")
         }
     }
 
@@ -100,8 +107,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         dependencies.add(releaseBuildTypeData)
         resolveDependencies(dependencies)
 
-        ProductionAppVariant testedVariant = createLibraryTasks(debugBuildTypeData)
-        ProductionAppVariant nonTestedVariant = createLibraryTasks(releaseBuildTypeData)
+        ProductionAppVariant testedVariant = createLibraryTasks(debugBuildTypeData, false)
+        ProductionAppVariant nonTestedVariant = createLibraryTasks(releaseBuildTypeData, true)
         TestAppVariant testVariant = createTestTasks(testedVariant)
 
         // add the not-tested build variant.
@@ -117,9 +124,11 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         extension.buildVariants.add(
                 instantiator.newInstance(DefaultBuildVariant.class,
                         testedVariant, testBuildVariant))
+
     }
 
-    private ProductionAppVariant createLibraryTasks(BuildTypeData buildTypeData) {
+    private ProductionAppVariant createLibraryTasks(BuildTypeData buildTypeData,
+                                                    boolean publishArtifact) {
         ProductFlavorData defaultConfigData = getDefaultConfigData();
 
         List<ConfigurationDependencies> configDependencies = []
@@ -221,7 +230,10 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         variant.packageLibTask = bundle
         variant.outputFile = bundle.archivePath
 
-        project.artifacts.add(buildTypeData.buildType.name, bundle)
+        if (publishArtifact) {
+            // add the artifact that will be published
+            project.artifacts.add("default", bundle)
+        }
 
         buildTypeData.assembleTask.dependsOn bundle
         variant.assembleTask = bundle
