@@ -37,7 +37,7 @@ import static com.google.common.base.Preconditions.checkState;
  */
 public class VariantConfiguration {
 
-    final static ManifestParser sManifestParser = new DefaultManifestParser();
+    private static final ManifestParser sManifestParser = new DefaultManifestParser();
 
     private final ProductFlavor mDefaultConfig;
     private final SourceProvider mDefaultSourceProvider;
@@ -70,6 +70,16 @@ public class VariantConfiguration {
 
     public static enum Type {
         DEFAULT, LIBRARY, TEST
+    }
+
+    /**
+     * Parses the manifest file and return the package name.
+     * @param manifestFile the manifest file
+     * @return the package name found or null
+     */
+    @Nullable
+    public static String getManifestPackage(@NonNull File manifestFile) {
+        return sManifestParser.getPackage(manifestFile);
     }
 
     /**
