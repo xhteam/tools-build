@@ -17,12 +17,17 @@
 package com.android.builder;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 
 import java.io.File;
 
 public interface ManifestParser {
 
+    @Nullable
     String getPackage(@NonNull File manifestFile);
+
     int getMinSdkVersion(@NonNull File manifestFile);
+
+    @Nullable
     String getVersionName(@NonNull File manifestFile);
 }

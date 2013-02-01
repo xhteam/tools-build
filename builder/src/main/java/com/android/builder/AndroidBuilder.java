@@ -46,14 +46,17 @@ import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.IAndroidTarget.IOptionalLibrary;
 import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.utils.ILogger;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.io.Files;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -616,31 +619,58 @@ public class AndroidBuilder {
         // now if the project has libraries, R needs to be created for each libraries,
         // but only if the current project is not a library.
         if (type != VariantConfiguration.Type.LIBRARY && !libraries.isEmpty()) {
-            SymbolLoader symbolValues = null;
+            SymbolLoader fullSymbolValues = null;
+
+            // First pass processing the libraries, collecting them by packageName,
+            // and ignoring the ones that have the same package name as the application
+            // (since that R class was already created).
+            String appPackageName = packageOverride;
+            if (appPackageName == null) {
+                appPackageName = VariantConfiguration.getManifestPackage(manifestFile);
+            }
+
+            // list of all the symbol loaders per package names.
+            Multimap<String, SymbolLoader> libMap = ArrayListMultimap.create();
 
             for (SymbolFileProvider lib : libraries) {
                 File rFile = lib.getSymbolFile();
                 // if the library has no resource, this file won't exist.
                 if (rFile.isFile()) {
-                    // load the values if that's not already been done.
-                    // Doing it lazily allow us to support the case where there's no
-                    // resources anywhere.
-                    if (symbolValues == null) {
-                        symbolValues = new SymbolLoader(new File(symbolOutputDir, "R.txt"),
-                                mLogger);
-                        symbolValues.load();
+
+                    String packageName = VariantConfiguration.getManifestPackage(lib.getManifest());
+                    if (appPackageName.equals(packageName)) {
+                        // ignore libraries that have the same package name as the app
+                        continue;
                     }
 
-                    SymbolLoader symbols = new SymbolLoader(rFile, mLogger);
-                    symbols.load();
+                    // load the full values if that's not already been done.
+                    // Doing it lazily allow us to support the case where there's no
+                    // resources anywhere.
+                    if (fullSymbolValues == null) {
+                        fullSymbolValues = new SymbolLoader(new File(symbolOutputDir, "R.txt"),
+                                mLogger);
+                        fullSymbolValues.load();
+                    }
 
-                    String packageName = VariantConfiguration.sManifestParser.getPackage(
-                            lib.getManifest());
+                    SymbolLoader libSymbols = new SymbolLoader(rFile, mLogger);
+                    libSymbols.load();
 
-                    SymbolWriter writer = new SymbolWriter(sourceOutputDir, packageName,
-                            symbols, symbolValues);
-                    writer.write();
+
+                    // store these symbols by associating them with the package name.
+                    libMap.put(packageName, libSymbols);
                 }
+            }
+
+            // now loop on all the package name, merge all the symbols to write, and write them
+            for (String packageName : libMap.keySet()) {
+                Collection<SymbolLoader> symbols = libMap.get(packageName);
+
+                SymbolWriter writer = new SymbolWriter(sourceOutputDir, packageName,
+                        fullSymbolValues);
+                for (SymbolLoader symbolLoader : symbols) {
+                    writer.addSymbolsToWrite(symbolLoader);
+                }
+                writer.write();
             }
         }
     }

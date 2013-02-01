@@ -20,6 +20,8 @@ import com.android.SdkConstants;
 import com.android.builder.internal.SymbolLoader.SymbolEntry;
 import com.google.common.base.Charsets;
 import com.google.common.base.Splitter;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.common.io.Closeables;
 import com.google.common.io.Files;
@@ -27,7 +29,11 @@ import com.google.common.io.Files;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  */
@@ -35,14 +41,27 @@ public class SymbolWriter {
 
     private final String mOutFolder;
     private final String mPackageName;
-    private final SymbolLoader mSymbols;
+    private final List<SymbolLoader> mSymbols = Lists.newArrayList();
     private final SymbolLoader mValues;
 
-    public SymbolWriter(String outFolder, String packageName, SymbolLoader symbols, SymbolLoader values) {
+    public SymbolWriter(String outFolder, String packageName, SymbolLoader values) {
         mOutFolder = outFolder;
         mPackageName = packageName;
-        mSymbols = symbols;
         mValues = values;
+    }
+
+    public void addSymbolsToWrite(SymbolLoader symbols) {
+        mSymbols.add(symbols);
+    }
+
+    private Table<String, String, SymbolEntry> getAllSymbols() {
+        Table<String, String, SymbolEntry> symbols = HashBasedTable.create();
+
+        for (SymbolLoader symbolLoader : mSymbols) {
+            symbols.putAll(symbolLoader.getSymbols());
+        }
+
+        return symbols;
     }
 
     public void write() throws IOException {
@@ -70,17 +89,26 @@ public class SymbolWriter {
             writer.write(mPackageName);
             writer.write(";\n\npublic final class R {\n");
 
-            Table<String, String, SymbolEntry> symbols = mSymbols.getSymbols();
+            Table<String, String, SymbolEntry> symbols = getAllSymbols();
             Table<String, String, SymbolEntry> values = mValues.getSymbols();
 
-            for (String row : symbols.rowKeySet()) {
+            Set<String> rowSet = symbols.rowKeySet();
+            List<String> rowList = Lists.newArrayList(rowSet);
+            Collections.sort(rowList);
+
+            for (String row : rowList) {
                 writer.write("\tpublic static final class ");
                 writer.write(row);
                 writer.write(" {\n");
 
-                for (Map.Entry<String, SymbolEntry> symbol : symbols.row(row).entrySet()) {
+                Map<String, SymbolEntry> rowMap = symbols.row(row);
+                Set<String> symbolSet = rowMap.keySet();
+                ArrayList<String> symbolList = Lists.newArrayList(symbolSet);
+                Collections.sort(symbolList);
+
+                for (String symbolName : symbolList) {
                     // get the matching SymbolEntry from the values Table.
-                    SymbolEntry value = values.get(row, symbol.getKey());
+                    SymbolEntry value = values.get(row, symbolName);
                     if (value != null) {
                         writer.write("\t\tpublic static final ");
                         writer.write(value.getType());

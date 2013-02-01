@@ -18,4 +18,8 @@
 
     <include layout="@layout/lib1_main" />
 
+    <include layout="@layout/lib2b_main" />
+
+    <include layout="@layout/libapp_main" />
+
 </LinearLayout>

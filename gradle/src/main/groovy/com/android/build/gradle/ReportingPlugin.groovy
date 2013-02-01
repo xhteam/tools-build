@@ -40,52 +40,50 @@ class ReportingPlugin implements org.gradle.api.Plugin<Project> {
 
         extension = project.extensions.create('android', TestOptions)
 
-        AndroidReportTask testTask = project.tasks.add("test", AndroidReportTask)
-        testTask.group = JavaBasePlugin.VERIFICATION_GROUP
-        testTask.description = "Installs and runs tests for all flavors, and aggregate the results"
-        testTask.reportType = ReportType.MULTI_PROJECT
+        AndroidReportTask mergeReportsTask = project.tasks.add("mergeAndroidReports",
+                AndroidReportTask)
+        mergeReportsTask.group = JavaBasePlugin.VERIFICATION_GROUP
+        mergeReportsTask.description = "Merges all the Android test reports from the sub projects."
+        mergeReportsTask.reportType = ReportType.MULTI_PROJECT
 
-        testTask.conventionMapping.resultsDir = {
+        mergeReportsTask.conventionMapping.resultsDir = {
             String location = extension.resultsDir != null ?
                 extension.resultsDir : "$project.buildDir/test-results"
 
             project.file(location)
         }
-        testTask.conventionMapping.reportsDir = {
+        mergeReportsTask.conventionMapping.reportsDir = {
             String location = extension.reportDir != null ?
                 extension.reportDir : "$project.buildDir/reports/tests"
 
             project.file(location)
         }
 
-        // TODO: deal with existing/missing test/check tasks.
-//        project.tasks.check.dependsOn testTask
-
         // gather the subprojects
         project.afterEvaluate {
             project.subprojects.each { p ->
                 TaskCollection<AndroidReportTask> tasks = p.tasks.withType(AndroidReportTask)
                 for (AndroidReportTask task : tasks) {
-                    testTask.addTask(task)
+                    mergeReportsTask.addTask(task)
                 }
                 TaskCollection<TestLibraryTask> tasks2= p.tasks.withType(TestLibraryTask)
                 for (TestLibraryTask task : tasks2) {
-                    testTask.addTask(task)
+                    mergeReportsTask.addTask(task)
                 }
             }
         }
 
         // If gradle is launched with --continue, we want to run all tests and generate an
         // aggregate report (to help with the fact that we may have several build variants).
-        // To do that, the "test" task (which does the aggregation) must always run even if
-        // one of its dependent task (all the testFlavor tasks) fails, so we make them ignore their
-        // error.
+        // To do that, the "mergeAndroidReports" task (which does the aggregation) must always
+        // run even if one of its dependent task (all the testFlavor tasks) fails, so we make
+        // them ignore their error.
         // We cannot do that always: in case the test task is not going to run, we do want the
         // individual testFlavor tasks to fail.
-        if (testTask != null && project.gradle.startParameter.continueOnFailure) {
+        if (mergeReportsTask != null && project.gradle.startParameter.continueOnFailure) {
             project.gradle.taskGraph.whenReady { taskGraph ->
-                if (taskGraph.hasTask(testTask)) {
-                    testTask.setWillRun()
+                if (taskGraph.hasTask(mergeReportsTask)) {
+                    mergeReportsTask.setWillRun()
                 }
             }
         }

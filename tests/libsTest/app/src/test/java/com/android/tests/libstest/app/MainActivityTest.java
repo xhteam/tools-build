@@ -45,6 +45,10 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
     private TextView mLib1TextView2;
     private TextView mLib2TextView1;
     private TextView mLib2TextView2;
+    private TextView mLib2bTextView1;
+    private TextView mLib2bTextView2;
+    private TextView mLibappTextView1;
+    private TextView mLibappTextView2;
 
     /**
      * Creates an {@link ActivityInstrumentationTestCase2} that tests the {@link Focus2} activity.
@@ -66,6 +70,10 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         mLib1TextView2 = (TextView) a.findViewById(R.id.lib1_text2);
         mLib2TextView1 = (TextView) a.findViewById(R.id.lib2_text1);
         mLib2TextView2 = (TextView) a.findViewById(R.id.lib2_text2);
+        mLib2bTextView1 = (TextView) a.findViewById(R.id.lib2b_text1);
+        mLib2bTextView2 = (TextView) a.findViewById(R.id.lib2b_text2);
+        mLibappTextView1 = (TextView) a.findViewById(R.id.libapp_text1);
+        mLibappTextView2 = (TextView) a.findViewById(R.id.libapp_text2);
     }
 
     /**
@@ -82,6 +90,10 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         assertNotNull(mLib1TextView2);
         assertNotNull(mLib2TextView1);
         assertNotNull(mLib2TextView2);
+        assertNotNull(mLib2bTextView1);
+        assertNotNull(mLib2bTextView2);
+        assertNotNull(mLibappTextView1);
+        assertNotNull(mLibappTextView2);
     }
 
     @MediumTest
@@ -89,6 +101,8 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         assertEquals(mAppTextView1.getText(), "SUCCESS-APP");
         assertEquals(mLib1TextView1.getText(), "SUCCESS-LIB1");
         assertEquals(mLib2TextView1.getText(), "SUCCESS-LIB2");
+        assertEquals(mLib2bTextView1.getText(), "SUCCESS-LIB2b");
+        assertEquals(mLibappTextView1.getText(), "SUCCESS-LIBAPP");
     }
 
     @MediumTest
@@ -96,5 +110,7 @@ public class MainActivityTest extends ActivityInstrumentationTestCase2<MainActiv
         assertEquals(mAppTextView2.getText(), "SUCCESS-APP");
         assertEquals(mLib1TextView2.getText(), "SUCCESS-LIB1");
         assertEquals(mLib2TextView2.getText(), "SUCCESS-LIB2");
+        assertEquals(mLib2bTextView2.getText(), "SUCCESS-LIB2b");
+        assertEquals(mLibappTextView2.getText(), "SUCCESS-LIBAPP");
     }
 }

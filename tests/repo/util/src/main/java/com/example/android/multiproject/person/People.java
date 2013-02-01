@@ -1,10 +1,13 @@
 package com.example.android.multiproject.person;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import com.google.common.collect.Lists;
 
 public class People implements Iterable<Person> {
     public Iterator<Person> iterator() {
-        return Lists.newArrayList(new Person("Fred"), new Person("Barney")).iterator();
+        ArrayList<Person> list = new ArrayList<Person>();
+        list.add(new Person("Fred"));
+        list.add(new Person("Barney"));
+        return list.iterator();
     }
 }

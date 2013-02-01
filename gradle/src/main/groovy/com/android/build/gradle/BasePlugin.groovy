@@ -342,8 +342,6 @@ public abstract class BasePlugin {
         renderscriptTask.dependsOn variant.prepareDependenciesTask
         renderscriptTask.plugin = this
         renderscriptTask.variant = variant
-        renderscriptTask.incrementalFolder =
-            project.file("$project.buildDir/incremental/rs/$variant.dirName")
 
         renderscriptTask.targetApi = config.mergedFlavor.renderscriptTargetApi
         renderscriptTask.debugBuild = config.buildType.renderscriptDebugBuild
@@ -896,6 +894,7 @@ public abstract class BasePlugin {
             Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
             Multimap<AndroidDependency, ConfigurationDependencies> reverseMap) {
 
+        // TODO support package configuration
         def compileClasspath = configDependencies.configuration
 
         // TODO - shouldn't need to do this - fix this in Gradle
