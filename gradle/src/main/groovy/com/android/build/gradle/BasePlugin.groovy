@@ -342,8 +342,6 @@ public abstract class BasePlugin {
         renderscriptTask.dependsOn variant.prepareDependenciesTask
         renderscriptTask.plugin = this
         renderscriptTask.variant = variant
-        renderscriptTask.incrementalFolder =
-            project.file("$project.buildDir/incremental/rs/$variant.dirName")
 
         renderscriptTask.targetApi = config.mergedFlavor.renderscriptTargetApi
         renderscriptTask.debugBuild = config.buildType.renderscriptDebugBuild
