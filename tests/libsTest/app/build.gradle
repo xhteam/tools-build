@@ -9,4 +9,6 @@ android {
 //
 dependencies {
     compile project(':lib1')
+    compile project(':lib2b')
+    compile project(':libapp')
 }

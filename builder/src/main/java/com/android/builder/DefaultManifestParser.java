@@ -17,6 +17,7 @@
 package com.android.builder;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.io.FileWrapper;
 import com.android.io.StreamException;
 import com.android.xml.AndroidManifest;
@@ -31,6 +32,7 @@ import java.io.FileNotFoundException;
 
 public class DefaultManifestParser implements ManifestParser {
 
+    @Nullable
     @Override
     public String getPackage(@NonNull File manifestFile) {
         XPath xpath = AndroidXPathFactory.newXPath();
@@ -47,6 +49,7 @@ public class DefaultManifestParser implements ManifestParser {
         return null;
     }
 
+    @Nullable
     @Override
     public String getVersionName(@NonNull File manifestFile) {
         XPath xpath = AndroidXPathFactory.newXPath();
