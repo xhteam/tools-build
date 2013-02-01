@@ -626,7 +626,7 @@ public class AndroidBuilder {
             // (since that R class was already created).
             String appPackageName = packageOverride;
             if (appPackageName == null) {
-                appPackageName = VariantConfiguration.sManifestParser.getPackage(manifestFile);
+                appPackageName = VariantConfiguration.getManifestPackage(manifestFile);
             }
 
             // list of all the symbol loaders per package names.
@@ -637,8 +637,7 @@ public class AndroidBuilder {
                 // if the library has no resource, this file won't exist.
                 if (rFile.isFile()) {
 
-                    String packageName = VariantConfiguration.sManifestParser.getPackage(
-                            lib.getManifest());
+                    String packageName = VariantConfiguration.getManifestPackage(lib.getManifest());
                     if (appPackageName.equals(packageName)) {
                         // ignore libraries that have the same package name as the app
                         continue;
