@@ -896,6 +896,7 @@ public abstract class BasePlugin {
             Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
             Multimap<AndroidDependency, ConfigurationDependencies> reverseMap) {
 
+        // TODO support package configuration
         def compileClasspath = configDependencies.configuration
 
         // TODO - shouldn't need to do this - fix this in Gradle
