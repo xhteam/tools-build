@@ -19,6 +19,7 @@ import com.android.build.gradle.BuildVariant
 import com.android.build.gradle.tasks.AidlCompile
 import com.android.build.gradle.tasks.Dex
 import com.android.build.gradle.tasks.GenerateBuildConfig
+import com.android.build.gradle.tasks.MergeAssets
 import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessAndroidResources
@@ -105,6 +106,11 @@ public class DefaultBuildVariant implements BuildVariant {
     @Override
     MergeResources getMergeResources() {
         return variant.mergeResourcesTask
+    }
+
+    @Override
+    MergeAssets getMergeAssets() {
+        return variant.mergeAssetsTask
     }
 
     @Override

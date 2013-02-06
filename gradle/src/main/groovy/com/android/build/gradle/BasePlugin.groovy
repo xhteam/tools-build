@@ -39,6 +39,7 @@ import com.android.build.gradle.internal.tasks.ValidateSigningTask
 import com.android.build.gradle.tasks.AidlCompile
 import com.android.build.gradle.tasks.Dex
 import com.android.build.gradle.tasks.GenerateBuildConfig
+import com.android.build.gradle.tasks.MergeAssets
 import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessAndroidResources
@@ -368,7 +369,7 @@ public abstract class BasePlugin {
         def mergeResourcesTask = project.tasks.add("merge${variant.name}Resources", MergeResources)
         variant.mergeResourcesTask = mergeResourcesTask
 
-        mergeResourcesTask.dependsOn variant.renderscriptCompileTask
+        mergeResourcesTask.dependsOn variant.prepareDependenciesTask, variant.renderscriptCompileTask
         mergeResourcesTask.plugin = this
         mergeResourcesTask.variant = variant
         mergeResourcesTask.incrementalFolder =
@@ -380,9 +381,25 @@ public abstract class BasePlugin {
             variant.config.getResourceSets(variant.renderscriptCompileTask.getResOutputDir())
         }
 
-        mergeResourcesTask.conventionMapping.outputDir = {
-            project.file(location)
+        mergeResourcesTask.conventionMapping.outputDir = { project.file(location) }
+    }
+
+    protected void createMergeAssetsTask(ApplicationVariant variant, String location) {
+        if (location == null) {
+            location = "$project.buildDir/assets/$variant.dirName"
         }
+
+        def mergeAssetsTask = project.tasks.add("merge${variant.name}Assets", MergeAssets)
+        variant.mergeAssetsTask = mergeAssetsTask
+
+        mergeAssetsTask.dependsOn variant.prepareDependenciesTask
+        mergeAssetsTask.plugin = this
+        mergeAssetsTask.variant = variant
+        mergeAssetsTask.incrementalFolder =
+            project.file("$project.buildDir/incremental/mergeAssets/$variant.dirName")
+
+        mergeAssetsTask.conventionMapping.inputAssetSets = { variant.config.assetSets }
+        mergeAssetsTask.conventionMapping.outputDir = { project.file(location) }
     }
 
     protected void createBuildConfigTask(ApplicationVariant variant) {
@@ -419,7 +436,7 @@ public abstract class BasePlugin {
         def processResources = project.tasks.add("process${variant.name}Resources",
                 ProcessAndroidResources)
         variant.processResourcesTask = processResources
-        processResources.dependsOn variant.processManifestTask, variant.mergeResourcesTask
+        processResources.dependsOn variant.processManifestTask, variant.mergeResourcesTask, variant.mergeAssetsTask
 
         processResources.plugin = this
         processResources.variant = variant
@@ -430,12 +447,12 @@ public abstract class BasePlugin {
             variant.processManifestTask.outManifest
         }
 
-        processResources.conventionMapping.mergedResFolder = {
+        processResources.conventionMapping.resFolder = {
             variant.mergeResourcesTask.outputDir
         }
 
         processResources.conventionMapping.assetsDir =  {
-            getFirstOptionalDir(config.defaultSourceSet.assetsDirectories)
+            variant.mergeAssetsTask.outputDir
         }
 
         processResources.conventionMapping.libraries = {
@@ -605,6 +622,9 @@ public abstract class BasePlugin {
 
         // Add a task to merge the resource folders
         createMergeResourcesTask(variant, true /*process9Patch*/)
+
+        // Add a task to merge the assets folders
+        createMergeAssetsTask(variant, null /*default location*/)
 
         if (testedVariant.config.type == VariantConfiguration.Type.LIBRARY) {
             // in this case the tested library must be fully built before test can be built!

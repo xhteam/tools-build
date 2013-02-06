@@ -35,7 +35,10 @@ public class ProcessAndroidResources extends IncrementalTask {
     File manifestFile
 
     @InputDirectory
-    File mergedResFolder
+    File resFolder
+
+    @InputDirectory @Optional
+    File assetsDir
 
     @OutputDirectory @Optional
     File sourceOutputDir
@@ -50,9 +53,6 @@ public class ProcessAndroidResources extends IncrementalTask {
     File proguardFile
 
     // ----- PRIVATE TASK API -----
-
-    @InputDirectory @Optional
-    File assetsDir
 
     @Nested
     List<SymbolFileProvider> libraries
@@ -73,7 +73,7 @@ public class ProcessAndroidResources extends IncrementalTask {
     protected void doFullTaskAction() {
         getBuilder().processResources(
                 getManifestFile(),
-                getMergedResFolder(),
+                getResFolder(),
                 getAssetsDir(),
                 getLibraries(),
                 getPackageOverride(),

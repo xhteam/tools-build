@@ -21,6 +21,7 @@ import com.android.annotations.Nullable
 import com.android.build.gradle.tasks.AidlCompile
 import com.android.build.gradle.tasks.Dex
 import com.android.build.gradle.tasks.GenerateBuildConfig
+import com.android.build.gradle.tasks.MergeAssets
 import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessManifest
@@ -131,10 +132,16 @@ public interface BuildVariant {
     AidlCompile getAidlCompile()
 
     /**
-     * Returns the image processing task.
+     * Returns the resource merging task.
      */
     @Nullable
     MergeResources getMergeResources()
+
+    /**
+     * Returns the asset merging task.
+     */
+    @Nullable
+    MergeAssets getMergeAssets()
 
     /**
      * Returns the Android Resources processing task.

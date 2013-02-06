@@ -19,6 +19,7 @@ package com.android.builder;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
+import com.android.builder.resources.AssetSet;
 import com.android.builder.resources.ResourceSet;
 import com.android.builder.signing.SigningConfig;
 import com.google.common.collect.Lists;
@@ -570,6 +571,58 @@ public class VariantConfiguration {
         }
 
         return resourceSets;
+    }
+
+    /**
+     * Returns the dynamic list of {@link AssetSet} based on the configuration, its dependencies,
+     * as well as tested config if applicable (test of a library).
+     *
+     * The list is ordered in ascending order of importance, meaning the first set is meant to be
+     * overridden by the 2nd one and so on. This is meant to facilitate usage of the list in a
+     * {@link com.android.builder.resources.ResourceMerger}.
+     *
+     * @return a list ResourceSet.
+     */
+    @NonNull public List<AssetSet> getAssetSets() {
+        List<AssetSet> assetSets = Lists.newArrayList();
+
+        // the list of dependency must be reversed to use the right overlay order.
+        for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
+            AndroidDependency dependency = mFlatLibraries.get(n);
+            File assetFolder = dependency.getAssetsFolder();
+            if (assetFolder != null) {
+                AssetSet assetSet = new AssetSet(dependency.getFolder().getName());
+                assetSet.addSource(assetFolder);
+                assetSets.add(assetSet);
+            }
+        }
+
+        Set<File> mainResDirs = mDefaultSourceProvider.getAssetsDirectories();
+
+        AssetSet assetSet = new AssetSet(ProductFlavor.MAIN);
+        assetSet.addSources(mainResDirs);
+        assetSets.add(assetSet);
+
+        // the list of flavor must be reversed to use the right overlay order.
+        for (int n = mFlavorSourceProviders.size() - 1; n >= 0 ; n--) {
+            SourceProvider sourceProvider = mFlavorSourceProviders.get(n);
+
+            Set<File> flavorResDirs = sourceProvider.getAssetsDirectories();
+            // we need the same of the flavor config, but it's in a different list.
+            // This is fine as both list are parallel collections with the same number of items.
+            assetSet = new AssetSet(mFlavorConfigs.get(n).getName());
+            assetSet.addSources(flavorResDirs);
+            assetSets.add(assetSet);
+        }
+
+        if (mBuildTypeSourceProvider != null) {
+            Set<File> typeResDirs = mBuildTypeSourceProvider.getAssetsDirectories();
+            assetSet = new AssetSet(mBuildType.getName());
+            assetSet.addSources(typeResDirs);
+            assetSets.add(assetSet);
+        }
+
+        return assetSets;
     }
 
     /**

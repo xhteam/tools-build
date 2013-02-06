@@ -208,6 +208,7 @@ public class AppPluginDslTest extends BaseTest {
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
         assertNotNull(variant.mergeResources)
+        assertNotNull(variant.mergeAssets)
         assertNotNull(variant.processResources)
         assertNotNull(variant.generateBuildConfig)
         assertNotNull(variant.javaCompile)
