@@ -57,7 +57,6 @@ import com.android.builder.PlatformSdkParser
 import com.android.builder.ProductFlavor
 import com.android.builder.SdkParser
 import com.android.builder.SourceProvider
-import com.android.builder.SymbolFileProvider
 import com.android.builder.VariantConfiguration
 import com.android.builder.signing.SigningConfig
 import com.android.utils.ILogger
@@ -275,7 +274,7 @@ public abstract class BasePlugin {
     }
 
     protected void createProcessManifestTask(ApplicationVariant variant,
-                                                            String manifestOurDir) {
+                                             String manifestOurDir) {
         def processManifestTask = project.tasks.add("process${variant.name}Manifest",
                 ProcessAppManifest)
         variant.processManifestTask = processManifestTask
@@ -315,7 +314,7 @@ public abstract class BasePlugin {
     }
 
     protected void createProcessTestManifestTask(ApplicationVariant variant,
-                                                                    String manifestOurDir) {
+                                                 String manifestOurDir) {
         def processTestManifestTask = project.tasks.add("process${variant.name}TestManifest",
                 ProcessTestManifest)
         variant.processManifestTask = processTestManifestTask
@@ -447,6 +446,10 @@ public abstract class BasePlugin {
     }
 
     protected void createProcessResTask(ApplicationVariant variant) {
+        createProcessResTask(variant, "$project.buildDir/symbols/$variant.dirName")
+    }
+
+    protected void createProcessResTask(ApplicationVariant variant, final String symbolLocation) {
         def processResources = project.tasks.add("process${variant.name}Resources",
                 ProcessAndroidResources)
         variant.processResourcesTask = processResources
@@ -484,7 +487,7 @@ public abstract class BasePlugin {
             project.file("$project.buildDir/source/r/$variant.dirName")
         }
         processResources.conventionMapping.textSymbolDir = {
-            project.file("$project.buildDir/symbols/$variant.dirName")
+            project.file(symbolLocation)
         }
         processResources.conventionMapping.packageFile = {
             project.file(
@@ -1093,8 +1096,10 @@ public abstract class BasePlugin {
         return null
     }
 
-    protected List<ManifestDependency> getManifestDependencies(List<AndroidDependency> libraries) {
-        List<ManifestDependency> list = Lists.newArrayListWithCapacity(libraries.size())
+    protected List<ManifestDependencyImpl> getManifestDependencies(
+            List<AndroidDependency> libraries) {
+
+        List<ManifestDependencyImpl> list = Lists.newArrayListWithCapacity(libraries.size())
 
         for (AndroidDependency lib : libraries) {
             // get the dependencies
@@ -1105,9 +1110,10 @@ public abstract class BasePlugin {
         return list
     }
 
-    protected static List<SymbolFileProvider> getTextSymbolDependencies(
+    protected static List<SymbolFileProviderImpl> getTextSymbolDependencies(
             List<AndroidDependency> libraries) {
-        List<SymbolFileProvider> list = Lists.newArrayListWithCapacity(libraries.size())
+
+        List<SymbolFileProviderImpl> list = Lists.newArrayListWithCapacity(libraries.size())
 
         for (AndroidDependency lib : libraries) {
             list.add(new SymbolFileProviderImpl(lib.manifest, lib.symbolFile))

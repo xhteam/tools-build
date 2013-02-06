@@ -28,24 +28,27 @@ import java.util.List;
  */
 public class ManifestDependencyImpl implements ManifestDependency{
 
-    @InputFile
     private File manifest;
+    private List<? extends ManifestDependency> dependencies;
 
-    @Nested
-    private List<ManifestDependency> dependencies;
-
-    public ManifestDependencyImpl(File manifest, List<ManifestDependency> dependencies) {
+    public ManifestDependencyImpl(File manifest, List<? extends ManifestDependency> dependencies) {
         this.manifest = manifest;
         this.dependencies = dependencies;
     }
 
+    @InputFile
     @Override
     public File getManifest() {
         return manifest;
     }
 
     @Override
-    public List<ManifestDependency> getManifestDependencies() {
+    public List<? extends ManifestDependency> getManifestDependencies() {
         return dependencies;
+    }
+
+    @Nested
+    public List<ManifestDependencyImpl> getManifestDependenciesForInput() {
+        return (List<ManifestDependencyImpl>) dependencies;
     }
 }

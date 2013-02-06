@@ -253,7 +253,7 @@ public class AndroidBuilder {
     public void processManifest(
             @NonNull File mainManifest,
             @NonNull List<File> manifestOverlays,
-            @NonNull List<ManifestDependency> libraries,
+            @NonNull List<? extends ManifestDependency> libraries,
                      int versionCode,
                      String versionName,
                      int minSdkVersion,
@@ -346,7 +346,7 @@ public class AndroidBuilder {
                      int minSdkVersion,
             @NonNull String testedPackageName,
             @NonNull String instrumentationRunner,
-            @NonNull List<ManifestDependency> libraries,
+            @NonNull List<? extends ManifestDependency> libraries,
             @NonNull String outManifestLocation) {
         checkState(mTarget != null, "Target not set.");
         checkNotNull(testPackageName, "testPackageName cannot be null.");
@@ -447,12 +447,12 @@ public class AndroidBuilder {
      */
     private void mergeLibraryManifests(
             File mainManifest,
-            Iterable<ManifestDependency> directLibraries,
+            Iterable<? extends ManifestDependency> directLibraries,
             File outManifest, Map<String, String> attributeInjection) throws IOException {
 
         List<File> manifests = Lists.newArrayList();
         for (ManifestDependency library : directLibraries) {
-            List<ManifestDependency> subLibraries = library.getManifestDependencies();
+            List<? extends ManifestDependency> subLibraries = library.getManifestDependencies();
             if (subLibraries == null || subLibraries.size() == 0) {
                 manifests.add(library.getManifest());
             } else {
@@ -500,7 +500,7 @@ public class AndroidBuilder {
             @NonNull  File manifestFile,
             @NonNull  File resFolder,
             @Nullable File assetsDir,
-            @NonNull  List<SymbolFileProvider> libraries,
+            @NonNull  List<? extends SymbolFileProvider> libraries,
             @Nullable String packageOverride,
             @Nullable String sourceOutputDir,
             @Nullable String symbolOutputDir,

@@ -26,10 +26,7 @@ import java.io.File;
  */
 public class SymbolFileProviderImpl implements SymbolFileProvider {
 
-    @InputFile
     private File manifest;
-
-    @InputFile
     private File symbolFile;
 
     public SymbolFileProviderImpl(File manifest, File symbolFile) {
@@ -37,11 +34,13 @@ public class SymbolFileProviderImpl implements SymbolFileProvider {
         this.symbolFile = symbolFile;
     }
 
+    @InputFile
     @Override
     public File getManifest() {
         return manifest;
     }
 
+    @InputFile
     @Override
     public File getSymbolFile() {
         return symbolFile;
