@@ -43,9 +43,11 @@ public class BuildTypeDslTest extends BaseTest {
         BuildType type = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
 
         assertTrue(type.isDebuggable());
-        assertTrue(type.isJniDebugBuild());
+        assertFalse(type.isJniDebugBuild());
+        assertFalse(type.isRenderscriptDebugBuild());
         assertNotNull(type.getSigningConfig());
         assertTrue(type.getSigningConfig().isSigningReady());
+        assertFalse(type.isZipAlign());
     }
 
     public void testRelease() {
@@ -64,40 +66,27 @@ public class BuildTypeDslTest extends BaseTest {
 
         assertFalse(type.isDebuggable());
         assertFalse(type.isJniDebugBuild());
+        assertFalse(type.isRenderscriptDebugBuild());
+        assertTrue(type.isZipAlign());
     }
 
     public void testInitWith() {
-        Project project = ProjectBuilder.builder().withProjectDir(
-                new File(testDir, "basic")).build();
+        BuildTypeDsl object1 = new BuildTypeDsl("foo");
 
-        project.apply plugin: 'android'
+        // change every value from their default.
+        object1.setDebuggable(true)
+        object1.setJniDebugBuild(true)
+        object1.setRenderscriptDebugBuild(true)
+        object1.setRenderscriptOptimLevel(0)
+        object1.setPackageNameSuffix("foo")
+        object1.setVersionNameSuffix("foo")
+        object1.setRunProguard(true)
+        object1.setSigningConfig(new SigningConfigDsl("blah"))
+        object1.setZipAlign(false)
 
-        project.android {
-            target "android-15"
+        BuildTypeDsl object2 = new BuildTypeDsl(object1.name)
+        object2.initWith(object1)
 
-            buildTypes {
-                debug {
-                    packageNameSuffix = ".debug"
-                    versionNameSuffix = "-DEBUG"
-                }
-
-                foo.initWith(owner.buildTypes.debug)
-                foo {
-                    packageNameSuffix = ".foo"
-                }
-            }
-        }
-
-        AppPlugin plugin = AppPlugin.pluginHolder.plugin
-
-        BuildType debugType = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
-        BuildType fooType = plugin.buildTypes.get("foo").buildType
-
-        assertEquals(debugType.isDebuggable(),         fooType.isDebuggable())
-        assertEquals(debugType.isJniDebugBuild(),      fooType.isJniDebugBuild())
-        assertEquals(debugType.isZipAlign(),           fooType.isZipAlign())
-        assertEquals(debugType.getVersionNameSuffix(), fooType.getVersionNameSuffix())
-        assertEquals(debugType.getSigningConfig(),     fooType.getSigningConfig())
-        assertNotSame(debugType.getPackageNameSuffix(), fooType.getPackageNameSuffix())
+        assertEquals(object1, object2)
     }
 }
