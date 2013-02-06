@@ -28,18 +28,18 @@ import java.util.Map;
  */
 public class ValueResourceParserTest extends BaseTestCase {
 
-    private static List<Resource> sResources = null;
+    private static List<ResourceItem> sResources = null;
 
     public void testParsedResourcesByCount() throws Exception {
-        List<Resource> resources = getParsedResources();
+        List<ResourceItem> resources = getParsedResources();
 
         assertEquals(18, resources.size());
     }
 
     public void testParsedResourcesByName() throws Exception {
-        List<Resource> resources = getParsedResources();
-        Map<String, Resource> resourceMap = Maps.newHashMapWithExpectedSize(resources.size());
-        for (Resource item : resources) {
+        List<ResourceItem> resources = getParsedResources();
+        Map<String, ResourceItem> resourceMap = Maps.newHashMapWithExpectedSize(resources.size());
+        for (ResourceItem item : resources) {
             resourceMap.put(item.getKey(), item);
         }
 
@@ -68,16 +68,16 @@ public class ValueResourceParserTest extends BaseTestCase {
         }
     }
 
-    private static List<Resource> getParsedResources() throws IOException {
+    private static List<ResourceItem> getParsedResources() throws IOException {
         if (sResources == null) {
-            File root = TestUtils.getRoot("baseResourceSet");
+            File root = TestUtils.getRoot("resources", "baseSet");
             File values = new File(root, "values");
             File valuesXml = new File(values, "values.xml");
 
             ValueResourceParser parser = new ValueResourceParser(valuesXml);
             sResources = parser.parseFile();
 
-            // create a fake resource file to allow calling Resource.getKey()
+            // create a fake resource file to allow calling ResourceItem.getKey()
             new ResourceFile(valuesXml, sResources, "");
         }
 

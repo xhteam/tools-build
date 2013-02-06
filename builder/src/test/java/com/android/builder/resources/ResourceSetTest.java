@@ -61,7 +61,7 @@ public class ResourceSetTest extends BaseTestCase {
     }
 
     public void testDupResourceSet() throws Exception {
-        File root = TestUtils.getRoot("dupResourceSet");
+        File root = TestUtils.getRoot("resources", "dupSet");
 
         ResourceSet set = new ResourceSet("main");
         set.addSource(new File(root, "res1"));
@@ -69,16 +69,16 @@ public class ResourceSetTest extends BaseTestCase {
         boolean gotException = false;
         try {
             set.loadFromFiles();
-        } catch (DuplicateResourceException e) {
+        } catch (DuplicateDataException e) {
             gotException = true;
         }
 
         assertTrue(gotException);
     }
 
-    static ResourceSet getBaseResourceSet() throws DuplicateResourceException, IOException {
+    static ResourceSet getBaseResourceSet() throws DuplicateDataException, IOException {
         if (sBaseResourceSet == null) {
-            File root = TestUtils.getRoot("baseResourceSet");
+            File root = TestUtils.getRoot("resources", "baseSet");
 
             sBaseResourceSet = new ResourceSet("main");
             sBaseResourceSet.addSource(root);

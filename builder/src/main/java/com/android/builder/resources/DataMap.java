@@ -16,27 +16,26 @@
 
 package com.android.builder.resources;
 
+import com.android.annotations.NonNull;
+import com.google.common.collect.ListMultimap;
+
 /**
- * Exception when a resource is declared more than once in a {@link ResourceSet}
+ * A DataItem Map able to provide a {@link com.google.common.collect.ListMultimap} of data items
+ * where the keys are the value returned by {@link DataItem#getKey()}
  */
-public class DuplicateResourceException extends Exception {
+interface DataMap<T extends DataItem> {
 
-    private Resource mOne;
-    private Resource mTwo;
+    /**
+     * Returns the number of items.
+     * @return the number of items
+     */
+    int size();
 
-    DuplicateResourceException(Resource one, Resource two) {
-        super(String.format("Duplicate resources: %1s:%2s, %3s:%4s",
-                one.getSource().getFile().getAbsolutePath(), one.getKey(),
-                two.getSource().getFile().getAbsolutePath(), two.getKey()));
-        mOne = one;
-        mTwo = two;
-    }
-
-    public Resource getOne() {
-        return mOne;
-    }
-
-    public Resource getTwo() {
-        return mTwo;
-    }
+    /**
+     * a Multi map of (key, dataItem) where key is the result of
+     * {@link DataItem#getKey()}
+     * @return a non null map
+     */
+    @NonNull
+    ListMultimap<String, T> getDataMap();
 }

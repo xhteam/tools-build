@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merger xmlns:ns1="urn:oasis:names:tc:xliff:document:1.2">
-    <resourceSet config="main">
-        <source path="$TOP$$SEP$baseResourceSet">
-            <file name="icon" path="$TOP$$SEP$baseResourceSet$SEP$drawable$SEP$icon.png" qualifiers="" type="drawable"/>
-            <file name="patch" path="$TOP$$SEP$baseResourceSet$SEP$drawable$SEP$patch.9.png" qualifiers="" type="drawable"/>
-            <file name="file_replaced_by_alias" path="$TOP$$SEP$baseResourceSet$SEP$layout$SEP$file_replaced_by_alias.xml" qualifiers="" type="layout"/>
-            <file name="main" path="$TOP$$SEP$baseResourceSet$SEP$layout$SEP$main.xml" qualifiers="" type="layout"/>
-            <file name="foo" path="$TOP$$SEP$baseResourceSet$SEP$raw$SEP$foo.dat" qualifiers="" type="raw"/>
-            <file path="$TOP$$SEP$baseResourceSet$SEP$values$SEP$values.xml" qualifiers="">
+    <dataSet config="main">
+        <source path="$TOP$$SEP$..$SEP$baseSet">
+            <file name="icon" path="$TOP$$SEP$..$SEP$baseSet$SEP$drawable$SEP$icon.png" qualifiers="" type="drawable"/>
+            <file name="patch" path="$TOP$$SEP$..$SEP$baseSet$SEP$drawable$SEP$patch.9.png" qualifiers="" type="drawable"/>
+            <file name="file_replaced_by_alias" path="$TOP$$SEP$..$SEP$baseSet$SEP$layout$SEP$file_replaced_by_alias.xml" qualifiers="" type="layout"/>
+            <file name="main" path="$TOP$$SEP$..$SEP$baseSet$SEP$layout$SEP$main.xml" qualifiers="" type="layout"/>
+            <file name="foo" path="$TOP$$SEP$..$SEP$baseSet$SEP$raw$SEP$foo.dat" qualifiers="" type="raw"/>
+            <file path="$TOP$$SEP$..$SEP$baseSet$SEP$values$SEP$values.xml" qualifiers="">
                 <dimen name="dimen">164dp</dimen>
                 <integer name="integer">75</integer>
                 <color name="color">#00000000</color>
@@ -76,18 +76,18 @@
                 </attr>
             </file>
         </source>
-    </resourceSet>
-    <resourceSet config="overlay">
-        <source path="$TOP$$SEP$baseMerge$SEP$overlay">
-            <file name="icon2" path="$TOP$$SEP$baseMerge$SEP$overlay$SEP$drawable$SEP$icon2.png" qualifiers="" type="drawable"/>
-            <file name="icon" path="$TOP$$SEP$baseMerge$SEP$overlay$SEP$drawable-ldpi$SEP$icon.png" qualifiers="ldpi" type="drawable"/>
-            <file name="alias_replaced_by_file" path="$TOP$$SEP$baseMerge$SEP$overlay$SEP$layout$SEP$alias_replaced_by_file.xml" qualifiers="" type="layout"/>
-            <file name="main" path="$TOP$$SEP$baseMerge$SEP$overlay$SEP$layout$SEP$main.xml" qualifiers="" type="layout"/>
-            <file path="$TOP$$SEP$baseMerge$SEP$overlay$SEP$values$SEP$values.xml" qualifiers="">
+    </dataSet>
+    <dataSet config="overlay">
+        <source path="$TOP$$SEP$overlay">
+            <file name="icon2" path="$TOP$$SEP$overlay$SEP$drawable$SEP$icon2.png" qualifiers="" type="drawable"/>
+            <file name="icon" path="$TOP$$SEP$overlay$SEP$drawable-ldpi$SEP$icon.png" qualifiers="ldpi" type="drawable"/>
+            <file name="alias_replaced_by_file" path="$TOP$$SEP$overlay$SEP$layout$SEP$alias_replaced_by_file.xml" qualifiers="" type="layout"/>
+            <file name="main" path="$TOP$$SEP$overlay$SEP$layout$SEP$main.xml" qualifiers="" type="layout"/>
+            <file path="$TOP$$SEP$overlay$SEP$values$SEP$values.xml" qualifiers="">
                 <color name="color">#FFFFFFFF</color>
                 <item name="file_replaced_by_alias" type="layout">@layout$SEP$ref</item>
                 <string name="basic_string">overlay_string</string>
             </file>
         </source>
-    </resourceSet>
+    </dataSet>
 </merger>

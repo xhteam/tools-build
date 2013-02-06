@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 package com.android.build.gradle.tasks
-
 import com.android.build.gradle.internal.tasks.IncrementalTask
+import com.android.builder.resources.AssetMerger
+import com.android.builder.resources.AssetSet
 import com.android.builder.resources.FileStatus
-import com.android.builder.resources.ResourceMerger
-import com.android.builder.resources.ResourceSet
 import com.android.utils.Pair
-import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 
-public class MergeResources extends IncrementalTask {
+public class MergeAssets extends IncrementalTask {
 
     // ----- PUBLIC TASK API -----
 
@@ -36,14 +34,11 @@ public class MergeResources extends IncrementalTask {
     // fake input to detect changes. Not actually used by the task
     @InputFiles
     Iterable<File> getRawInputFolders() {
-        return IncrementalTask.flattenSourceSets(getInputResourceSets())
+        return IncrementalTask.flattenSourceSets(getInputAssetSets())
     }
 
-    @Input
-    boolean process9Patch
-
     // actual inputs
-    List<ResourceSet> inputResourceSets
+    List<AssetSet> inputAssetSets
 
     @Override
     protected boolean isIncremental() {
@@ -61,19 +56,19 @@ public class MergeResources extends IncrementalTask {
         File destinationDir = getOutputDir()
         emptyFolder(destinationDir)
 
-        List<ResourceSet> resourceSets = getInputResourceSets()
+        List<AssetSet> assetSets = getInputAssetSets()
 
         // create a new merger and populate it with the sets.
-        ResourceMerger merger = new ResourceMerger()
+        AssetMerger merger = new AssetMerger()
 
-        for (ResourceSet resourceSet : resourceSets) {
+        for (AssetSet assetSet : assetSets) {
             // set needs to be loaded.
-            resourceSet.loadFromFiles()
-            merger.addDataSet(resourceSet)
+            assetSet.loadFromFiles()
+            merger.addDataSet(assetSet)
         }
 
         // get the merged set and write it down.
-        merger.writeDataFolder(destinationDir, getProcess9Patch() ? builder.aaptRunner : null)
+        merger.writeDataFolder(destinationDir)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
@@ -82,7 +77,7 @@ public class MergeResources extends IncrementalTask {
     @Override
     protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs) {
         // create a merger and load the known state.
-        ResourceMerger merger = new ResourceMerger()
+        AssetMerger merger = new AssetMerger()
         if (!merger.loadFromBlob(getIncrementalFolder())) {
             doFullTaskAction()
             return
@@ -91,10 +86,10 @@ public class MergeResources extends IncrementalTask {
         // compare the known state to the current sets to detect incompatibility.
         // This is in case there's a change that's too hard to do incrementally. In this case
         // we'll simply revert to full build.
-        List<ResourceSet> resourceSets = getInputResourceSets()
+        List<AssetSet> assetSets = getInputAssetSets()
 
-        if (!merger.checkValidUpdate(resourceSets)) {
-            project.logger.info("Changed Resource sets: full task run!")
+        if (!merger.checkValidUpdate(assetSets)) {
+            project.logger.info("Changed Asset sets: full task run!")
             doFullTaskAction()
             return
         }
@@ -105,7 +100,7 @@ public class MergeResources extends IncrementalTask {
         for (Map.Entry<File, FileStatus> entry : changedInputs.entrySet()) {
             File changedFile = entry.getKey()
 
-            Pair<ResourceSet, File> matchSet = merger.getDataSetContaining(changedFile)
+            Pair<AssetSet, File> matchSet = merger.getDataSetContaining(changedFile)
             assert matchSet != null
             if (matchSet == null) {
                 doFullTaskAction()
@@ -123,7 +118,7 @@ public class MergeResources extends IncrementalTask {
             }
         }
 
-        merger.writeDataFolder(getOutputDir(), getProcess9Patch() ? builder.aaptRunner : null)
+        merger.writeDataFolder(getOutputDir())
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
