@@ -11,6 +11,7 @@ subprojects {
     project.buildDir = project.file("$project.parent.buildDir/../$project.name")
 
     apply plugin: 'idea'
+    apply plugin: 'findbugs'
 
     repositories {
         mavenCentral()
@@ -25,6 +26,12 @@ subprojects {
         tasks.withType(Test) {
             ignoreFailures = true
         }
+    }
+
+     findbugs {
+        ignoreFailures = true
+        effort = "max"
+        reportLevel = "high"
     }
 
     group = 'com.android.tools.build'
