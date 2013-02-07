@@ -122,11 +122,11 @@ public abstract class BaseTestCase extends TestCase {
             DataMerger<? extends DataItem, ? extends DataFile, ? extends DataSet> dataMerger) {
 
         // Loop on all the data sets.
-        for (DataSet set : dataMerger.getDataSets()) {
+        for (DataSet<? extends DataItem, ? extends DataFile> set : dataMerger.getDataSets()) {
             // get the source files and verify they exists.
             List<File> files = set.getSourceFiles();
             for (File file : files) {
-                assertTrue(file.isDirectory());
+                assertTrue("Not a folder: " + file.getAbsolutePath(), file.isDirectory());
             }
 
             // for each source file, also check that the files inside are in fact inside
@@ -138,7 +138,8 @@ public abstract class BaseTestCase extends TestCase {
                 DataFile dataFile = item.getSource();
                 File file = dataFile.getFile();
 
-                assertNotNull(set.findMatchingSourceFile(file));
+                assertNotNull("Not in source file: " + file.getAbsolutePath(),
+                        set.findMatchingSourceFile(file));
             }
         }
     }

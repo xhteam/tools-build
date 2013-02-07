@@ -403,9 +403,6 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // ----------------
         // first set is the main one, no change here
-        ResourceSet mainSet = sets.get(0);
-        File mainBase = new File(root, "main");
-        File mainValues = new File(mainBase, "values");
 
         // ----------------
         // second set is the overlay one
