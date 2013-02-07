@@ -31,13 +31,14 @@ dependencies {
     testCompile 'junit:junit:3.8.1'
 
     buildTestCompile sourceSets.main.output
-    buildTestCompile configurations.testCompile
     buildTestCompile sourceSets.test.output
+    buildTestCompile configurations.testCompile
     buildTestCompile configurations.testRuntime
 
     deviceTestCompile sourceSets.main.output
-    deviceTestCompile configurations.testCompile
     deviceTestCompile sourceSets.test.output
+    deviceTestCompile sourceSets.buildTest.output
+    deviceTestCompile configurations.testCompile
     deviceTestCompile configurations.testRuntime
 }
 
@@ -76,19 +77,15 @@ task buildTest(type: Test, dependsOn: publishLocal) {
     systemProperties['jar.path'] = jar.archivePath
 }
 
-task deviceTest(dependsOn: publishLocal) {
+task deviceTest(type: Test, dependsOn: publishLocal) {
     testClassesDir = sourceSets.deviceTest.output.classesDir
     classpath = sourceSets.deviceTest.runtimeClasspath
     description = "Runs the device tests. This requires a device."
     group = "verification"
-    //systemProperties['jar.path'] = jar.archivePath
+    systemProperties['jar.path'] = jar.archivePath
 }
 
-deviceTest.dependsOn buildTest
 check.dependsOn buildTest
-// uncomment when device tests are ready.
-//check.dependsOn deviceTest
-
 
 project.ext.sonatypeUsername = project.hasProperty('sonatypeUsername') ? sonatypeUsername : ""
 project.ext.sonatypePassword = project.hasProperty('sonatypePassword') ? sonatypePassword : ""

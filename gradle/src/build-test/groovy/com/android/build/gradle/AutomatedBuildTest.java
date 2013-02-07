@@ -45,7 +45,7 @@ public class AutomatedBuildTest extends BuildTest {
 
     public static Test suite() {
         TestSuite suite = new TestSuite();
-        suite.setName("ManifestMergerTestSuite");
+        suite.setName("AutomatedBuildTest");
 
         for (String gradleVersion : BasePlugin.GRADLE_SUPPORTED_VERSIONS) {
             // first the project we build on all available versions of Gradle

@@ -38,6 +38,10 @@ abstract class BuildTest extends BaseTest {
     }
 
     protected File buildProject(String name, String gradleVersion) {
+        return runTasksOnProject(name, gradleVersion, "clean", "assembleDebug");
+    }
+
+    protected File runTasksOnProject(String name, String gradleVersion, String... tasks) {
         File project = new File(testDir, name);
 
         File buildGradle = new File(project, "build.gradle");
@@ -46,7 +50,7 @@ abstract class BuildTest extends BaseTest {
         }
 
         // build the project
-        runGradleTasks(sdkDir, gradleVersion, project, "clean", "assembleDebug");
+        runGradleTasks(sdkDir, gradleVersion, project, tasks);
 
         return project;
     }
