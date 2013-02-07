@@ -23,12 +23,14 @@ import com.android.sdklib.SdkManager;
 import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.sdklib.repository.PkgProps;
 import com.android.utils.ILogger;
+import com.google.common.base.Charsets;
 import com.google.common.io.Closeables;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Properties;
 
@@ -82,7 +84,9 @@ public class DefaultSdkParser implements SdkParser {
 
         Reader reader = null;
         try {
-            reader = new FileReader(new File(platformTools, FN_SOURCE_PROP));
+            reader = new InputStreamReader(
+                    new FileInputStream(new File(platformTools, FN_SOURCE_PROP)),
+                    Charsets.UTF_8);
             Properties props = new Properties();
             props.load(reader);
 
