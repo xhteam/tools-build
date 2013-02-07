@@ -28,7 +28,7 @@ subprojects {
         }
     }
 
-     findbugs {
+    findbugs {
         ignoreFailures = true
         effort = "max"
         reportLevel = "high"
