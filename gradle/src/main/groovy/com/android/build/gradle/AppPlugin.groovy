@@ -178,6 +178,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             testTask.group = JavaBasePlugin.VERIFICATION_GROUP
             testTask.description = "Installs and runs tests for all flavors"
             testTask.reportType = ReportType.MULTI_FLAVOR
+            project.tasks.check.dependsOn testTask
 
             testTask.conventionMapping.resultsDir = {
                 String rootLocation = extension.testOptions.resultsDir != null ?
