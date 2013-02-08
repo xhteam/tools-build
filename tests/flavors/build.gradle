@@ -9,7 +9,7 @@ buildscript {
 apply plugin: 'android'
 
 android {
-    target         "android-15"
+    compileSdkVersion 15
     flavorGroups   "group1", "group2"
 
     productFlavors {

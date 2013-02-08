@@ -24,6 +24,7 @@ import com.android.sdklib.internal.repository.packages.FullRevision;
 import com.android.sdklib.repository.PkgProps;
 import com.android.utils.ILogger;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
 
 import java.io.File;
@@ -32,6 +33,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Map;
 import java.util.Properties;
 
 import static com.android.SdkConstants.FD_PLATFORM_TOOLS;
@@ -47,6 +49,9 @@ public class DefaultSdkParser implements SdkParser {
 
     private final String mSdkLocation;
     private SdkManager mManager;
+
+    private File mPlatformTools;
+    private final Map<String, File> mToolsMap = Maps.newHashMapWithExpectedSize(6);
 
     public DefaultSdkParser(@NonNull String sdkLocation) {
         if (!sdkLocation.endsWith(File.separator)) {
@@ -77,7 +82,7 @@ public class DefaultSdkParser implements SdkParser {
 
     @Override
     public FullRevision getPlatformToolsRevision() {
-        File platformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
+        File platformTools = getPlatformTools();
         if (!platformTools.isDirectory()) {
             return null;
         }
@@ -109,31 +114,54 @@ public class DefaultSdkParser implements SdkParser {
 
     @Override
     public File getAapt() {
-        File platformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
-        if (!platformTools.isDirectory()) {
-            return null;
-        }
-
-        return new File(platformTools, SdkConstants.FN_AAPT);
+        return getTool(SdkConstants.FN_AAPT);
     }
 
     @Override
     public File getAidlCompiler() {
-        File platformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
-        if (!platformTools.isDirectory()) {
-            return null;
-        }
-
-        return new File(platformTools, SdkConstants.FN_AIDL);
+        return getTool(SdkConstants.FN_AIDL);
     }
 
     @Override
     public File getRenderscriptCompiler() {
-        File platformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
-        if (!platformTools.isDirectory()) {
-            return null;
+        return getTool(SdkConstants.FN_RENDERSCRIPT);
+    }
+
+    @Override
+    public File getDx() {
+        return getTool(SdkConstants.FN_DX);
+    }
+
+    @Override
+    public File getZipAlign() {
+        return getTool(SdkConstants.FN_ZIPALIGN);
+    }
+
+    @Override
+    public File getAdb() {
+        return getTool(SdkConstants.FN_ADB);
+    }
+
+    private File getTool(String filename) {
+        File f = mToolsMap.get(filename);
+        if (f == null) {
+            File platformTools = getPlatformTools();
+            if (!platformTools.isDirectory()) {
+                return null;
+            }
+
+            f = new File(platformTools, filename);
+            mToolsMap.put(filename, f);
         }
 
-        return new File(platformTools, SdkConstants.FN_RENDERSCRIPT);
+        return f;
+    }
+
+    private File getPlatformTools() {
+        if (mPlatformTools == null) {
+            mPlatformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
+        }
+
+        return mPlatformTools;
     }
 }

@@ -35,7 +35,7 @@ public class BuildTypeDslTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
         }
 
         AppPlugin plugin = AppPlugin.pluginHolder.plugin
@@ -57,7 +57,7 @@ public class BuildTypeDslTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
         }
 
         AppPlugin plugin = AppPlugin.pluginHolder.plugin

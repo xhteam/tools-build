@@ -35,7 +35,7 @@ public class LibraryPluginDslTest extends BaseTest {
         project.apply plugin: 'android-library'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
         }
 
         Set<BuildVariant> variants = project.android.buildVariants
@@ -59,7 +59,7 @@ public class LibraryPluginDslTest extends BaseTest {
         project.apply plugin: 'android-library'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             debugSigningConfig {
                 storePassword = "foo"
