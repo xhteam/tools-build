@@ -35,7 +35,7 @@ import org.gradle.internal.reflect.Instantiator
  */
 public abstract class BaseExtension {
 
-    String target
+    private String target
 
     final ProductFlavor defaultConfig
     final AaptOptionsImpl aaptOptions
@@ -95,6 +95,22 @@ public abstract class BaseExtension {
         }
     }
 
+    void compileSdkVersion(int apiLevel) {
+        this.target = "android-" + apiLevel
+    }
+
+    void setCompileSdkVersion(int apiLevel) {
+        compileSdkVersion(apiLevel)
+    }
+
+    void compileSdkVersion(String target) {
+        this.target = target
+    }
+
+    void setCompileSdkVersion(String target) {
+        compileSdkVersion(target)
+    }
+
     void sourceSets(Action<NamedDomainObjectContainer<AndroidSourceSet>> action) {
         action.execute(sourceSetsContainer)
     }
@@ -127,5 +143,9 @@ public abstract class BaseExtension {
     public DefaultDomainObjectSet<BuildVariant> getTestBuildVariants() {
         plugin.createAndroidTasks()
         return testBuildVariants
+    }
+
+    public String getCompileSdkVersion() {
+        return target
     }
 }

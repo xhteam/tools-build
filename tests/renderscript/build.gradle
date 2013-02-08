@@ -12,7 +12,7 @@ buildscript {
 apply plugin: 'android'
 
 android {
-    target "android-17"
+    compileSdkVersion 17
 
     defaultConfig {
         renderscriptTargetApi = 17

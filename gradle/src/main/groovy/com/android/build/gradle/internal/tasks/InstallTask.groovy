@@ -21,7 +21,8 @@ import org.gradle.api.tasks.TaskAction
  * Task installing an app.
  */
 public class InstallTask extends DefaultTask {
-    File sdkDir
+    @InputFile
+    File adbExe
 
     @InputFile
     File packageFile
@@ -29,7 +30,7 @@ public class InstallTask extends DefaultTask {
     @TaskAction
     void generate() {
         project.exec {
-            executable = new File(getSdkDir(), "platform-tools${File.separator}adb")
+            executable = getAdbExe()
             args 'install'
             args '-r'
             args getPackageFile()

@@ -15,17 +15,19 @@
  */
 package com.android.build.gradle.internal.tasks
 
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.TaskAction
 
 public class UninstallTask extends BaseTask {
-    File sdkDir
+    @InputFile
+    File adbExe
 
     @TaskAction
     public void uninstall() {
         String packageName = variant.packageName
         logger.info("Uninstalling app: " + packageName)
         project.exec {
-            executable = new File(getSdkDir(), "platform-tools${File.separator}adb")
+            executable = getAdbExe()
             args "uninstall"
             args packageName
         }

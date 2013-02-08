@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-import com.android.SdkConstants
+
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
 import com.android.build.gradle.internal.ApplicationVariant
@@ -42,8 +42,8 @@ import java.util.concurrent.Callable
  */
 public class TestFlavorTask extends BaseTask implements AndroidTestTask {
 
-    @Input
-    File sdkDir
+    @InputFile
+    File adbExe
 
     @InputFile
     File testApp
@@ -156,10 +156,8 @@ public class TestFlavorTask extends BaseTask implements AndroidTestTask {
     protected void runTests() {
         AndroidDebugBridge.initIfNeeded(false /*clientSupport*/)
 
-        File platformTools = new File(getSdkDir(), SdkConstants.FD_PLATFORM_TOOLS)
-
-        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(
-                new File(platformTools, SdkConstants.FN_ADB).absolutePath, false /*forceNewBridge*/)
+        AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(getAdbExe().absolutePath,
+                false /*forceNewBridge*/)
 
         long timeOut = 30000 // 30 sec
         int sleepTime = 1000

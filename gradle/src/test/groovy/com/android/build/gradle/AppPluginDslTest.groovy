@@ -36,7 +36,50 @@ public class AppPluginDslTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
+        }
+
+        Set<BuildVariant> variants = project.android.buildVariants
+        assertEquals(2, variants.size())
+
+        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        assertEquals(1, testVariants.size())
+
+        checkTestedVariant("Debug", "Test", variants, testVariants)
+        checkNonTestedVariant("Release", variants)
+    }
+
+    /**
+     * Same as Basic but with a slightly different DSL.
+     */
+    public void testBasic2() {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
+
+        project.apply plugin: 'android'
+
+        project.android {
+            compileSdkVersion = 15
+        }
+
+        Set<BuildVariant> variants = project.android.buildVariants
+        assertEquals(2, variants.size())
+
+        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        assertEquals(1, testVariants.size())
+
+        checkTestedVariant("Debug", "Test", variants, testVariants)
+        checkNonTestedVariant("Release", variants)
+    }
+
+    public void testBasicWithStringTarget() {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
+
+        project.apply plugin: 'android'
+
+        project.android {
+            compileSdkVersion "android-15"
         }
 
         Set<BuildVariant> variants = project.android.buildVariants
@@ -56,7 +99,7 @@ public class AppPluginDslTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             sourceSets {
                 main {
@@ -77,7 +120,7 @@ public class AppPluginDslTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
             testBuildType "staging"
 
             buildTypes {
@@ -107,7 +150,7 @@ public class AppPluginDslTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             productFlavors {
                 flavor1 {
@@ -140,7 +183,7 @@ public class AppPluginDslTest extends BaseTest {
         project.apply plugin: 'android'
 
         project.android {
-            target "android-15"
+            compileSdkVersion 15
 
             flavorGroups   "group1", "group2"
 

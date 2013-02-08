@@ -300,6 +300,6 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
 
     @Override
     protected String getTarget() {
-        return extension.target
+        return extension.compileSdkVersion
     }
 }

@@ -5,7 +5,7 @@
 apply plugin: 'android'
 
 android {
-    target 'android-15'
+    compileSdkVersion 15
 }
 
 dependencies {

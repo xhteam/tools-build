@@ -67,4 +67,19 @@ public interface SdkParser {
      * Returns the location of the renderscript compiler.
      */
     File getRenderscriptCompiler();
+
+    /**
+     * Returns the location of the dx tool.
+     */
+    File getDx();
+
+    /**
+     * Returns the location of the zip align tool.
+     */
+    File getZipAlign();
+
+    /**
+     * Returns the location of the adb tool.
+     */
+    File getAdb();
 }

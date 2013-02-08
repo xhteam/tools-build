@@ -53,6 +53,7 @@ import com.android.builder.BuilderConstants
 import com.android.builder.DefaultSdkParser
 import com.android.builder.JarDependency
 import com.android.builder.ManifestDependency
+import com.android.builder.PlatformSdkParser
 import com.android.builder.ProductFlavor
 import com.android.builder.SdkParser
 import com.android.builder.SourceProvider
@@ -102,8 +103,7 @@ public abstract class BasePlugin {
     final Map<SigningConfig, ValidateSigningTask> validateSigningTaskMap = [:]
 
     protected Project project
-    protected File sdkDir
-    private DefaultSdkParser androidSdkParser
+    protected SdkParser androidSdkParser
     private LoggerWrapper loggerWrapper
 
     private boolean hasCreatedTasks = false
@@ -134,8 +134,6 @@ public abstract class BasePlugin {
         project.tasks.assemble.description =
             "Assembles all variants of all applications and secondary packages."
 
-        findSdk(project)
-
         uninstallAll = project.tasks.add("uninstallAll")
         uninstallAll.description = "Uninstall all applications."
         uninstallAll.group = INSTALL_GROUP
@@ -164,6 +162,8 @@ public abstract class BasePlugin {
     }
 
     final void createAndroidTasks() {
+        findSdk(project)
+
         if (hasCreatedTasks) {
             return
         }
@@ -187,10 +187,6 @@ public abstract class BasePlugin {
     }
 
     SdkParser getSdkParser() {
-        if (androidSdkParser == null) {
-            androidSdkParser = new DefaultSdkParser(sdkDir.absolutePath)
-        }
-
         return androidSdkParser;
     }
 
@@ -220,9 +216,12 @@ public abstract class BasePlugin {
     private void findSdk(Project project) {
         // if already set through tests.
         if (TEST_SDK_DIR != null) {
-            sdkDir = TEST_SDK_DIR
+            androidSdkParser = new DefaultSdkParser(TEST_SDK_DIR.absolutePath)
             return
         }
+
+        boolean defaultParser = true
+        File sdkDir = null
 
         def rootDir = project.rootDir
         def localProperties = new File(rootDir, SdkConstants.FN_LOCAL_PROPERTIES)
@@ -232,10 +231,19 @@ public abstract class BasePlugin {
                 properties.load(instr)
             }
             def sdkDirProp = properties.getProperty('sdk.dir')
-            if (!sdkDirProp) {
-                throw new RuntimeException("No sdk.dir property defined in local.properties file.")
+
+            if (sdkDirProp != null) {
+                sdkDir = new File(sdkDirProp)
+            } else {
+                sdkDirProp = properties.getProperty('android.dir')
+                if (sdkDirProp != null) {
+                    sdkDir = new File(rootDir, sdkDirProp)
+                    defaultParser = false
+                } else {
+                    throw new RuntimeException(
+                            "No sdk.dir property defined in local.properties file.")
+                }
             }
-            sdkDir = new File(sdkDirProp)
         } else {
             def envVar = System.getenv("ANDROID_HOME")
             if (envVar != null) {
@@ -251,6 +259,12 @@ public abstract class BasePlugin {
         if (!sdkDir.directory) {
             throw new RuntimeException(
                     "The SDK directory '$sdkDir' specified in local.properties does not exist.")
+        }
+
+        if (defaultParser) {
+            androidSdkParser = new DefaultSdkParser(sdkDir.absolutePath)
+        } else {
+            androidSdkParser = new PlatformSdkParser(sdkDir.absolutePath)
         }
     }
 
@@ -668,8 +682,9 @@ public abstract class BasePlugin {
         testFlavorTask.plugin = this
         testFlavorTask.variant = variant
         testFlavorTask.testedVariant = testedVariant
-        testFlavorTask.sdkDir = sdkDir
         testFlavorTask.flavorName = variant.flavorName
+
+        testFlavorTask.conventionMapping.adbExe = { androidSdkParser.adb }
 
         testFlavorTask.conventionMapping.testApp = { variant.outputFile }
         if (testedVariant.config.type != VariantConfiguration.Type.LIBRARY) {
@@ -780,7 +795,7 @@ public abstract class BasePlugin {
                     project.file(
                             "$project.buildDir/apk/${project.archivesBaseName}-${variant.baseName}.apk")
                 }
-                zipAlignTask.sdkDir = sdkDir
+                zipAlignTask.conventionMapping.zipAlignExe = { androidSdkParser.zipAlign }
 
                 appTask = zipAlignTask
                 variant.outputFile = project.file(
@@ -793,7 +808,7 @@ public abstract class BasePlugin {
             installTask.group = INSTALL_GROUP
             installTask.dependsOn appTask
             installTask.conventionMapping.packageFile = { appTask.outputFile }
-            installTask.sdkDir = sdkDir
+            installTask.conventionMapping.adbExe = { androidSdkParser.adb }
 
             variant.installTask = installTask
         }
@@ -812,7 +827,7 @@ public abstract class BasePlugin {
         uninstallTask.description = "Uninstalls the " + variant.description
         uninstallTask.group = INSTALL_GROUP
         uninstallTask.variant = variant
-        uninstallTask.sdkDir = sdkDir
+        uninstallTask.conventionMapping.adbExe = { androidSdkParser.adb }
 
         variant.uninstallTask = uninstallTask
         uninstallAll.dependsOn uninstallTask

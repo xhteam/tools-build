@@ -1,7 +1,7 @@
 apply plugin: 'android'
 
 android {
-    target "android-15"
+    compileSdkVersion 15
 }
 
 // query for all (non-test) variants and inject a new step in the builds
