@@ -42,12 +42,23 @@ public class FileManagerTest extends TestCase {
         assertNull(status);
     }
 
-    public void testUntouchedDateChanged() throws Exception {
+    public void testUntouchedDateBefore() throws Exception {
         FileManager fileManager = getFileManager();
         Map<File, FileStatus> changedFiles = fileManager.getChangedFiles();
 
-        File file = new File(sFilesFolder, "untouched_date_changed.png");
+        File file = new File(sFilesFolder, "untouched_date_before.png");
         FileStatus status = changedFiles.get(file);
+        // no change
+        assertNull(status);
+    }
+
+    public void testUntouchedDateAfter() throws Exception {
+        FileManager fileManager = getFileManager();
+        Map<File, FileStatus> changedFiles = fileManager.getChangedFiles();
+
+        File file = new File(sFilesFolder, "untouched_date_after.png");
+        FileStatus status = changedFiles.get(file);
+        // no change
         assertNull(status);
     }
 
