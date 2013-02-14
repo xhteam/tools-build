@@ -12,14 +12,15 @@
    - API to manipulate Build Variants.
    - Support for versionName suffix provided by the BuildType.
    - Testing
-      * Tests now runs on all connected devices in parallel.
-      * Running tests on device now breaks the build if any test fails.
-      * Generate an HTML report for each flavor/project, but also aggregated.
+      * Instrumentation tests now started from "deviceCheck" instead of "check"
+      * Instrumentation tests now run on all connected devices in parallel.
+      * Instrumentation tests now break the build if any test fails.
+      * Instrumentation tests now generate an HTML report for each flavor/project, but also aggregated.
       * New plugin 'android-reporting' to aggregate android test results across projects. See 'flavorlib' sample.
    - Improved DSL:
-      * replaced android.target with android.compileSdkVersion to make it less confusing vs min/targetSdkVersion
+      * replaced android.target with android.compileSdkVersion to make it less confusing with targetSdkVersion
       * signing information now a SigningConfig object reusable across BuildType and ProductFlavor
-      * ability to relocated a full sourceSet. See 'migrated' sample.
+      * ability to relocate a full sourceSet. See 'migrated' sample.
 * Fixes:
    - Default Java compile target set to 1.6.
    - Fix generation of R classes in case libraries share same package name as the app project.

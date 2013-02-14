@@ -50,6 +50,7 @@ public class DefaultSdkParser implements SdkParser {
     private final String mSdkLocation;
     private SdkManager mManager;
 
+    private File mTools;
     private File mPlatformTools;
     private final Map<String, File> mToolsMap = Maps.newHashMapWithExpectedSize(6);
 
@@ -82,7 +83,7 @@ public class DefaultSdkParser implements SdkParser {
 
     @Override
     public FullRevision getPlatformToolsRevision() {
-        File platformTools = getPlatformTools();
+        File platformTools = getPlatformToolsFolder();
         if (!platformTools.isDirectory()) {
             return null;
         }
@@ -114,22 +115,22 @@ public class DefaultSdkParser implements SdkParser {
 
     @Override
     public File getAapt() {
-        return getTool(SdkConstants.FN_AAPT);
+        return getPlatformTool(SdkConstants.FN_AAPT);
     }
 
     @Override
     public File getAidlCompiler() {
-        return getTool(SdkConstants.FN_AIDL);
+        return getPlatformTool(SdkConstants.FN_AIDL);
     }
 
     @Override
     public File getRenderscriptCompiler() {
-        return getTool(SdkConstants.FN_RENDERSCRIPT);
+        return getPlatformTool(SdkConstants.FN_RENDERSCRIPT);
     }
 
     @Override
     public File getDx() {
-        return getTool(SdkConstants.FN_DX);
+        return getPlatformTool(SdkConstants.FN_DX);
     }
 
     @Override
@@ -139,13 +140,13 @@ public class DefaultSdkParser implements SdkParser {
 
     @Override
     public File getAdb() {
-        return getTool(SdkConstants.FN_ADB);
+        return getPlatformTool(SdkConstants.FN_ADB);
     }
 
-    private File getTool(String filename) {
+    private File getPlatformTool(String filename) {
         File f = mToolsMap.get(filename);
         if (f == null) {
-            File platformTools = getPlatformTools();
+            File platformTools = getPlatformToolsFolder();
             if (!platformTools.isDirectory()) {
                 return null;
             }
@@ -157,11 +158,35 @@ public class DefaultSdkParser implements SdkParser {
         return f;
     }
 
-    private File getPlatformTools() {
+    private File getTool(String filename) {
+        File f = mToolsMap.get(filename);
+        if (f == null) {
+            File platformTools = getToolsFolder();
+            if (!platformTools.isDirectory()) {
+                return null;
+            }
+
+            f = new File(platformTools, filename);
+            mToolsMap.put(filename, f);
+        }
+
+        return f;
+    }
+
+    private File getPlatformToolsFolder() {
         if (mPlatformTools == null) {
             mPlatformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
         }
 
         return mPlatformTools;
     }
+
+    private File getToolsFolder() {
+        if (mTools == null) {
+            mTools = new File(mSdkLocation, FD_TOOLS);
+        }
+
+        return mTools;
+    }
+
 }

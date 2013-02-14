@@ -120,6 +120,11 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
     }
 
+    /**
+     * Adds new BuildType, creating a BuildTypeData, and the associated source set,
+     * and adding it to the map.
+     * @param buildType the build type.
+     */
     private void addBuildType(BuildType buildType) {
         String name = buildType.name
         if (name.startsWith("test")) {
@@ -137,6 +142,12 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         buildTypes[name] = buildTypeData
     }
 
+    /**
+     * Adds a new ProductFlavor, creating a ProductFlavorData and associated source sets,
+     * and adding it to the map.
+     *
+     * @param productFlavor the product flavor
+     */
     private void addProductFlavor(GroupableProductFlavor productFlavor) {
         if (productFlavor.name.startsWith("test")) {
             throw new RuntimeException("ProductFlavor names cannot start with 'test'")
@@ -156,6 +167,9 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         productFlavors[productFlavor.name] = productFlavorData
     }
 
+    /**
+     * Task creation entry point.
+     */
     @Override
     protected void doCreateAndroidTasks() {
         // resolve dependencies for all config
@@ -174,11 +188,11 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             assembleTest.description = "Assembles all the Test applications"
 
             // same for the test task
-            testTask = project.tasks.add("test", AndroidReportTask)
+            testTask = project.tasks.add("instrumentationTest", AndroidReportTask)
             testTask.group = JavaBasePlugin.VERIFICATION_GROUP
-            testTask.description = "Installs and runs tests for all flavors"
+            testTask.description = "Installs and runs instrumentation tests for all flavors"
             testTask.reportType = ReportType.MULTI_FLAVOR
-            project.tasks.check.dependsOn testTask
+            deviceCheck.dependsOn testTask
 
             testTask.conventionMapping.resultsDir = {
                 String rootLocation = extension.testOptions.resultsDir != null ?
@@ -238,19 +252,36 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         }
     }
 
+    /**
+     * Creates the tasks for multi-flavor builds.
+     *
+     * This recursively fills the array of ProductFlavorData (in the order defined
+     * in extension.flavorGroupList), creating all possible combination.
+     *
+     * @param datas the arrays to fill
+     * @param i the current index to fill
+     * @param map the map of group -> list(ProductFlavor)
+     * @return
+     */
     private createTasksForMultiFlavoredBuilds(ProductFlavorData[] datas, int i,
-                                              ListMultimap<String, ProductFlavorData> map) {
+                                              ListMultimap<String, ? extends ProductFlavorData> map) {
         if (i == datas.length) {
             createTasksForFlavoredBuild(datas)
             return
         }
 
-        // fill the array at the current index
+        // fill the array at the current index.
+        // get the group name that matches the index we are filling.
         def group = extension.flavorGroupList.get(i)
+
+        // from our map, get all the possible flavors in that group.
         def flavorList = map.get(group)
+
+        // loop on all the flavors to add them to the current index and recursively fill the next
+        // indices.
         for (ProductFlavorData flavor : flavorList) {
             datas[i] = flavor
-            createTasksForMultiFlavoredBuilds(datas, i+1, map)
+            createTasksForMultiFlavoredBuilds(datas, (int) i + 1, map)
         }
     }
 
