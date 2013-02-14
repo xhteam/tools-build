@@ -15,7 +15,7 @@
  */
 package com.android.build.gradle.tasks
 
-import com.android.builder.ManifestDependency
+import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Nested
 
@@ -39,7 +39,7 @@ public class ProcessTestManifest extends ProcessManifest {
     String instrumentationRunner
 
     @Nested
-    List<ManifestDependency> libraries
+    List<ManifestDependencyImpl> libraries
 
     @Override
     protected void doFullTaskAction() {

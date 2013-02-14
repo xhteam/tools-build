@@ -26,5 +26,5 @@ public interface ManifestDependency extends ManifestProvider {
     /**
      * Returns the direct dependency of this dependency.
      */
-    List<ManifestDependency> getManifestDependencies();
+    List<? extends ManifestDependency> getManifestDependencies();
 }

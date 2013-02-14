@@ -31,7 +31,7 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.MavenPlugin
-import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.Sync
 import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.internal.reflect.Instantiator
@@ -182,8 +182,9 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         // Add a task to create the BuildConfig class
         createBuildConfigTask(variant)
 
-        // Add a task to generate resource source files
-        createProcessResTask(variant)
+        // Add a task to generate resource source files, directing the location
+        // of the r.txt file to be directly in the bundle.
+        createProcessResTask(variant, "$project.buildDir/$DIR_BUNDLES/${variant.dirName}")
 
         // process java resources
         createProcessJavaResTask(variant)
@@ -207,7 +208,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         jar.exclude(packageName + "/BuildConfig.class")
 
         // package the aidl files into the bundle folder
-        Copy packageAidl = project.tasks.add("package${variant.name}Aidl", Copy)
+        Sync packageAidl = project.tasks.add("package${variant.name}Aidl", Sync)
         // packageAidl from 3 sources. the order is important to make sure the override works well.
         packageAidl.from(defaultConfigData.sourceSet.aidl.directories,
                 buildTypeData.sourceSet.aidl.directories).include("**/*.aidl")
@@ -215,21 +216,15 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
                 "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_AIDL"))
 
         // package the renderscript header files files into the bundle folder
-        Copy packageRenderscript = project.tasks.add("package${variant.name}Renderscript", Copy)
+        Sync packageRenderscript = project.tasks.add("package${variant.name}Renderscript", Sync)
         // packageAidl from 3 sources. the order is important to make sure the override works well.
         packageRenderscript.from(defaultConfigData.sourceSet.renderscript.directories,
                 buildTypeData.sourceSet.renderscript.directories).include("**/*.rsh")
         packageRenderscript.into(project.file(
                 "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_RENDERSCRIPT"))
 
-        // package the R symbol text file into the bundle folder
-        Copy packageSymbol = project.tasks.add("package${variant.name}Symbols", Copy)
-        packageSymbol.dependsOn variant.processResourcesTask
-        packageSymbol.from(variant.processResourcesTask.textSymbolDir)
-        packageSymbol.into(project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}"))
-
         Zip bundle = project.tasks.add("bundle${variant.name}", Zip)
-        bundle.dependsOn jar, packageAidl, packageSymbol, packageRenderscript
+        bundle.dependsOn jar, packageAidl, packageRenderscript
         bundle.setDescription("Assembles a bundle containing the library in ${variant.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
         bundle.extension = BuilderConstants.EXT_LIB_ARCHIVE

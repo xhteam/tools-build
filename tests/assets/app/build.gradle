@@ -1,0 +1,9 @@
+apply plugin: 'android'
+
+android {
+    compileSdkVersion 15
+}
+
+dependencies {
+    compile project(':lib')
+}

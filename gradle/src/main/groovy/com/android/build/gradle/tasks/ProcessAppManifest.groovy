@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 package com.android.build.gradle.tasks
-
-import com.android.builder.ManifestDependency
+import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.Optional
-
 /**
  * A task that processes the manifest
  */
@@ -36,7 +34,7 @@ public class ProcessAppManifest extends ProcessManifest {
     List<File> manifestOverlays
 
     @Nested
-    List<ManifestDependency> libraries
+    List<ManifestDependencyImpl> libraries
 
     @Input
     int versionCode
