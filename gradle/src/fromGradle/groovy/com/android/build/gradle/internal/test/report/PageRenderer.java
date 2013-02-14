@@ -22,6 +22,8 @@ import org.gradle.reporting.TabbedPageRenderer;
 import org.gradle.reporting.TabsRenderer;
 import org.w3c.dom.Element;
 
+import java.util.Map;
+
 /**
  * Custom PageRenderer based on Gradle's PageRenderer
  */
@@ -66,30 +68,104 @@ abstract class PageRenderer<T extends CompositeTestResults> extends TabbedPageRe
         }
     }
 
+    protected void addDeviceAndVariantTabs() {
+        if (results.getResultsPerDevices().size() > 1) {
+            addTab("Devices", new Action<Element>() {
+                @Override
+                public void execute(Element element) {
+                    renderCompositeResults(element, results.getResultsPerDevices(), "Devices");
+                }
+            });
+
+        }
+
+        if (results.getResultsPerVariants().size() > 1) {
+            addTab("Variants", new Action<Element>() {
+                @Override
+                public void execute(Element element) {
+                    renderCompositeResults(element, results.getResultsPerVariants(), "Variants");
+                }
+            });
+        }
+    }
+
     protected void renderFailures(Element parent) {
         Element ul = append(parent, "ul");
         ul.setAttribute("class", "linkList");
 
-        // TODO
+        boolean multiDevices = results.getResultsPerDevices().size() > 1;
+        boolean multiVariants = results.getResultsPerVariants().size() > 1;
 
-        for (TestResult test : results.getFailures()) {
-            Element li = append(ul, "li");
+        Element table = append(parent, "table");
+        Element thead = append(table, "thead");
+        Element tr = append(thead, "tr");
+        if (multiDevices) {
+            appendWithText(tr, "th", "Devices");
+        }
+        if (multiVariants) {
             if (reportType == ReportType.MULTI_PROJECT) {
-                appendText(li, test.getProject());
-                appendText(li, ".");
-                appendText(li, test.getFlavor());
-                appendText(li, ".");
+                appendWithText(tr, "th", "Project");
+                appendWithText(tr, "th", "Flavor");
             } else if (reportType == ReportType.MULTI_FLAVOR) {
-                appendText(li, test.getFlavor());
-                appendText(li, ".");
+                appendWithText(tr, "th", "Flavor");
             }
-            appendLink(li, String.format("%s.html", test.getClassResults().getFilename(reportType)),
+
+        }
+        appendWithText(tr, "th", "Class");
+        appendWithText(tr, "th", "Test");
+        for (TestResult test : results.getFailures()) {
+            tr = append(table, "tr");
+            Element td;
+
+            if (multiDevices) {
+                appendWithText(tr, "td", test.getDevice());
+            }
+            if (multiVariants) {
+                if (reportType == ReportType.MULTI_PROJECT) {
+                    appendWithText(tr, "td", test.getProject());
+                    appendWithText(tr, "td", test.getFlavor());
+                } else if (reportType == ReportType.MULTI_FLAVOR) {
+                    appendWithText(tr, "td", test.getFlavor());
+                }
+
+            }
+
+            td = append(tr, "td");
+            appendLink(td,
+                    String.format("%s.html", test.getClassResults().getFilename(reportType)),
                     test.getClassResults().getSimpleName());
-            appendText(li, ".");
-            appendLink(li,
-                    String.format("%s.html#%s", test.getClassResults().getFilename(reportType),
+
+            td = append(tr, "td");
+            appendLink(td,
+                    String.format("%s.html#%s",
+                            test.getClassResults().getFilename(reportType),
                             test.getName()),
                     test.getName());
+        }
+    }
+
+    protected void renderCompositeResults(Element parent,
+                                          Map<String, ? extends CompositeTestResults> map,
+                                          String name) {
+        Element table = append(parent, "table");
+        Element thead = append(table, "thead");
+        Element tr = append(thead, "tr");
+        appendWithText(tr, "th", name);
+        appendWithText(tr, "th", "Tests");
+        appendWithText(tr, "th", "Failures");
+        appendWithText(tr, "th", "Duration");
+        appendWithText(tr, "th", "Success rate");
+        for (CompositeTestResults results : map.values()) {
+            tr = append(table, "tr");
+            Element td;
+
+            td = appendWithText(tr, "td", results.getName());
+            td.setAttribute("class", results.getStatusClass());
+            appendWithText(tr, "td", results.getTestCount());
+            appendWithText(tr, "td", results.getFailureCount());
+            appendWithText(tr, "td", results.getFormattedDuration());
+            td = appendWithText(tr, "td", results.getFormattedSuccessRate());
+            td.setAttribute("class", results.getStatusClass());
         }
     }
 

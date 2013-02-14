@@ -34,7 +34,7 @@ public class AutomatedBuildTest extends BuildTest {
     private static enum TestType { BUILD, REPORT };
 
     private static final String[] sBuiltProjects = new String[] {
-            "aidl", "api", "assets", "applibtest", "assets", "basic", "dependencies", "flavored",
+            "aidl", "api", "applibtest", "assets", "basic", "dependencies", "flavored",
             "flavorlib", "flavors", "libsTest", "migrated", "multiproject", "multires",
             "overlay1", "overlay2", "renderscript", "renderscriptInLib", "renderscriptMultiSrc",
             "tictactoe"

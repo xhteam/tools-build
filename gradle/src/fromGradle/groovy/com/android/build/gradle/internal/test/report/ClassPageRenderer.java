@@ -43,16 +43,7 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
 
     @Override
     protected String getTitle() {
-        ClassTestResults model = getModel();
-
-        switch (reportType) {
-            case MULTI_PROJECT:
-                return model.getProject() + ": " + model.getFlavor() + ": " + model.getTitle();
-            case MULTI_FLAVOR:
-                return model.getFlavor() + ": " + model.getTitle();
-        }
-
-        return model.getTitle();
+        return getModel().getTitle();
     }
 
     @Override protected void renderBreadcrumbs(Element parent) {
@@ -249,5 +240,6 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
                 }
             });
         }
+        addDeviceAndVariantTabs();
     }
 }

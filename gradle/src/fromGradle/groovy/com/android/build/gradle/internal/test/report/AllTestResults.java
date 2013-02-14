@@ -28,7 +28,7 @@ class AllTestResults extends CompositeTestResults {
     private final Map<String, PackageTestResults> packages = new TreeMap<String, PackageTestResults>();
 
     public AllTestResults() {
-        super(null, null, null, null);
+        super(null);
     }
 
     @Override
@@ -47,20 +47,21 @@ class AllTestResults extends CompositeTestResults {
 
     public TestResult addTest(String className, String testName, long duration,
                               String device, String project, String flavor) {
-        PackageTestResults packageResults = addPackageForClass(className,
-                device, project, flavor);
-        return addTest(packageResults.addTest(className, testName, duration,
-                device, project, flavor));
+        PackageTestResults packageResults = addPackageForClass(className);
+        TestResult testResult = addTest(
+                packageResults.addTest(className, testName, duration, device, project, flavor));
+
+        addDevice(device, testResult);
+        addVariant(project, flavor, testResult);
+
+        return testResult;
     }
 
-    public ClassTestResults addTestClass(String className,
-                                         String device, String project, String flavor) {
-        return addPackageForClass(className, device, project, flavor).addClass(className,
-                device, project, flavor);
+    public ClassTestResults addTestClass(String className) {
+        return addPackageForClass(className).addClass(className);
     }
 
-    private PackageTestResults addPackageForClass(String className,
-                                                  String device, String project, String flavor) {
+    private PackageTestResults addPackageForClass(String className) {
         String packageName;
         int pos = className.lastIndexOf(".");
         if (pos != -1) {
@@ -68,17 +69,15 @@ class AllTestResults extends CompositeTestResults {
         } else {
             packageName = "";
         }
-        return addPackage(packageName, device, project, flavor);
+        return addPackage(packageName);
     }
 
-    private PackageTestResults addPackage(String packageName,
-                                          String device, String project, String flavor) {
-        String key = device + "/" + project + "/" + flavor + "/" + packageName;
+    private PackageTestResults addPackage(String packageName) {
 
-        PackageTestResults packageResults = packages.get(key);
+        PackageTestResults packageResults = packages.get(packageName);
         if (packageResults == null) {
-            packageResults = new PackageTestResults(packageName, this, device, project, flavor);
-            packages.put(key, packageResults);
+            packageResults = new PackageTestResults(packageName, this);
+            packages.put(packageName, packageResults);
         }
         return packageResults;
     }
