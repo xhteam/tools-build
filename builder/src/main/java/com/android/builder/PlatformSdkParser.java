@@ -20,7 +20,7 @@ import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.builder.internal.FakeAndroidTarget;
 import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.internal.repository.packages.FullRevision;
+import com.android.sdklib.repository.FullRevision;
 import com.android.utils.ILogger;
 import com.google.common.collect.Maps;
 
@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * Implementation of {@link SdkParser} for the SDK prebuilds in the Android source tree.
  */
-class PlatformSdkParser implements SdkParser {
+public class PlatformSdkParser implements SdkParser {
     private final String mPlatformRootFolder;
 
     private File mHostTools;

@@ -20,7 +20,7 @@ import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.SdkManager;
-import com.android.sdklib.internal.repository.packages.FullRevision;
+import com.android.sdklib.repository.FullRevision;
 import com.android.sdklib.repository.PkgProps;
 import com.android.utils.ILogger;
 import com.google.common.base.Charsets;

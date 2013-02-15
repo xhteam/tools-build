@@ -32,6 +32,7 @@ public class FakeAndroidTarget implements IAndroidTarget {
     private final SparseArray<String> mPaths = new SparseArray<String>();
     private final int mApiLevel;
 
+    @SuppressWarnings("deprecation")
     public FakeAndroidTarget(String sdkLocation, String target) {
         mSdkLocation = sdkLocation;
         mApiLevel = getApiLevel(target);

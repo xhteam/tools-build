@@ -44,7 +44,7 @@ import com.android.manifmerger.ManifestMerger;
 import com.android.manifmerger.MergerLog;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.IAndroidTarget.IOptionalLibrary;
-import com.android.sdklib.internal.repository.packages.FullRevision;
+import com.android.sdklib.repository.FullRevision;
 import com.android.utils.ILogger;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
@@ -202,10 +202,10 @@ public class AndroidBuilder {
 
     /**
      * Returns an {@link AaptRunner} able to run aapt commands.
-     * @return
+     * @return an AaptRunner object
      */
     public AaptRunner getAaptRunner() {
-        return new AaptRunner(mTarget.getPath(IAndroidTarget.AAPT), mCmdLineRunner);
+        return new AaptRunner(mSdkParser.getAapt().getAbsolutePath(), mCmdLineRunner);
     }
 
     /**
