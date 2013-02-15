@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.test.report;
 
+import com.android.builder.BuilderConstants;
 import org.gradle.api.internal.tasks.testing.junit.report.TestResultModel;
 
 import java.math.BigDecimal;
@@ -151,7 +152,7 @@ public abstract class CompositeTestResults extends TestResultModel {
     }
 
     private static String getVariantKey(String projectName, String flavorName) {
-        if (flavorName.equals("Main")) {
+        if (BuilderConstants.MAIN.equalsIgnoreCase(flavorName)) {
             return projectName;
         }
 

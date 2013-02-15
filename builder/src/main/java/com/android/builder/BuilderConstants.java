@@ -26,7 +26,13 @@ public class BuilderConstants {
      */
     public final static String EXT_LIB_ARCHIVE = "aar";
 
+    /**
+     * The name of the default config.
+     */
+    public static final String MAIN = "main";
+
     public final static String DEBUG = "debug";
     public final static String RELEASE = "release";
 
+    public final static String TEST = "test";
 }

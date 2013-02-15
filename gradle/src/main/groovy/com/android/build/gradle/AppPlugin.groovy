@@ -117,7 +117,6 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         productFlavorContainer.whenObjectRemoved {
             throw new UnsupportedOperationException("Removing product flavors is not supported.")
         }
-
     }
 
     /**
@@ -127,7 +126,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
      */
     private void addBuildType(BuildType buildType) {
         String name = buildType.name
-        if (name.startsWith("test")) {
+        if (name.startsWith(BuilderConstants.TEST)) {
             throw new RuntimeException("BuildType names cannot start with 'test'")
         }
         if (productFlavors.containsKey(name)) {
@@ -149,7 +148,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
      * @param productFlavor the product flavor
      */
     private void addProductFlavor(GroupableProductFlavor productFlavor) {
-        if (productFlavor.name.startsWith("test")) {
+        if (productFlavor.name.startsWith(BuilderConstants.TEST)) {
             throw new RuntimeException("ProductFlavor names cannot start with 'test'")
         }
         if (buildTypes.containsKey(productFlavor.name)) {
@@ -157,7 +156,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         }
 
         def mainSourceSet = extension.sourceSetsContainer.create(productFlavor.name)
-        String testName = "test${productFlavor.name.capitalize()}"
+        String testName = "${BuilderConstants.TEST}${productFlavor.name.capitalize()}"
         def testSourceSet = extension.sourceSetsContainer.create(testName)
 
         ProductFlavorData<GroupableProductFlavor> productFlavorData =
