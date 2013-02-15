@@ -29,6 +29,7 @@ import com.android.build.gradle.tasks.ProcessManifest
 import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
+import com.android.builder.BuilderConstants
 import com.android.builder.ProductFlavor
 import com.android.builder.VariantConfiguration
 import org.gradle.api.Task
@@ -97,7 +98,7 @@ public abstract class ApplicationVariant {
         if (config.hasFlavors()) {
             return "${getFlavoredName(true)}"
         } else {
-            return "Main"
+            return BuilderConstants.MAIN.capitalize()
         }
     }
 

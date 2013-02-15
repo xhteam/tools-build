@@ -544,7 +544,7 @@ public class VariantConfiguration {
 
         Set<File> mainResDirs = mDefaultSourceProvider.getResourcesDirectories();
 
-        ResourceSet resourceSet = new ResourceSet(ProductFlavor.MAIN);
+        ResourceSet resourceSet = new ResourceSet(BuilderConstants.MAIN);
         resourceSet.addSources(mainResDirs);
         if (generatedResFolder != null) {
             resourceSet.addSource(generatedResFolder);
@@ -599,7 +599,7 @@ public class VariantConfiguration {
 
         Set<File> mainResDirs = mDefaultSourceProvider.getAssetsDirectories();
 
-        AssetSet assetSet = new AssetSet(ProductFlavor.MAIN);
+        AssetSet assetSet = new AssetSet(BuilderConstants.MAIN);
         assetSet.addSources(mainResDirs);
         assetSets.add(assetSet);
 

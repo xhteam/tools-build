@@ -29,11 +29,6 @@ import com.google.common.base.Objects;
 public class ProductFlavor extends BuildConfig {
     private static final long serialVersionUID = 1L;
 
-    /**
-     * The name of the default config.
-     */
-    public static final String MAIN = "main";
-
     private final String mName;
     private int mMinSdkVersion = -1;
     private int mTargetSdkVersion = -1;
@@ -51,7 +46,7 @@ public class ProductFlavor extends BuildConfig {
      * Names can be important when dealing with flavor groups.
      * @param name the name of the flavor.
      *
-     * @see #MAIN
+     * @see BuilderConstants#MAIN
      */
     public ProductFlavor(@NonNull String name) {
         mName = name;

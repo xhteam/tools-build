@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.dsl.AaptOptionsImpl
 import com.android.build.gradle.internal.dsl.AndroidSourceSetFactory
 import com.android.build.gradle.internal.dsl.DexOptionsImpl
-import com.android.build.gradle.internal.dsl.GroupableProductFlavor
 import com.android.build.gradle.internal.dsl.ProductFlavorDsl
 import com.android.build.gradle.internal.test.TestOptions
+import com.android.builder.BuilderConstants
 import com.android.builder.ProductFlavor
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
@@ -58,7 +57,7 @@ public abstract class BaseExtension {
     BaseExtension(BasePlugin plugin, ProjectInternal project, Instantiator instantiator) {
         this.plugin = plugin
 
-        defaultConfig = instantiator.newInstance(ProductFlavorDsl.class, ProductFlavor.MAIN)
+        defaultConfig = instantiator.newInstance(ProductFlavorDsl.class, BuilderConstants.MAIN)
 
         aaptOptions = instantiator.newInstance(AaptOptionsImpl.class)
         dexOptions = instantiator.newInstance(DexOptionsImpl.class)
@@ -115,7 +114,7 @@ public abstract class BaseExtension {
         action.execute(sourceSetsContainer)
     }
 
-    void defaultConfig(Action<GroupableProductFlavor> action) {
+    void defaultConfig(Action<ProductFlavor> action) {
         action.execute(defaultConfig)
     }
 

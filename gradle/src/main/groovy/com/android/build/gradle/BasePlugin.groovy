@@ -180,7 +180,7 @@ public abstract class BasePlugin {
     protected setDefaultConfig(ProductFlavor defaultConfig,
                                NamedDomainObjectContainer<AndroidSourceSet> sourceSets) {
         mainSourceSet = sourceSets.create(defaultConfig.name)
-        testSourceSet = sourceSets.create("test")
+        testSourceSet = sourceSets.create(BuilderConstants.TEST)
 
         defaultConfigData = new ProductFlavorData<ProductFlavor>(defaultConfig, mainSourceSet,
                 testSourceSet, project, ConfigurationDependencies.ConfigType.DEFAULT)
