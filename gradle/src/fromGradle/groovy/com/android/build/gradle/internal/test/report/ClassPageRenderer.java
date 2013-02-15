@@ -93,7 +93,9 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
                 Map<String, TestResult> deviceMap = results.get(device);
                 TestResult test = deviceMap.get(testName);
 
-                Element deviceTd = appendWithText(tr, "td", test.getFormattedResultType());
+                Element deviceTd = appendWithText(tr, "td",
+                        String.format("%s (%s)",
+                                test.getFormattedResultType(), test.getFormattedDuration()));
                 deviceTd.setAttribute("class", test.getStatusClass());
 
                 currentType = combineResultType(currentType, test.getResultType());
