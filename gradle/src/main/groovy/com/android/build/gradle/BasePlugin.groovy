@@ -113,6 +113,7 @@ public abstract class BasePlugin {
 
     protected Task uninstallAll
     protected Task assembleTest
+    protected Task deviceCheck
 
     protected abstract String getTarget()
 
@@ -136,6 +137,10 @@ public abstract class BasePlugin {
         uninstallAll = project.tasks.add("uninstallAll")
         uninstallAll.description = "Uninstall all applications."
         uninstallAll.group = INSTALL_GROUP
+
+        deviceCheck = project.tasks.add("deviceCheck")
+        deviceCheck.description = "Runs all checks that requires a connected device."
+        deviceCheck.group = JavaBasePlugin.VERIFICATION_GROUP
 
         project.afterEvaluate {
             createAndroidTasks()
@@ -672,14 +677,15 @@ public abstract class BasePlugin {
         }
 
         // create the check task for this test
-        def testFlavorTask = project.tasks.add(mainTestTask ? "test" : "test${testedVariant.name}",
+        def testFlavorTask = project.tasks.add(
+                mainTestTask ? "instrumentationTest" : "instrumentationTest${testedVariant.name}",
                 mainTestTask ? TestLibraryTask : TestFlavorTask)
         testFlavorTask.description = "Installs and runs the tests for Build ${testedVariant.name}."
         testFlavorTask.group = JavaBasePlugin.VERIFICATION_GROUP
         testFlavorTask.dependsOn testedVariant.assembleTask, variant.assembleTask
 
         if (mainTestTask) {
-            project.tasks.check.dependsOn testFlavorTask
+            deviceCheck.dependsOn testFlavorTask
         }
 
         testFlavorTask.plugin = this
