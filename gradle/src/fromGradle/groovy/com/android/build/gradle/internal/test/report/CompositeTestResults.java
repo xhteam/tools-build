@@ -19,7 +19,9 @@ package com.android.build.gradle.internal.test.report;
 import org.gradle.api.internal.tasks.testing.junit.report.TestResultModel;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 import static org.gradle.api.tasks.testing.TestResult.ResultType;
@@ -33,26 +35,15 @@ public abstract class CompositeTestResults extends TestResultModel {
     private final Set<TestResult> failures = new TreeSet<TestResult>();
     private long duration;
 
-    private final String device;
-    private final String project;
-    private final String flavor;
+    private final Map<String, DeviceTestResults> devices = new TreeMap<String, DeviceTestResults>();
+    private final Map<String, VariantTestResults> variants = new TreeMap<String, VariantTestResults>();
 
-    protected CompositeTestResults(CompositeTestResults parent,
-                                   String device, String project, String flavor) {
+
+    protected CompositeTestResults(CompositeTestResults parent) {
         this.parent = parent;
-        this.device = device;
-        this.project = project;
-        this.flavor = flavor;
     }
 
     public String getFilename(ReportType reportType) {
-        switch (reportType) {
-            case MULTI_PROJECT:
-                return project + "-" + flavor + "-" + getName();
-            case MULTI_FLAVOR:
-                return flavor + "-" + getName();
-        }
-
         return getName();
     }
 
@@ -64,18 +55,6 @@ public abstract class CompositeTestResults extends TestResultModel {
 
     public int getFailureCount() {
         return failures.size();
-    }
-
-    public String getDevice() {
-        return device;
-    }
-
-    public String getProject() {
-        return project;
-    }
-
-    public String getFlavor() {
-        return flavor;
     }
 
     @Override
@@ -90,6 +69,14 @@ public abstract class CompositeTestResults extends TestResultModel {
 
     public Set<TestResult> getFailures() {
         return failures;
+    }
+
+    Map<String, DeviceTestResults> getResultsPerDevices() {
+        return devices;
+    }
+
+    Map<String, VariantTestResults> getResultsPerVariants() {
+        return variants;
     }
 
     @Override
@@ -117,10 +104,22 @@ public abstract class CompositeTestResults extends TestResultModel {
                 BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(100)).intValue();
     }
 
-    protected void failed(TestResult failedTest) {
+    protected void failed(TestResult failedTest,
+                          String deviceName, String projectName, String flavorName) {
         failures.add(failedTest);
         if (parent != null) {
-            parent.failed(failedTest);
+            parent.failed(failedTest, deviceName, projectName, flavorName);
+        }
+
+        DeviceTestResults deviceResults = devices.get(deviceName);
+        if (deviceResults != null) {
+            deviceResults.failed(failedTest, deviceName, projectName, flavorName);
+        }
+
+        String key = getVariantKey(projectName, flavorName);
+        VariantTestResults variantResults = variants.get(key);
+        if (variantResults != null) {
+            variantResults.failed(failedTest, deviceName, projectName, flavorName);
         }
     }
 
@@ -128,5 +127,34 @@ public abstract class CompositeTestResults extends TestResultModel {
         tests++;
         duration += test.getDuration();
         return test;
+    }
+
+    protected void addDevice(String deviceName, TestResult testResult) {
+        DeviceTestResults deviceResults = devices.get(deviceName);
+        if (deviceResults == null) {
+            deviceResults = new DeviceTestResults(deviceName, null);
+            devices.put(deviceName, deviceResults);
+        }
+
+        deviceResults.addTest(testResult);
+    }
+
+    protected void addVariant(String projectName, String flavorName, TestResult testResult) {
+        String key = getVariantKey(projectName, flavorName);
+        VariantTestResults variantResults = variants.get(key);
+        if (variantResults == null) {
+            variantResults = new VariantTestResults(key, null);
+            variants.put(key, variantResults);
+        }
+
+        variantResults.addTest(testResult);
+    }
+
+    private static String getVariantKey(String projectName, String flavorName) {
+        if (flavorName.equals("Main")) {
+            return projectName;
+        }
+
+        return projectName + ":" + flavorName;
     }
 }

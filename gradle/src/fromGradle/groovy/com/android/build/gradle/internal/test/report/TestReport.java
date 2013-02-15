@@ -99,8 +99,9 @@ public class TestReport {
                         deviceName, projectName, flavorName);
                 for (int j = 0; j < failures.getLength(); j++) {
                     Element failure = (Element) failures.item(j);
-                    testResult.addFailure(failure.getAttribute("message"),
-                            failure.getTextContent());
+                    testResult.addFailure(
+                            failure.getAttribute("message"), failure.getTextContent(),
+                            deviceName, projectName, flavorName);
                 }
             }
             NodeList ignoredTestCases = document.getElementsByTagName("ignored-testcase");
@@ -111,8 +112,7 @@ public class TestReport {
                 model.addTest(className, testName, 0, deviceName, projectName, flavorName).ignored();
             }
             String suiteClassName = document.getDocumentElement().getAttribute("name");
-            ClassTestResults suiteResults = model.addTestClass(suiteClassName,
-                    deviceName, projectName, flavorName);
+            ClassTestResults suiteResults = model.addTestClass(suiteClassName);
             NodeList stdOutElements = document.getElementsByTagName("system-out");
             for (int i = 0; i < stdOutElements.getLength(); i++) {
                 suiteResults.addStandardOutput(stdOutElements.item(i).getTextContent());

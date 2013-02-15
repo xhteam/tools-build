@@ -43,16 +43,7 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
 
     @Override
     protected String getTitle() {
-        ClassTestResults model = getModel();
-
-        switch (reportType) {
-            case MULTI_PROJECT:
-                return model.getProject() + ": " + model.getFlavor() + ": " + model.getTitle();
-            case MULTI_FLAVOR:
-                return model.getFlavor() + ": " + model.getTitle();
-        }
-
-        return model.getTitle();
+        return getModel().getTitle();
     }
 
     @Override protected void renderBreadcrumbs(Element parent) {
@@ -102,7 +93,9 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
                 Map<String, TestResult> deviceMap = results.get(device);
                 TestResult test = deviceMap.get(testName);
 
-                Element deviceTd = appendWithText(tr, "td", test.getFormattedResultType());
+                Element deviceTd = appendWithText(tr, "td",
+                        String.format("%s (%s)",
+                                test.getFormattedResultType(), test.getFormattedDuration()));
                 deviceTd.setAttribute("class", test.getStatusClass());
 
                 currentType = combineResultType(currentType, test.getResultType());
@@ -249,5 +242,6 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
                 }
             });
         }
+        addDeviceAndVariantTabs();
     }
 }

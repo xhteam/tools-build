@@ -18,7 +18,6 @@ package com.android.build.gradle.internal.test.report;
 
 import com.google.common.collect.Maps;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -34,9 +33,8 @@ class ClassTestResults extends CompositeTestResults {
     private final StringBuilder standardOutput = new StringBuilder();
     private final StringBuilder standardError = new StringBuilder();
 
-    public ClassTestResults(String name, PackageTestResults packageResults,
-                            String device, String project, String flavor) {
-        super(packageResults, device, project, flavor);
+    public ClassTestResults(String name, PackageTestResults packageResults) {
+        super(packageResults);
         this.name = name;
         this.packageResults = packageResults;
     }
@@ -80,10 +78,6 @@ class ClassTestResults extends CompositeTestResults {
         return map;
     }
 
-    public Collection<TestResult> getTestResults() {
-        return results;
-    }
-
     public CharSequence getStandardError() {
         return standardError;
     }
@@ -96,6 +90,10 @@ class ClassTestResults extends CompositeTestResults {
                               String device, String project, String flavor) {
         TestResult test = new TestResult(testName, duration, device, project, flavor, this);
         results.add(test);
+
+        addDevice(device, test);
+        addVariant(project, flavor, test);
+
         return addTest(test);
     }
 

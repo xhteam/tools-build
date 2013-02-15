@@ -44,6 +44,7 @@ class OverviewPageRenderer extends PageRenderer<AllTestResults> {
                 renderClasses(element);
             }
         });
+        addDeviceAndVariantTabs();
     }
 
     @Override protected void renderBreadcrumbs(Element element) {
@@ -53,12 +54,6 @@ class OverviewPageRenderer extends PageRenderer<AllTestResults> {
         Element table = append(parent, "table");
         Element thead = append(table, "thead");
         Element tr = append(thead, "tr");
-        if (reportType == ReportType.MULTI_PROJECT) {
-            appendWithText(tr, "th", "Project");
-            appendWithText(tr, "th", "Flavor");
-        } else if (reportType == ReportType.MULTI_FLAVOR) {
-            appendWithText(tr, "th", "Flavor");
-        }
         appendWithText(tr, "th", "Package");
         appendWithText(tr, "th", "Tests");
         appendWithText(tr, "th", "Failures");
@@ -67,17 +62,6 @@ class OverviewPageRenderer extends PageRenderer<AllTestResults> {
         for (PackageTestResults testPackage : getResults().getPackages()) {
             tr = append(table, "tr");
             Element td;
-
-            if (reportType == ReportType.MULTI_PROJECT) {
-                td = appendWithText(tr, "td", testPackage.getProject());
-                td.setAttribute("class", testPackage.getStatusClass());
-                td = appendWithText(tr, "td", testPackage.getFlavor());
-                td.setAttribute("class", testPackage.getStatusClass());
-            } else if (reportType == ReportType.MULTI_FLAVOR) {
-                td = appendWithText(tr, "td", testPackage.getFlavor());
-                td.setAttribute("class", testPackage.getStatusClass());
-            }
-
             td = append(tr, "td");
             td.setAttribute("class", testPackage.getStatusClass());
             appendLink(td,
@@ -95,12 +79,6 @@ class OverviewPageRenderer extends PageRenderer<AllTestResults> {
         Element table = append(parent, "table");
         Element thead = append(table, "thead");
         Element tr = append(thead, "tr");
-        if (reportType == ReportType.MULTI_PROJECT) {
-            appendWithText(tr, "th", "Project");
-            appendWithText(tr, "th", "Flavor");
-        } else if (reportType == ReportType.MULTI_FLAVOR) {
-            appendWithText(tr, "th", "Flavor");
-        }
         appendWithText(tr, "th", "Class");
         appendWithText(tr, "th", "Tests");
         appendWithText(tr, "th", "Failures");
@@ -110,16 +88,6 @@ class OverviewPageRenderer extends PageRenderer<AllTestResults> {
             for (ClassTestResults testClass : testPackage.getClasses()) {
                 tr = append(table, "tr");
                 Element td;
-
-                if (reportType == ReportType.MULTI_PROJECT) {
-                    td = appendWithText(tr, "td", testClass.getProject());
-                    td.setAttribute("class", testClass.getStatusClass());
-                    td = appendWithText(tr, "td", testClass.getFlavor());
-                    td.setAttribute("class", testClass.getStatusClass());
-                } else if (reportType == ReportType.MULTI_FLAVOR) {
-                    td = appendWithText(tr, "td", testClass.getFlavor());
-                    td.setAttribute("class", testClass.getStatusClass());
-                }
 
                 td = append(tr, "td");
                 td.setAttribute("class", testClass.getStatusClass());

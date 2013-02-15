@@ -28,9 +28,8 @@ class PackageTestResults extends CompositeTestResults {
     private final String name;
     private final Map<String, ClassTestResults> classes = new TreeMap<String, ClassTestResults>();
 
-    public PackageTestResults(String name, AllTestResults model,
-                              String device, String project, String flavor) {
-        super(model, device, project, flavor);
+    public PackageTestResults(String name, AllTestResults model) {
+        super(model);
         this.name = name.length() == 0 ? DEFAULT_PACKAGE : name;
     }
 
@@ -39,6 +38,7 @@ class PackageTestResults extends CompositeTestResults {
         return name.equals(DEFAULT_PACKAGE) ? "Default package" : String.format("Package %s", name);
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -49,19 +49,21 @@ class PackageTestResults extends CompositeTestResults {
 
     public TestResult addTest(String className, String testName, long duration,
                               String device, String project, String flavor) {
-        ClassTestResults classResults = addClass(className, device, project, flavor);
-        return addTest(classResults.addTest(testName, duration, device, project, flavor));
+        ClassTestResults classResults = addClass(className);
+        TestResult testResult = addTest(
+                classResults.addTest(testName, duration, device, project, flavor));
+
+        addDevice(device, testResult);
+        addVariant(project, flavor, testResult);
+
+        return testResult;
     }
 
-
-    public ClassTestResults addClass(String className,
-                                     String device, String project, String flavor) {
-        String key = device + "/" + project + "/" + flavor + "/" + className;
-
-        ClassTestResults classResults = classes.get(key);
+    public ClassTestResults addClass(String className) {
+        ClassTestResults classResults = classes.get(className);
         if (classResults == null) {
-            classResults = new ClassTestResults(className, this, device, project, flavor);
-            classes.put(key, classResults);
+            classResults = new ClassTestResults(className, this);
+            classes.put(className, classResults);
         }
         return classResults;
     }

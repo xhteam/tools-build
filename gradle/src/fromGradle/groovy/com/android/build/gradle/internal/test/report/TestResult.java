@@ -98,8 +98,9 @@ class TestResult extends TestResultModel implements Comparable<TestResult> {
         return failures;
     }
 
-    public void addFailure(String message, String stackTrace) {
-        classResults.failed(this);
+    public void addFailure(String message, String stackTrace,
+                           String deviceName, String projectName, String flavorName) {
+        classResults.failed(this, deviceName, projectName, flavorName);
         failures.add(new TestFailure(message, stackTrace));
     }
 
