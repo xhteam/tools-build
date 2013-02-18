@@ -126,9 +126,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
      */
     private void addBuildType(BuildType buildType) {
         String name = buildType.name
-        if (name.startsWith(BuilderConstants.TEST)) {
-            throw new RuntimeException("BuildType names cannot start with 'test'")
-        }
+        checkName(name, "BuildType")
+
         if (productFlavors.containsKey(name)) {
             throw new RuntimeException("BuildType names cannot collide with ProductFlavor names")
         }
@@ -148,10 +147,10 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
      * @param productFlavor the product flavor
      */
     private void addProductFlavor(GroupableProductFlavor productFlavor) {
-        if (productFlavor.name.startsWith(BuilderConstants.TEST)) {
-            throw new RuntimeException("ProductFlavor names cannot start with 'test'")
-        }
-        if (buildTypes.containsKey(productFlavor.name)) {
+        String name = productFlavor.name
+        checkName(name, "ProductFlavor")
+
+        if (buildTypes.containsKey(name)) {
             throw new RuntimeException("ProductFlavor names cannot collide with BuildType names")
         }
 
@@ -164,6 +163,17 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
                         productFlavor, mainSourceSet, testSourceSet, project)
 
         productFlavors[productFlavor.name] = productFlavorData
+    }
+
+    private static void checkName(String name, String displayName) {
+        if (name.startsWith(BuilderConstants.TEST)) {
+            throw new RuntimeException(
+                    "${displayName} names cannot start with '${BuilderConstants.TEST}'")
+        }
+
+        if (BuilderConstants.LINT.equals(name)) {
+            throw new RuntimeException("${displayName} names cannot be ${BuilderConstants.LINT}")
+        }
     }
 
     /**

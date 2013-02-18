@@ -35,4 +35,5 @@ public class BuilderConstants {
     public final static String RELEASE = "release";
 
     public final static String TEST = "test";
+    public final static String LINT = "lint";
 }
