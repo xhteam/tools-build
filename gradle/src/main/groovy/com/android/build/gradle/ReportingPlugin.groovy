@@ -22,6 +22,10 @@ import com.android.build.gradle.internal.test.report.ReportType
 import org.gradle.api.Project
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.tasks.TaskCollection
+
+import static com.android.builder.BuilderConstants.REPORTS
+import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
+import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
 /**
  * Gradle plugin class for 'reporting' projects.
  *
@@ -48,13 +52,13 @@ class ReportingPlugin implements org.gradle.api.Plugin<Project> {
 
         mergeReportsTask.conventionMapping.resultsDir = {
             String location = extension.resultsDir != null ?
-                extension.resultsDir : "$project.buildDir/test-results"
+                extension.resultsDir : "$project.buildDir/$INSTRUMENTATION_RESULTS"
 
             project.file(location)
         }
         mergeReportsTask.conventionMapping.reportsDir = {
             String location = extension.reportDir != null ?
-                extension.reportDir : "$project.buildDir/reports/tests"
+                extension.reportDir : "$project.buildDir/$REPORTS/$INSTRUMENTATION_TESTS"
 
             project.file(location)
         }
