@@ -38,10 +38,10 @@ android {
             }
         }
 
-        // this moves src/test to tests so all folders follow:
+        // this moves src/instrumentTest to tests so all folders follow:
         // tests/java, tests/res, tests/assets, ...
         // This is a *reset* so it replaces the default paths
-        test.setRoot('tests')
+        instrumentTest.setRoot('tests')
 
         // Could also be done with:
         //main.manifest.srcFile 'AndroidManifest.xml'
@@ -49,6 +49,6 @@ android {
         //main.res.srcDir 'res'
         //main.assets.srcDir 'assets'
         //main.resources.srcDir 'src'
-        //test.java.srcDir 'tests/src'
+        //instrumentTest.java.srcDir 'tests/src'
     }
 }

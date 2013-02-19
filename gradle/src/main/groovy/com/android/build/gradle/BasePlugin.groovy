@@ -84,10 +84,10 @@ import org.gradle.util.GUtil
 
 import static com.android.builder.BuilderConstants.EXT_LIB_ARCHIVE
 import static com.android.builder.BuilderConstants.FLAVORS
-import static com.android.builder.BuilderConstants.REPORTS
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_TEST
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
+import static com.android.builder.BuilderConstants.REPORTS
 /**
  * Base class for all Android plugins
  */
@@ -684,7 +684,7 @@ public abstract class BasePlugin {
 
         // create the check task for this test
         def testFlavorTask = project.tasks.add(
-                mainTestTask ? "instrumentationTest" : "instrumentationTest${testedVariant.name}",
+                mainTestTask ? INSTRUMENTATION_TEST : "$INSTRUMENTATION_TEST${testedVariant.name}",
                 mainTestTask ? TestLibraryTask : TestFlavorTask)
         testFlavorTask.description = "Installs and runs the tests for Build ${testedVariant.name}."
         testFlavorTask.group = JavaBasePlugin.VERIFICATION_GROUP
