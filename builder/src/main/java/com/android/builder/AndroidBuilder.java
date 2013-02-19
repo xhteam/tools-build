@@ -479,8 +479,6 @@ public class AndroidBuilder {
     /**
      * Process the resources and generate R.java and/or the packaged resources.
      *
-     * TODO support 2+ assets folders.
-     *
      * @param manifestFile the location of the manifest file
      * @param resFolder the merged res folder
      * @param assetsDir the merged asset folder

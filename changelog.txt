@@ -9,18 +9,20 @@
       * PNG crunch is now done incrementally and in parallel.
    - Support for multi asset folders.
    - Support for asset folders in Library Projects.
-   - API to manipulate Build Variants.
    - Support for versionName suffix provided by the BuildType.
    - Testing
-      * Instrumentation tests now started from "deviceCheck" instead of "check"
-      * Instrumentation tests now run on all connected devices in parallel.
-      * Instrumentation tests now break the build if any test fails.
-      * Instrumentation tests now generate an HTML report for each flavor/project, but also aggregated.
+      * Default sourceset for tests now src/instrumentTest (instrumentTest<Name> for flavors)
+      * Instrumentation tests now:
+          - started from "deviceCheck" instead of "check"
+          - run on all connected devices in parallel.
+          - break the build if any test fails.
+          - generate an HTML report for each flavor/project, but also aggregated.
       * New plugin 'android-reporting' to aggregate android test results across projects. See 'flavorlib' sample.
    - Improved DSL:
       * replaced android.target with android.compileSdkVersion to make it less confusing with targetSdkVersion
       * signing information now a SigningConfig object reusable across BuildType and ProductFlavor
       * ability to relocate a full sourceSet. See 'migrated' sample.
+      * API to manipulate Build Variants.
 * Fixes:
    - Default Java compile target set to 1.6.
    - Fix generation of R classes in case libraries share same package name as the app project.

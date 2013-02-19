@@ -49,7 +49,6 @@ import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
 import com.android.builder.AndroidDependency
-import com.android.builder.BuilderConstants
 import com.android.builder.DefaultSdkParser
 import com.android.builder.JarDependency
 import com.android.builder.ManifestDependency
@@ -82,6 +81,13 @@ import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
 import org.gradle.util.GUtil
+
+import static com.android.builder.BuilderConstants.EXT_LIB_ARCHIVE
+import static com.android.builder.BuilderConstants.FLAVORS
+import static com.android.builder.BuilderConstants.REPORTS
+import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
+import static com.android.builder.BuilderConstants.INSTRUMENTATION_TEST
+import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
 /**
  * Base class for all Android plugins
  */
@@ -180,7 +186,7 @@ public abstract class BasePlugin {
     protected setDefaultConfig(ProductFlavor defaultConfig,
                                NamedDomainObjectContainer<AndroidSourceSet> sourceSets) {
         mainSourceSet = sourceSets.create(defaultConfig.name)
-        testSourceSet = sourceSets.create(BuilderConstants.TEST)
+        testSourceSet = sourceSets.create(INSTRUMENTATION_TEST)
 
         defaultConfigData = new ProductFlavorData<ProductFlavor>(defaultConfig, mainSourceSet,
                 testSourceSet, project, ConfigurationDependencies.ConfigType.DEFAULT)
@@ -702,15 +708,25 @@ public abstract class BasePlugin {
 
         testFlavorTask.conventionMapping.resultsDir = {
             String rootLocation = extension.testOptions.resultsDir != null ?
-                extension.testOptions.resultsDir : "$project.buildDir/test-results"
+                extension.testOptions.resultsDir : "$project.buildDir/$INSTRUMENTATION_RESULTS"
 
-            project.file("$rootLocation/flavors/$variant.flavorDirName")
+            String flavorFolder = variant.flavorDirName
+            if (!flavorFolder.isEmpty()) {
+                flavorFolder = "$FLAVORS/" + flavorFolder
+            }
+
+            project.file("$rootLocation/$flavorFolder")
         }
         testFlavorTask.conventionMapping.reportsDir = {
             String rootLocation = extension.testOptions.reportDir != null ?
-                extension.testOptions.reportDir : "$project.buildDir/reports/tests"
+                extension.testOptions.reportDir : "$project.buildDir/$REPORTS/$INSTRUMENTATION_TESTS"
 
-            project.file("$rootLocation/flavors/$variant.flavorDirName")
+            String flavorFolder = variant.flavorDirName
+            if (!flavorFolder.isEmpty()) {
+                flavorFolder = "$FLAVORS/" + flavorFolder
+            }
+
+            project.file("$rootLocation/$flavorFolder")
         }
         variant.testFlavorTask = testFlavorTask
 
@@ -1019,7 +1035,7 @@ public abstract class BasePlugin {
 
             def moduleArtifacts = artifacts[id]
             moduleArtifacts?.each { artifact ->
-                if (artifact.type == BuilderConstants.EXT_LIB_ARCHIVE) {
+                if (artifact.type == EXT_LIB_ARCHIVE) {
                     def explodedDir = project.file(
                             "$project.buildDir/exploded-bundles/$artifact.file.name")
                     AndroidDependencyImpl adep = new AndroidDependencyImpl(

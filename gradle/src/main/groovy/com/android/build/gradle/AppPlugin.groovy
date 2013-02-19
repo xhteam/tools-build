@@ -15,7 +15,6 @@
  */
 
 package com.android.build.gradle
-
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
@@ -34,7 +33,6 @@ import com.android.build.gradle.internal.test.PluginHolder
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
-import com.android.builder.BuilderConstants
 import com.android.builder.JarDependency
 import com.android.builder.VariantConfiguration
 import com.android.builder.signing.SigningConfig
@@ -48,6 +46,16 @@ import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.internal.reflect.Instantiator
 
 import javax.inject.Inject
+
+import static com.android.builder.BuilderConstants.DEBUG
+import static com.android.builder.BuilderConstants.FLAVORS_ALL
+import static com.android.builder.BuilderConstants.LINT
+import static com.android.builder.BuilderConstants.RELEASE
+import static com.android.builder.BuilderConstants.REPORTS
+import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
+import static com.android.builder.BuilderConstants.INSTRUMENTATION_TEST
+import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
+import static com.android.builder.BuilderConstants.UI_TEST
 
 /**
  * Gradle plugin class for 'application' projects.
@@ -94,7 +102,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         }
 
         buildTypeContainer.whenObjectAdded { BuildType buildType ->
-            ((BuildTypeDsl)buildType).init(signingConfigContainer.getByName(BuilderConstants.DEBUG))
+            ((BuildTypeDsl)buildType).init(signingConfigContainer.getByName(DEBUG))
             addBuildType(buildType)
         }
 
@@ -103,9 +111,9 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         }
 
         // create default Objects, signingConfig first as its used by the BuildTypes.
-        signingConfigContainer.create(BuilderConstants.DEBUG)
-        buildTypeContainer.create(BuilderConstants.DEBUG)
-        buildTypeContainer.create(BuilderConstants.RELEASE)
+        signingConfigContainer.create(DEBUG)
+        buildTypeContainer.create(DEBUG)
+        buildTypeContainer.create(RELEASE)
 
         // map whenObjectRemoved on the containers to throw an exception.
         signingConfigContainer.whenObjectRemoved {
@@ -155,7 +163,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         }
 
         def mainSourceSet = extension.sourceSetsContainer.create(productFlavor.name)
-        String testName = "${BuilderConstants.TEST}${productFlavor.name.capitalize()}"
+        String testName = "${INSTRUMENTATION_TEST}${productFlavor.name.capitalize()}"
         def testSourceSet = extension.sourceSetsContainer.create(testName)
 
         ProductFlavorData<GroupableProductFlavor> productFlavorData =
@@ -166,13 +174,18 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     }
 
     private static void checkName(String name, String displayName) {
-        if (name.startsWith(BuilderConstants.TEST)) {
+        if (name.startsWith(INSTRUMENTATION_TEST)) {
             throw new RuntimeException(
-                    "${displayName} names cannot start with '${BuilderConstants.TEST}'")
+                    "${displayName} names cannot start with '${INSTRUMENTATION_TEST}'")
         }
 
-        if (BuilderConstants.LINT.equals(name)) {
-            throw new RuntimeException("${displayName} names cannot be ${BuilderConstants.LINT}")
+        if (name.startsWith(UI_TEST)) {
+            throw new RuntimeException(
+                    "${displayName} names cannot start with '${UI_TEST}'")
+        }
+
+        if (LINT.equals(name)) {
+            throw new RuntimeException("${displayName} names cannot be ${LINT}")
         }
     }
 
@@ -205,15 +218,16 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
             testTask.conventionMapping.resultsDir = {
                 String rootLocation = extension.testOptions.resultsDir != null ?
-                    extension.testOptions.resultsDir : "$project.buildDir/test-results"
+                    extension.testOptions.resultsDir : "$project.buildDir/$INSTRUMENTATION_RESULTS"
 
-                project.file("$rootLocation/all")
+                project.file("$rootLocation/$FLAVORS_ALL")
             }
             testTask.conventionMapping.reportsDir = {
                 String rootLocation = extension.testOptions.reportDir != null ?
-                    extension.testOptions.reportDir : "$project.buildDir/reports/tests"
+                    extension.testOptions.reportDir :
+                    "$project.buildDir/$REPORTS/$INSTRUMENTATION_TESTS"
 
-                project.file("$rootLocation/all")
+                project.file("$rootLocation/$FLAVORS_ALL")
             }
 
             // check whether we have multi flavor builds
