@@ -318,7 +318,7 @@ public abstract class BasePlugin {
         processManifestTask.conventionMapping.targetSdkVersion = {
             mergedFlavor.targetSdkVersion
         }
-        processManifestTask.conventionMapping.outManifest = {
+        processManifestTask.conventionMapping.manifestOutputFile = {
             project.file(
                     "$project.buildDir/${manifestOurDir}/$variant.dirName/AndroidManifest.xml")
         }
@@ -351,7 +351,7 @@ public abstract class BasePlugin {
         processTestManifestTask.conventionMapping.libraries = {
             getManifestDependencies(config.directLibraries)
         }
-        processTestManifestTask.conventionMapping.outManifest = {
+        processTestManifestTask.conventionMapping.manifestOutputFile = {
             project.file(
                     "$project.buildDir/${manifestOurDir}/$variant.dirName/AndroidManifest.xml")
         }
@@ -472,10 +472,10 @@ public abstract class BasePlugin {
         VariantConfiguration config = variant.config
 
         processResources.conventionMapping.manifestFile = {
-            variant.processManifestTask.outManifest
+            variant.processManifestTask.manifestOutputFile
         }
 
-        processResources.conventionMapping.resFolder = {
+        processResources.conventionMapping.resDir = {
             variant.mergeResourcesTask.outputDir
         }
 
@@ -497,15 +497,15 @@ public abstract class BasePlugin {
         processResources.conventionMapping.sourceOutputDir = {
             project.file("$project.buildDir/source/r/$variant.dirName")
         }
-        processResources.conventionMapping.textSymbolDir = {
+        processResources.conventionMapping.textSymbolOutputDir = {
             project.file(symbolLocation)
         }
-        processResources.conventionMapping.packageFile = {
+        processResources.conventionMapping.packageOutputFile = {
             project.file(
                     "$project.buildDir/libs/${project.archivesBaseName}-${variant.baseName}.ap_")
         }
         if (variant.runProguard) {
-            processResources.conventionMapping.proguardFile = {
+            processResources.conventionMapping.proguardOutputFile = {
                 project.file("$project.buildDir/proguard/${variant.dirName}/rules.txt")
             }
         }
@@ -769,7 +769,7 @@ public abstract class BasePlugin {
 
         VariantConfiguration config = variant.config
 
-        packageApp.conventionMapping.resourceFile = { variant.processResourcesTask.packageFile }
+        packageApp.conventionMapping.resourceFile = { variant.processResourcesTask.packageOutputFile }
         packageApp.conventionMapping.dexFile = { dexTask.outputFile }
 
         packageApp.conventionMapping.packagedJars = { config.packagedJars }

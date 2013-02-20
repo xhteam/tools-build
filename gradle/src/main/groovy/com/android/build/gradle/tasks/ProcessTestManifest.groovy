@@ -49,7 +49,7 @@ public class ProcessTestManifest extends ProcessManifest {
                 getTestedPackageName(),
                 getInstrumentationRunner(),
                 getLibraries(),
-                getOutManifest().absolutePath)
+                getManifestOutputFile().absolutePath)
     }
 
 }

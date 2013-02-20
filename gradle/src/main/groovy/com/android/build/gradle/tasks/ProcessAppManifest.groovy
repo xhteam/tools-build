@@ -58,7 +58,7 @@ public class ProcessAppManifest extends ProcessManifest {
                 getVersionName(),
                 getMinSdkVersion(),
                 getTargetSdkVersion(),
-                getOutManifest().absolutePath)
+                getManifestOutputFile().absolutePath)
     }
 
 }

@@ -27,6 +27,6 @@ public abstract class ProcessManifest extends IncrementalTask {
      * The processed Manifest.
      */
     @OutputFile
-    File outManifest
+    File manifestOutputFile
 
 }

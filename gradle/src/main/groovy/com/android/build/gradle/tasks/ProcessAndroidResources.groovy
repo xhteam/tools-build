@@ -34,7 +34,7 @@ public class ProcessAndroidResources extends IncrementalTask {
     File manifestFile
 
     @InputDirectory
-    File resFolder
+    File resDir
 
     @InputDirectory @Optional
     File assetsDir
@@ -43,13 +43,13 @@ public class ProcessAndroidResources extends IncrementalTask {
     File sourceOutputDir
 
     @OutputDirectory @Optional
-    File textSymbolDir
+    File textSymbolOutputDir
 
     @OutputFile @Optional
-    File packageFile
+    File packageOutputFile
 
     @OutputFile @Optional
-    File proguardFile
+    File proguardOutputFile
 
     // ----- PRIVATE TASK API -----
 
@@ -72,14 +72,14 @@ public class ProcessAndroidResources extends IncrementalTask {
     protected void doFullTaskAction() {
         getBuilder().processResources(
                 getManifestFile(),
-                getResFolder(),
+                getResDir(),
                 getAssetsDir(),
                 getLibraries(),
                 getPackageOverride(),
                 getSourceOutputDir()?.absolutePath,
-                getTextSymbolDir()?.absolutePath,
-                getPackageFile()?.absolutePath,
-                getProguardFile()?.absolutePath,
+                getTextSymbolOutputDir()?.absolutePath,
+                getPackageOutputFile()?.absolutePath,
+                getProguardOutputFile()?.absolutePath,
                 getType(),
                 getDebuggable(),
                 getAaptOptions())

@@ -24,6 +24,7 @@ import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ProcessManifest
+import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
@@ -79,7 +80,7 @@ public class DefaultBuildVariant implements BuildVariant {
     }
 
     @Override
-    ProductFlavor getMergedConfig() {
+    ProductFlavor getMergedFlavor() {
         return variant.config.mergedFlavor
     }
 
@@ -101,6 +102,11 @@ public class DefaultBuildVariant implements BuildVariant {
     @Override
     AidlCompile getAidlCompile() {
         return variant.aidlCompileTask
+    }
+
+    @Override
+    RenderscriptCompile getRenderscriptCompile() {
+        return variant.renderscriptCompileTask
     }
 
     @Override
@@ -169,7 +175,7 @@ public class DefaultBuildVariant implements BuildVariant {
     }
 
     @Override
-    Task getTestFlavor() {
+    Task getInstrumentTest() {
         return variant.testFlavorTask
     }
 
