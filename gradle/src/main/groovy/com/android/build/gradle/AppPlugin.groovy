@@ -49,14 +49,13 @@ import javax.inject.Inject
 
 import static com.android.builder.BuilderConstants.DEBUG
 import static com.android.builder.BuilderConstants.FLAVORS_ALL
-import static com.android.builder.BuilderConstants.LINT
-import static com.android.builder.BuilderConstants.RELEASE
-import static com.android.builder.BuilderConstants.REPORTS
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_TEST
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
+import static com.android.builder.BuilderConstants.LINT
+import static com.android.builder.BuilderConstants.RELEASE
+import static com.android.builder.BuilderConstants.REPORTS
 import static com.android.builder.BuilderConstants.UI_TEST
-
 /**
  * Gradle plugin class for 'application' projects.
  */
@@ -210,7 +209,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             assembleTest.description = "Assembles all the Test applications"
 
             // same for the test task
-            testTask = project.tasks.add("instrumentationTest", AndroidReportTask)
+            testTask = project.tasks.add(INSTRUMENTATION_TEST, AndroidReportTask)
             testTask.group = JavaBasePlugin.VERIFICATION_GROUP
             testTask.description = "Installs and runs instrumentation tests for all flavors"
             testTask.reportType = ReportType.MULTI_FLAVOR
