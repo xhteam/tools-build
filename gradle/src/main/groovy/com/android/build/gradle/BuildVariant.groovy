@@ -26,6 +26,7 @@ import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
 import com.android.build.gradle.tasks.ProcessManifest
 import com.android.build.gradle.tasks.ProcessAndroidResources
+import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
@@ -36,7 +37,7 @@ import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.JavaCompile
 
 /**
- * A Build variant and all it's public data.
+ * A Build variant and all its public data.
  */
 public interface BuildVariant {
 
@@ -89,7 +90,7 @@ public interface BuildVariant {
      * and the flavors of this build variant.
      */
     @NonNull
-    ProductFlavor getMergedConfig()
+    ProductFlavor getMergedFlavor()
 
     /**
      * Returns the output file for this build variants. Depending on the configuration, this could
@@ -130,6 +131,12 @@ public interface BuildVariant {
      */
     @NonNull
     AidlCompile getAidlCompile()
+
+    /**
+     * Returns the Renderscript compilation task.
+     */
+    @NonNull
+    RenderscriptCompile getRenderscriptCompile()
 
     /**
      * Returns the resource merging task.
@@ -180,7 +187,7 @@ public interface BuildVariant {
     PackageApplication getPackageApplication()
 
     /**
-     * Retursn the Zip align task.
+     * Returns the Zip align task.
      */
     @Nullable
     ZipAlign getZipAlign()
@@ -219,5 +226,5 @@ public interface BuildVariant {
      * Only valid for test project.
      */
     @Nullable
-    Task getTestFlavor()
+    Task getInstrumentTest()
 }

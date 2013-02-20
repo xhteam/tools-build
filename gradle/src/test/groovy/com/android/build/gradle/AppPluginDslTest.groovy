@@ -276,9 +276,9 @@ public class AppPluginDslTest extends BaseTest {
         }
 
         if (testVariant) {
-            assertNotNull(variant.testFlavor)
+            assertNotNull(variant.instrumentTest)
         } else {
-            assertNull(variant.testFlavor)
+            assertNull(variant.instrumentTest)
         }
     }
 
