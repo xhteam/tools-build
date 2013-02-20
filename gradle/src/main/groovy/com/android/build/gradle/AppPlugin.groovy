@@ -528,7 +528,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
      * @param assembleTask an optional assembleTask to be used. If null, a new one is created.
      * @return
      */
-    private ProductionAppVariant addVariant(VariantConfiguration variantConfig, Task assembleTask,
+    private ProductionAppVariant addVariant(VariantConfiguration variantConfig,
+                                            Task assembleTask,
                                             List<ConfigurationDependencies> configDependencies) {
 
         def variant = new ProductionAppVariant(variantConfig)
