@@ -1,4 +1,20 @@
+buildscript {
+    repositories {
+        maven { url "$rootDir/../../prebuilts/tools/common/gradle-plugins/repository" }
+    }
+    dependencies {
+        classpath 'com.android.tools.internal:internal-plugins:1.0'
+    }
+}
+
 apply plugin: 'idea'
+apply plugin: 'clone-artifacts'
+
+// artifact cloning destinations
+cloneArtifacts {
+    mainRepo = "$rootDir/../../prebuilts/tools/common/m2/repository"
+    secondaryRepo = "$rootDir/../../prebuilts/tools/common/m2/internal"
+}
 
 // ext.androidHostOut is shared by all tools/{base,build,swt} gradle projects/
 ext.androidHostOut = file("$rootDir/../../out/host/gradle")
@@ -14,8 +30,22 @@ subprojects {
     apply plugin: 'findbugs'
 
     repositories {
-        mavenCentral()
+        // repository containing the cloned 3rd party artifacts.
+        maven { url = uri(rootProject.cloneArtifacts.mainRepo) }
+        maven { url = uri(rootProject.cloneArtifacts.secondaryRepo) }
+
+        // repository with the artifacts from tools/base
         maven { url = uri("$rootProject.ext.androidHostOut/repo") }
+    }
+
+    // find bug dependencies is added dynamically so it's hard for the
+    // clone artifact plugin to find it. This custom config lets us manually
+    // add such dependencies.
+    configurations {
+        hidden
+    }
+    dependencies {
+        hidden "com.google.code.findbugs:findbugs:2.0.1"
     }
 
     project.ext {

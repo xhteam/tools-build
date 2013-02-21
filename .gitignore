@@ -5,7 +5,6 @@ local.properties
 *.iws
 .gradle
 /build
-gradle/build
 tests/*/build
 tests/api/*/build
 tests/applibtest/*/build
