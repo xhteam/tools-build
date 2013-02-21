@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal
-
 import com.android.build.gradle.BuildVariant
 import com.android.build.gradle.tasks.AidlCompile
 import com.android.build.gradle.tasks.Dex
@@ -29,11 +28,11 @@ import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
 import com.android.builder.signing.SigningConfig
+import org.gradle.api.DefaultTask
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.JavaCompile
-
 /**
  * implementation of the {@link BuildVariant} interface around an {@link ApplicationVariant}
  * object.
@@ -165,17 +164,17 @@ public class DefaultBuildVariant implements BuildVariant {
     }
 
     @Override
-    Task getInstall() {
+    DefaultTask getInstall() {
         return variant.installTask
     }
 
     @Override
-    Task getUninstall() {
+    DefaultTask getUninstall() {
         return variant.uninstallTask
     }
 
     @Override
-    Task getInstrumentTest() {
+    DefaultTask getInstrumentTest() {
         return variant.testFlavorTask
     }
 

@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal
-
 import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.TestFlavorTask
@@ -32,11 +31,10 @@ import com.android.builder.AndroidBuilder
 import com.android.builder.BuilderConstants
 import com.android.builder.ProductFlavor
 import com.android.builder.VariantConfiguration
-import org.gradle.api.Task
+import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.JavaCompile
-
 /**
  * Represents something that can be packaged into an APK and installed.
  */
@@ -65,10 +63,10 @@ public abstract class ApplicationVariant {
 
     File outputFile
 
-    Task assembleTask
+    DefaultTask assembleTask
 
-    Task installTask
-    Task uninstallTask
+    DefaultTask installTask
+    DefaultTask uninstallTask
 
     TestFlavorTask testFlavorTask
 

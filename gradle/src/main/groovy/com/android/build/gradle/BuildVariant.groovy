@@ -15,7 +15,6 @@
  */
 
 package com.android.build.gradle
-
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
 import com.android.build.gradle.tasks.AidlCompile
@@ -24,18 +23,18 @@ import com.android.build.gradle.tasks.GenerateBuildConfig
 import com.android.build.gradle.tasks.MergeAssets
 import com.android.build.gradle.tasks.MergeResources
 import com.android.build.gradle.tasks.PackageApplication
-import com.android.build.gradle.tasks.ProcessManifest
 import com.android.build.gradle.tasks.ProcessAndroidResources
+import com.android.build.gradle.tasks.ProcessManifest
 import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.BuildType
 import com.android.builder.ProductFlavor
 import com.android.builder.signing.SigningConfig
+import org.gradle.api.DefaultTask
 import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.compile.JavaCompile
-
 /**
  * A Build variant and all its public data.
  */
@@ -210,7 +209,7 @@ public interface BuildVariant {
      * Even for variant for regular project, this can be null if the app cannot be signed.
      */
     @Nullable
-    Task getInstall()
+    DefaultTask getInstall()
 
     /**
      * Returns the uinstallation task.
@@ -219,12 +218,12 @@ public interface BuildVariant {
      * signing isn't setup.
      */
     @Nullable
-    Task getUninstall()
+    DefaultTask getUninstall()
 
     /**
      * Returns the task to run the tests.
      * Only valid for test project.
      */
     @Nullable
-    Task getInstrumentTest()
+    DefaultTask getInstrumentTest()
 }
