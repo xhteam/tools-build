@@ -17,6 +17,7 @@
 package com.android.builder.resources;
 
 import com.android.annotations.NonNull;
+import com.android.utils.ILogger;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -108,10 +109,10 @@ abstract class DataSet<I extends DataItem<F>, F extends DataFile<I>> implements 
      * @throws com.android.builder.resources.DuplicateDataException
      * @throws java.io.IOException
      */
-    protected abstract void readSourceFolder(File sourceFolder)
+    protected abstract void readSourceFolder(File sourceFolder, ILogger logger)
             throws DuplicateDataException, IOException;
 
-    protected abstract F createFileAndItems(File file);
+    protected abstract F createFileAndItems(File file, ILogger logger) throws IOException;
 
 
     /**
@@ -217,10 +218,10 @@ abstract class DataSet<I extends DataItem<F>, F extends DataFile<I>> implements 
      * @throws DuplicateDataException
      * @throws IOException
      */
-    public void loadFromFiles() throws DuplicateDataException, IOException {
+    public void loadFromFiles(ILogger logger) throws DuplicateDataException, IOException {
         for (File file : mSourceFiles) {
             if (file.isDirectory()) {
-                readSourceFolder(file);
+                readSourceFolder(file, logger);
 
             } else if (file.isFile()) {
                 // TODO support resource bundle
@@ -372,12 +373,13 @@ abstract class DataSet<I extends DataItem<F>, F extends DataFile<I>> implements 
      * @param fileStatus the change state
      * @return true if the set was properly updated, false otherwise
      */
-    public boolean updateWith(File sourceFolder, File changedFile, FileStatus fileStatus)
+    public boolean updateWith(File sourceFolder, File changedFile, FileStatus fileStatus,
+                              ILogger logger)
             throws IOException {
         switch (fileStatus) {
             case NEW:
                 if (isValidSourceFile(sourceFolder, changedFile)) {
-                    return handleNewFile(sourceFolder, changedFile);
+                    return handleNewFile(sourceFolder, changedFile, logger);
                 }
                 return true;
             case CHANGED:
@@ -397,8 +399,9 @@ abstract class DataSet<I extends DataItem<F>, F extends DataFile<I>> implements 
 
     protected abstract boolean isValidSourceFile(File sourceFolder, File changedFile);
 
-    protected boolean handleNewFile(File sourceFolder, File file) {
-        F dataFile = createFileAndItems(file);
+    protected boolean handleNewFile(File sourceFolder, File file, ILogger logger)
+            throws IOException {
+        F dataFile = createFileAndItems(file, logger);
         processNewDataFile(sourceFolder, dataFile, true /*setTouched*/);
         return true;
     }

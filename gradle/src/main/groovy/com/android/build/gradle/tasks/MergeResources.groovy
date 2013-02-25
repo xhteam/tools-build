@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 package com.android.build.gradle.tasks
-
 import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.builder.resources.FileStatus
 import com.android.builder.resources.ResourceMerger
@@ -68,7 +67,7 @@ public class MergeResources extends IncrementalTask {
 
         for (ResourceSet resourceSet : resourceSets) {
             // set needs to be loaded.
-            resourceSet.loadFromFiles()
+            resourceSet.loadFromFiles(plugin.logger)
             merger.addDataSet(resourceSet)
         }
 
@@ -114,7 +113,7 @@ public class MergeResources extends IncrementalTask {
 
             // do something?
             if (!matchSet.getFirst().updateWith(
-                    matchSet.getSecond(), changedFile, entry.getValue())) {
+                    matchSet.getSecond(), changedFile, entry.getValue(), plugin.logger)) {
                 project.logger.info(
                         String.format("Failed to process %s event! Full task run",
                                 entry.getValue()))

@@ -18,6 +18,7 @@ import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.builder.resources.AssetMerger
 import com.android.builder.resources.AssetSet
 import com.android.builder.resources.FileStatus
+import com.android.utils.ILogger
 import com.android.utils.Pair
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
@@ -39,6 +40,8 @@ public class MergeAssets extends IncrementalTask {
 
     // actual inputs
     List<AssetSet> inputAssetSets
+
+    ILogger androidLogger
 
     @Override
     protected boolean isIncremental() {
@@ -63,7 +66,7 @@ public class MergeAssets extends IncrementalTask {
 
         for (AssetSet assetSet : assetSets) {
             // set needs to be loaded.
-            assetSet.loadFromFiles()
+            assetSet.loadFromFiles(plugin.logger)
             merger.addDataSet(assetSet)
         }
 
@@ -109,7 +112,7 @@ public class MergeAssets extends IncrementalTask {
 
             // do something?
             if (!matchSet.getFirst().updateWith(
-                    matchSet.getSecond(), changedFile, entry.getValue())) {
+                    matchSet.getSecond(), changedFile, entry.getValue(), plugin.logger)) {
                 project.logger.info(
                         String.format("Failed to process %s event! Full task run",
                                 entry.getValue()))

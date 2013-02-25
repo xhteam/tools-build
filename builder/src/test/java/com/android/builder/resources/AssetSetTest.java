@@ -48,22 +48,27 @@ public class AssetSetTest extends BaseTestCase {
         set.addSource(new File(root, "assets1"));
         set.addSource(new File(root, "assets2"));
         boolean gotException = false;
+        RecordingLogger logger = new RecordingLogger();
         try {
-            set.loadFromFiles();
+            set.loadFromFiles(logger);
         } catch (DuplicateDataException e) {
             gotException = true;
         }
 
         assertTrue(gotException);
+        checkLogger(logger);
     }
 
     static AssetSet getBaseAssetSet() throws DuplicateDataException, IOException {
         if (sBaseResourceSet == null) {
             File root = TestUtils.getRoot("assets", "baseSet");
 
+            RecordingLogger logger = new RecordingLogger();
+
             sBaseResourceSet = new AssetSet("main");
             sBaseResourceSet.addSource(root);
-            sBaseResourceSet.loadFromFiles();
+            sBaseResourceSet.loadFromFiles(logger);
+            checkLogger(logger);
         }
 
         return sBaseResourceSet;
