@@ -24,8 +24,10 @@ import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.repository.FullRevision;
 import com.android.utils.ILogger;
+import com.google.common.collect.Lists;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Implementation of {@link SdkParser} for the SDK prebuilds in the Android source tree.
@@ -131,6 +133,14 @@ public class PlatformSdkParser implements SdkParser {
     }
 
     @NonNull
+    @Override
+    public List<File> getRepositories() {
+        List<File> repositories = Lists.newArrayList();
+        repositories.add(new File(mPlatformRootFolder + "/prebuilts/sdk/m2repository"));
+
+        return repositories;
+    }
+
     private File getHostToolsFolder() {
         if (mHostTools == null) {
             File tools = new File(mPlatformRootFolder, "prebuilts/sdk/tools");

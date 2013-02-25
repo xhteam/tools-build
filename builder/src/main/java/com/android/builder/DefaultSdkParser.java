@@ -26,6 +26,7 @@ import com.android.sdklib.repository.FullRevision;
 import com.android.sdklib.repository.PkgProps;
 import com.android.utils.ILogger;
 import com.google.common.base.Charsets;
+import com.google.common.collect.Lists;
 import com.google.common.io.Closeables;
 
 import java.io.File;
@@ -34,6 +35,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
 import java.util.Properties;
 
 import static com.android.SdkConstants.FD_PLATFORM_TOOLS;
@@ -164,6 +166,23 @@ public class DefaultSdkParser implements SdkParser {
             mAdb = new File(getPlatformToolsFolder(), SdkConstants.FN_ADB);
         }
         return mAdb;
+    }
+
+    @Override
+    public List<File> getRepositories() {
+        List<File> repositories = Lists.newArrayList();
+
+        File androidRepo = new File(mSdkLocation + "/extras/android/m2repository");
+        if (androidRepo.isDirectory()) {
+            repositories.add(androidRepo);
+        }
+
+        File googleRepo = new File(mSdkLocation + "/extras/google/m2repository");
+        if (googleRepo.isDirectory()) {
+            repositories.add(googleRepo);
+        }
+
+        return repositories;
     }
 
     @NonNull

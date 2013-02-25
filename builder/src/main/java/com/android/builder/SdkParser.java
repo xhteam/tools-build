@@ -24,6 +24,7 @@ import com.android.sdklib.repository.FullRevision;
 import com.android.utils.ILogger;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * A parser able to parse the SDK and return valuable information to the build system.
@@ -92,4 +93,7 @@ public interface SdkParser {
      */
     @NonNull
     File getAdb();
+
+    @NonNull
+    List<File> getRepositories();
 }
