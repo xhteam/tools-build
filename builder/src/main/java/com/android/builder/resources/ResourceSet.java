@@ -22,6 +22,7 @@ import com.android.resources.FolderTypeRelationship;
 import com.android.resources.ResourceConstants;
 import com.android.resources.ResourceFolderType;
 import com.android.resources.ResourceType;
+import com.android.utils.ILogger;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.w3c.dom.Attr;
@@ -54,11 +55,11 @@ public class ResourceSet extends DataSet<ResourceItem, ResourceFile> {
     }
 
     @Override
-    protected ResourceFile createFileAndItems(File file) {
+    protected ResourceFile createFileAndItems(File file, ILogger logger) throws IOException {
         // get the type.
         FolderData folderData = getFolderData(file.getParentFile());
 
-        return createResourceFile(file, folderData);
+        return createResourceFile(file, folderData, logger);
     }
 
     @Override
@@ -106,7 +107,8 @@ public class ResourceSet extends DataSet<ResourceItem, ResourceFile> {
     }
 
     @Override
-    protected void readSourceFolder(File sourceFolder) throws DuplicateDataException, IOException {
+    protected void readSourceFolder(File sourceFolder, ILogger logger)
+            throws DuplicateDataException, IOException {
         File[] folders = sourceFolder.listFiles();
         if (folders != null) {
             for (File folder : folders) {
@@ -115,7 +117,7 @@ public class ResourceSet extends DataSet<ResourceItem, ResourceFile> {
                         PackagingUtils.checkFolderForPackaging(folder.getName())) {
                     FolderData folderData = getFolderData(folder);
                     if (folderData.folderType != null) {
-                        parseFolder(sourceFolder, folder, folderData);
+                        parseFolder(sourceFolder, folder, folderData, logger);
                     }
                 }
             }
@@ -196,13 +198,15 @@ public class ResourceSet extends DataSet<ResourceItem, ResourceFile> {
      * Reads the content of a typed resource folder (sub folder to the root of res folder), and
      * loads the resources from it.
      *
+     *
      * @param sourceFolder the main res folder
      * @param folder the folder to read.
      * @param folderData the folder Data
+     * @param logger a logger object
      *
      * @throws IOException
      */
-    private void parseFolder(File sourceFolder, File folder, FolderData folderData)
+    private void parseFolder(File sourceFolder, File folder, FolderData folderData, ILogger logger)
             throws IOException {
         File[] files = folder.listFiles();
         if (files != null && files.length > 0) {
@@ -211,13 +215,16 @@ public class ResourceSet extends DataSet<ResourceItem, ResourceFile> {
                     continue;
                 }
 
-                ResourceFile resourceFile = createResourceFile(file, folderData);
-                processNewDataFile(sourceFolder, resourceFile, true /*setTouched*/);
+                ResourceFile resourceFile = createResourceFile(file, folderData, logger);
+                if (resourceFile != null) {
+                    processNewDataFile(sourceFolder, resourceFile, true /*setTouched*/);
+                }
             }
         }
     }
 
-    private ResourceFile createResourceFile(File file, FolderData folderData) {
+    private ResourceFile createResourceFile(File file, FolderData folderData, ILogger logger)
+            throws IOException {
         if (folderData.type != null) {
             int pos;// get the resource name based on the filename
             String name = file.getName();
@@ -237,7 +244,8 @@ public class ResourceSet extends DataSet<ResourceItem, ResourceFile> {
 
                 return new ResourceFile(file, items, folderData.qualifiers);
             } catch (IOException e) {
-                return null;
+                logger.error(e, "Failed to parse %s", file.getAbsolutePath());
+                throw e;
             }
         }
     }

@@ -143,4 +143,10 @@ public abstract class BaseTestCase extends TestCase {
             }
         }
     }
+
+    protected static void checkLogger(RecordingLogger logger) {
+        if (!logger.getErrorMsgs().isEmpty()) {
+            assertTrue(logger.getErrorMsgs().get(0), false);
+        }
+    }
 }

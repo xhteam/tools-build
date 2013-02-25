@@ -67,13 +67,33 @@ public class ResourceSetTest extends BaseTestCase {
         set.addSource(new File(root, "res1"));
         set.addSource(new File(root, "res2"));
         boolean gotException = false;
+        RecordingLogger logger =  new RecordingLogger();
         try {
-            set.loadFromFiles();
+            set.loadFromFiles(logger);
         } catch (DuplicateDataException e) {
             gotException = true;
         }
 
+        checkLogger(logger);
         assertTrue(gotException);
+    }
+
+    public void testBrokenSet() throws Exception {
+        File root = TestUtils.getRoot("resources", "brokenSet");
+
+        ResourceSet set = new ResourceSet("main");
+        set.addSource(root);
+
+        boolean gotException = false;
+        RecordingLogger logger =  new RecordingLogger();
+        try {
+            set.loadFromFiles(logger);
+        } catch (IOException e) {
+            gotException = true;
+        }
+
+        assertTrue(gotException);
+        assertFalse(logger.getErrorMsgs().isEmpty());
     }
 
     static ResourceSet getBaseResourceSet() throws DuplicateDataException, IOException {
@@ -82,7 +102,10 @@ public class ResourceSetTest extends BaseTestCase {
 
             sBaseResourceSet = new ResourceSet("main");
             sBaseResourceSet.addSource(root);
-            sBaseResourceSet.loadFromFiles();
+            RecordingLogger logger =  new RecordingLogger();
+            sBaseResourceSet.loadFromFiles(logger);
+
+            checkLogger(logger);
         }
 
         return sBaseResourceSet;

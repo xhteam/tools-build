@@ -54,9 +54,13 @@ public class AssetMergerTest extends BaseTestCase {
 
         File folder = getWrittenResources();
 
+        RecordingLogger logger = new RecordingLogger();
+
         AssetSet writtenSet = new AssetSet("unused");
         writtenSet.addSource(folder);
-        writtenSet.loadFromFiles();
+        writtenSet.loadFromFiles(logger);
+
+        checkLogger(logger);
 
         // compare the two maps, but not using the full map as the set loaded from the output
         // won't contains all versions of each AssetItem item.
@@ -110,6 +114,8 @@ public class AssetMergerTest extends BaseTestCase {
         List<AssetSet> sets = assetMerger.getDataSets();
         assertEquals(2, sets.size());
 
+        RecordingLogger logger = new RecordingLogger();
+
         // ----------------
         // first set is the main one, no change here
         AssetSet mainSet = sets.get(0);
@@ -117,13 +123,16 @@ public class AssetMergerTest extends BaseTestCase {
 
         // touched/removed files:
         File mainTouched = new File(mainFolder, "touched.png");
-        mainSet.updateWith(mainFolder, mainTouched, FileStatus.CHANGED);
+        mainSet.updateWith(mainFolder, mainTouched, FileStatus.CHANGED, logger);
+        checkLogger(logger);
 
         File mainRemoved = new File(mainFolder, "removed.png");
-        mainSet.updateWith(mainFolder, mainRemoved, FileStatus.REMOVED);
+        mainSet.updateWith(mainFolder, mainRemoved, FileStatus.REMOVED, logger);
+        checkLogger(logger);
 
         File mainAdded = new File(mainFolder, "added.png");
-        mainSet.updateWith(mainFolder, mainAdded, FileStatus.NEW);
+        mainSet.updateWith(mainFolder, mainAdded, FileStatus.NEW, logger);
+        checkLogger(logger);
 
         // ----------------
         // second set is the overlay one
@@ -132,10 +141,12 @@ public class AssetMergerTest extends BaseTestCase {
 
         // new/removed files:
         File overlayAdded = new File(overlayFolder, "overlay_added.png");
-        overlaySet.updateWith(overlayFolder, overlayAdded, FileStatus.NEW);
+        overlaySet.updateWith(overlayFolder, overlayAdded, FileStatus.NEW, logger);
+        checkLogger(logger);
 
         File overlayRemoved = new File(overlayFolder, "overlay_removed.png");
-        overlaySet.updateWith(overlayFolder, overlayRemoved, FileStatus.REMOVED);
+        overlaySet.updateWith(overlayFolder, overlayRemoved, FileStatus.REMOVED, logger);
+        checkLogger(logger);
 
         // validate for duplicates
         assetMerger.validateDataSets();
@@ -334,9 +345,13 @@ public class AssetMergerTest extends BaseTestCase {
 
             AssetSet res = AssetSetTest.getBaseAssetSet();
 
+            RecordingLogger logger = new RecordingLogger();
+
             AssetSet overlay = new AssetSet("overlay");
             overlay.addSource(new File(root, "overlay"));
-            overlay.loadFromFiles();
+            overlay.loadFromFiles(logger);
+
+            checkLogger(logger);
 
             sAssetMerger = new AssetMerger();
             sAssetMerger.addDataSet(res);

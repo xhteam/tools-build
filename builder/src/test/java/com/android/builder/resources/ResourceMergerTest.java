@@ -128,16 +128,18 @@ public class ResourceMergerTest extends BaseTestCase {
 
     public void testMergeWrite() throws Exception {
         ResourceMerger merger = getResourceMerger();
+        RecordingLogger logger =  new RecordingLogger();
 
         File folder = getWrittenResources();
 
         ResourceSet writtenSet = new ResourceSet("unused");
         writtenSet.addSource(folder);
-        writtenSet.loadFromFiles();
+        writtenSet.loadFromFiles(logger);
 
         // compare the two maps, but not using the full map as the set loaded from the output
         // won't contains all versions of each ResourceItem item.
         compareResourceMaps(merger, writtenSet, false /*full compare*/);
+        checkLogger(logger);
     }
 
     public void testMergeBlob() throws Exception {
@@ -187,6 +189,8 @@ public class ResourceMergerTest extends BaseTestCase {
         List<ResourceSet> sets = resourceMerger.getDataSets();
         assertEquals(2, sets.size());
 
+        RecordingLogger logger =  new RecordingLogger();
+
         // ----------------
         // first set is the main one, no change here
         ResourceSet mainSet = sets.get(0);
@@ -196,13 +200,16 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // touched/removed files:
         File mainDrawableTouched = new File(mainDrawable, "touched.png");
-        mainSet.updateWith(mainBase, mainDrawableTouched, FileStatus.CHANGED);
+        mainSet.updateWith(mainBase, mainDrawableTouched, FileStatus.CHANGED, logger);
+        checkLogger(logger);
 
         File mainDrawableRemoved = new File(mainDrawable, "removed.png");
-        mainSet.updateWith(mainBase, mainDrawableRemoved, FileStatus.REMOVED);
+        mainSet.updateWith(mainBase, mainDrawableRemoved, FileStatus.REMOVED, logger);
+        checkLogger(logger);
 
         File mainDrawableLdpiRemoved = new File(mainDrawableLdpi, "removed.png");
-        mainSet.updateWith(mainBase, mainDrawableLdpiRemoved, FileStatus.REMOVED);
+        mainSet.updateWith(mainBase, mainDrawableLdpiRemoved, FileStatus.REMOVED, logger);
+        checkLogger(logger);
 
         // ----------------
         // second set is the overlay one
@@ -213,13 +220,17 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // new/removed files:
         File overlayDrawableNewOverlay = new File(overlayDrawable, "new_overlay.png");
-        overlaySet.updateWith(overlayBase, overlayDrawableNewOverlay, FileStatus.NEW);
+        overlaySet.updateWith(overlayBase, overlayDrawableNewOverlay, FileStatus.NEW, logger);
+        checkLogger(logger);
 
         File overlayDrawableRemovedOverlay = new File(overlayDrawable, "removed_overlay.png");
-        overlaySet.updateWith(overlayBase, overlayDrawableRemovedOverlay, FileStatus.REMOVED);
+        overlaySet.updateWith(overlayBase, overlayDrawableRemovedOverlay, FileStatus.REMOVED,
+                logger);
+        checkLogger(logger);
 
         File overlayDrawableHdpiNewAlternate = new File(overlayDrawableHdpi, "new_alternate.png");
-        overlaySet.updateWith(overlayBase, overlayDrawableHdpiNewAlternate, FileStatus.NEW);
+        overlaySet.updateWith(overlayBase, overlayDrawableHdpiNewAlternate, FileStatus.NEW, logger);
+        checkLogger(logger);
 
         // validate for duplicates
         resourceMerger.validateDataSets();
@@ -294,6 +305,8 @@ public class ResourceMergerTest extends BaseTestCase {
         List<ResourceSet> sets = resourceMerger.getDataSets();
         assertEquals(2, sets.size());
 
+        RecordingLogger logger = new RecordingLogger();
+
         // ----------------
         // first set is the main one, no change here
         ResourceSet mainSet = sets.get(0);
@@ -303,11 +316,15 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // touched file:
         File mainValuesTouched = new File(mainValues, "values.xml");
-        mainSet.updateWith(mainBase, mainValuesTouched, FileStatus.CHANGED);
+        mainSet.updateWith(mainBase, mainValuesTouched, FileStatus.CHANGED, logger);
+        checkLogger(logger);
+
 
         // removed files
         File mainValuesEnRemoved = new File(mainValuesEn, "values.xml");
-        mainSet.updateWith(mainBase, mainValuesEnRemoved, FileStatus.REMOVED);
+        mainSet.updateWith(mainBase, mainValuesEnRemoved, FileStatus.REMOVED, logger);
+        checkLogger(logger);
+
 
         // ----------------
         // second set is the overlay one
@@ -318,9 +335,12 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // new files:
         File overlayValuesNew = new File(overlayValues, "values.xml");
-        overlaySet.updateWith(overlayBase, overlayValuesNew, FileStatus.NEW);
+        overlaySet.updateWith(overlayBase, overlayValuesNew, FileStatus.NEW, logger);
+        checkLogger(logger);
+
         File overlayValuesFrNew = new File(overlayValuesFr, "values.xml");
-        overlaySet.updateWith(overlayBase, overlayValuesFrNew, FileStatus.NEW);
+        overlaySet.updateWith(overlayBase, overlayValuesFrNew, FileStatus.NEW, logger);
+        checkLogger(logger);
 
         // validate for duplicates
         resourceMerger.validateDataSets();
@@ -401,6 +421,8 @@ public class ResourceMergerTest extends BaseTestCase {
         List<ResourceSet> sets = resourceMerger.getDataSets();
         assertEquals(2, sets.size());
 
+        RecordingLogger logger = new RecordingLogger();
+
         // ----------------
         // first set is the main one, no change here
 
@@ -412,7 +434,9 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // new files:
         File overlayValuesNew = new File(overlayValues, "values.xml");
-        overlaySet.updateWith(overlayBase, overlayValuesNew, FileStatus.REMOVED);
+        overlaySet.updateWith(overlayBase, overlayValuesNew, FileStatus.REMOVED, logger);
+        checkLogger(logger);
+
 
         // validate for duplicates
         resourceMerger.validateDataSets();
@@ -464,6 +488,8 @@ public class ResourceMergerTest extends BaseTestCase {
         List<ResourceSet> sets = resourceMerger.getDataSets();
         assertEquals(1, sets.size());
 
+        RecordingLogger logger = new RecordingLogger();
+
         // ----------------
         // Load the main set
         ResourceSet mainSet = sets.get(0);
@@ -473,15 +499,18 @@ public class ResourceMergerTest extends BaseTestCase {
 
         // touched file:
         File mainValuesTouched = new File(mainValues, "values.xml");
-        mainSet.updateWith(mainBase, mainValuesTouched, FileStatus.CHANGED);
+        mainSet.updateWith(mainBase, mainValuesTouched, FileStatus.CHANGED, logger);
+        checkLogger(logger);
 
         // new file:
         File mainLayoutNew = new File(mainLayout, "alias_replaced_by_file.xml");
-        mainSet.updateWith(mainBase, mainLayoutNew, FileStatus.NEW);
+        mainSet.updateWith(mainBase, mainLayoutNew, FileStatus.NEW, logger);
+        checkLogger(logger);
 
         // removed file
         File mainLayoutRemoved = new File(mainLayout, "file_replaced_by_alias.xml");
-        mainSet.updateWith(mainBase, mainLayoutRemoved, FileStatus.REMOVED);
+        mainSet.updateWith(mainBase, mainLayoutRemoved, FileStatus.REMOVED, logger);
+        checkLogger(logger);
 
         // validate for duplicates
         resourceMerger.validateDataSets();
@@ -684,9 +713,13 @@ public class ResourceMergerTest extends BaseTestCase {
 
             ResourceSet res = ResourceSetTest.getBaseResourceSet();
 
+            RecordingLogger logger = new RecordingLogger();
+
             ResourceSet overlay = new ResourceSet("overlay");
             overlay.addSource(new File(root, "overlay"));
-            overlay.loadFromFiles();
+            overlay.loadFromFiles(logger);
+
+            checkLogger(logger);
 
             sResourceMerger = new ResourceMerger();
             sResourceMerger.addDataSet(res);

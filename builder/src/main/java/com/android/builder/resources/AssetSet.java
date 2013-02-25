@@ -16,6 +16,7 @@
 
 package com.android.builder.resources;
 
+import com.android.utils.ILogger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
 
@@ -43,7 +44,7 @@ public class AssetSet extends DataSet<AssetItem, AssetFile> {
     }
 
     @Override
-    protected AssetFile createFileAndItems(File file) {
+    protected AssetFile createFileAndItems(File file, ILogger logger) {
         // key is going to be the full filename, since you can have both
         //     icon.png
         // and
@@ -71,7 +72,8 @@ public class AssetSet extends DataSet<AssetItem, AssetFile> {
     }
 
     @Override
-    protected void readSourceFolder(File sourceFolder) throws DuplicateDataException, IOException {
+    protected void readSourceFolder(File sourceFolder, ILogger logger)
+            throws DuplicateDataException, IOException {
         // get the files
         File[] files = sourceFolder.listFiles();
         if (files != null && files.length > 0) {
@@ -80,7 +82,7 @@ public class AssetSet extends DataSet<AssetItem, AssetFile> {
                     continue;
                 }
 
-                handleNewFile(sourceFolder, file);
+                handleNewFile(sourceFolder, file, logger);
             }
         }
     }
