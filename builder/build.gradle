@@ -45,8 +45,8 @@ task publishLocal(type: Upload) {
     }
 }
 
-project.ext.sonatypeUsername = project.hasProperty('sonatypeUsername') ? sonatypeUsername : ""
-project.ext.sonatypePassword = project.hasProperty('sonatypePassword') ? sonatypePassword : ""
+project.ext.sonatypeUsername = hasProperty('sonatypeUsername') ? sonatypeUsername : ""
+project.ext.sonatypePassword = hasProperty('sonatypePassword') ? sonatypePassword : ""
 
 uploadArchives {
     repositories {
@@ -56,7 +56,7 @@ uploadArchives {
                     throw new StopExecutionException("uploadArchives must be called with the release.gradle init script")
                 }
 
-                if (ext.sonatypeUsername.length() == 0 || ext.sonatypePassword.length() == 0) {
+                if (project.ext.sonatypeUsername.length() == 0 || project.ext.sonatypePassword.length() == 0) {
                     throw new StopExecutionException("uploadArchives cannot be called without sonatype username and password")
                 }
 
