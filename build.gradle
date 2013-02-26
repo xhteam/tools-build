@@ -17,7 +17,7 @@ subprojects {
     }
 
     project.ext {
-        baseVersion = '0.3'
+        baseVersion = '0.4'
     }
 
     task disableTestFailures << {
