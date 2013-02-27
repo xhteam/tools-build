@@ -182,7 +182,7 @@ public class AndroidBuilder {
 
         List<String> classpath = Lists.newArrayList();
 
-        classpath.add(mTarget.getPath(IAndroidTarget.ANDROID_JAR));
+        classpath.addAll(mTarget.getBootClasspath());
 
         // add optional libraries if any
         IOptionalLibrary[] libs = mTarget.getOptionalLibraries();

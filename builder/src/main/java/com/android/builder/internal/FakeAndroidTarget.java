@@ -17,11 +17,14 @@
 package com.android.builder.internal;
 
 import com.android.SdkConstants;
+import com.android.annotations.NonNull;
 import com.android.sdklib.AndroidVersion;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.util.SparseArray;
+import com.google.common.collect.Lists;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,6 +33,7 @@ import java.util.Map;
 public class FakeAndroidTarget implements IAndroidTarget {
     private final String mSdkLocation;
     private final SparseArray<String> mPaths = new SparseArray<String>();
+    private final List<String> mBootClasspath = Lists.newArrayListWithExpectedSize(2);
     private final int mApiLevel;
 
     @SuppressWarnings("deprecation")
@@ -37,14 +41,34 @@ public class FakeAndroidTarget implements IAndroidTarget {
         mSdkLocation = sdkLocation;
         mApiLevel = getApiLevel(target);
 
-        String apiPrebuilts = mSdkLocation + "/prebuilts/sdk/" + Integer.toString(mApiLevel) + "/";
-        String rsPrebuilts = mSdkLocation + "/prebuilts/sdk/renderscript/";
+        if ("unstubbed".equals(target)) {
+            mBootClasspath.add(mSdkLocation +
+                    "/out/target/common/obj/JAVA_LIBRARIES/framework_intermediates/classes.jar");
+            mBootClasspath.add(mSdkLocation +
+                    "/out/target/common/obj/JAVA_LIBRARIES/core_intermediates/classes.jar");
 
-        // pre-build the path to the platform components
-        mPaths.put(ANDROID_JAR, apiPrebuilts + SdkConstants.FN_FRAMEWORK_LIBRARY);
-        mPaths.put(ANDROID_AIDL, apiPrebuilts + SdkConstants.FN_FRAMEWORK_AIDL);
+            // pre-build the path to the platform components
+            mPaths.put(ANDROID_JAR, mSdkLocation + "/prebuilts/sdk/current/" +
+                    SdkConstants.FN_FRAMEWORK_LIBRARY);
+            mPaths.put(ANDROID_AIDL, mSdkLocation + "/prebuilts/sdk/renderscript/" +
+                    SdkConstants.FN_FRAMEWORK_AIDL);
+        } else {
+            String apiPrebuilts;
+
+            if ("current".equals(target)) {
+                apiPrebuilts = mSdkLocation + "/prebuilts/sdk/current/";
+            } else {
+                apiPrebuilts = mSdkLocation + "/prebuilts/sdk/" + Integer.toString(mApiLevel) + "/";
+            }
+
+            // pre-build the path to the platform components
+            mBootClasspath.add(apiPrebuilts + SdkConstants.FN_FRAMEWORK_LIBRARY);
+            mPaths.put(ANDROID_JAR, apiPrebuilts + SdkConstants.FN_FRAMEWORK_LIBRARY);
+            mPaths.put(ANDROID_AIDL, apiPrebuilts + SdkConstants.FN_FRAMEWORK_AIDL);
+        }
 
         // location of the renderscript imports.
+        String rsPrebuilts = mSdkLocation + "/prebuilts/sdk/renderscript/";
         mPaths.put(ANDROID_RS, rsPrebuilts + SdkConstants.OS_FRAMEWORK_RS);
         mPaths.put(ANDROID_RS_CLANG, rsPrebuilts + SdkConstants.OS_FRAMEWORK_RS_CLANG);
     }
@@ -54,12 +78,17 @@ public class FakeAndroidTarget implements IAndroidTarget {
             return Integer.parseInt(target.substring("android-".length()));
         }
 
-        throw new IllegalArgumentException("Android target '%s' is not recognized.");
+        return -1;
     }
 
     @Override
     public String getPath(int pathId) {
         return mPaths.get(pathId);
+    }
+
+    @Override @NonNull
+    public List<String> getBootClasspath() {
+        return mBootClasspath;
     }
 
     @Override
