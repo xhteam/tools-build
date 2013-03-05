@@ -6,7 +6,7 @@
             <file name="touched.png" path="$TOP$$SEP$main$SEP$touched.png" />
             <file name="removed.png" path="$TOP$$SEP$main$SEP$removed.png" />
             <file name="overlay_removed.png" path="$TOP$$SEP$main$SEP$overlay_removed.png" />
-            <file name="overlay_added.png" path="$TOP$$SEP$main$SEP$overlay_added.png" />
+            <file name="foo/overlay_added.png" path="$TOP$$SEP$main$SEP$foo$SEP$overlay_added.png" />
         </source>
     </dataSet>
     <dataSet config="overlay">

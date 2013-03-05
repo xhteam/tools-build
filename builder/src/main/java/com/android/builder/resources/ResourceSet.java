@@ -55,7 +55,8 @@ public class ResourceSet extends DataSet<ResourceItem, ResourceFile> {
     }
 
     @Override
-    protected ResourceFile createFileAndItems(File file, ILogger logger) throws IOException {
+    protected ResourceFile createFileAndItems(File sourceFolder, File file, ILogger logger)
+            throws IOException {
         // get the type.
         FolderData folderData = getFolderData(file.getParentFile());
 

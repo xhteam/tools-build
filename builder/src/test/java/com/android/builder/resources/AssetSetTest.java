@@ -34,8 +34,8 @@ public class AssetSetTest extends BaseTestCase {
         AssetSet assetSet = getBaseAssetSet();
 
         verifyResourceExists(assetSet,
-                "foo.dat",
-                "icon.png",
+                "foo/foo.dat",
+                "foo/icon.png",
                 "main.xml",
                 "values.xml"
         );
