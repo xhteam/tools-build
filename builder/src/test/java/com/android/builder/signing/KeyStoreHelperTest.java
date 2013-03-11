@@ -74,6 +74,8 @@ public class KeyStoreHelperTest extends TestCase {
 
         // and 30 years from now
         c.add(Calendar.DAY_OF_YEAR, 29 * 365);
+        // remove 1 hour to handle for PST/PDT issue
+        c.add(Calendar.HOUR_OF_DAY, -1);
         assertTrue("30 year expiration failed",
                 certificate.getNotAfter().compareTo(c.getTime()) > 0);
 
