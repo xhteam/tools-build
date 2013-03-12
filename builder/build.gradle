@@ -5,10 +5,10 @@ apply plugin: 'signing'
 project.ext.baseAndroidVersion = "22.0-SNAPSHOT"
 
 dependencies {
-    compile "com.android.tools.sdk:sdklib:$project.ext.baseAndroidVersion"
+    compile "com.android.tools:sdklib:$project.ext.baseAndroidVersion"
     compile "com.android.tools:sdk-common:$project.ext.baseAndroidVersion"
     compile "com.android.tools.build:manifest-merger:$project.ext.baseAndroidVersion"
-    compile "com.android.tools:ddmlib:$project.ext.baseAndroidVersion"
+    compile "com.android.tools.ddms:ddmlib:$project.ext.baseAndroidVersion"
 
     testCompile 'junit:junit:3.8.1'
 }
