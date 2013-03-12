@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.android.build.gradle
+
 import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.dsl.AaptOptionsImpl
 import com.android.build.gradle.internal.dsl.AndroidSourceSetFactory
@@ -22,6 +23,7 @@ import com.android.build.gradle.internal.dsl.ProductFlavorDsl
 import com.android.build.gradle.internal.test.TestOptions
 import com.android.builder.BuilderConstants
 import com.android.builder.ProductFlavor
+import com.android.sdklib.repository.FullRevision
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.artifacts.Configuration
@@ -35,6 +37,7 @@ import org.gradle.internal.reflect.Instantiator
 public abstract class BaseExtension {
 
     private String target
+    private FullRevision buildToolsRevision
 
     final ProductFlavor defaultConfig
     final AaptOptionsImpl aaptOptions
@@ -110,6 +113,14 @@ public abstract class BaseExtension {
         compileSdkVersion(target)
     }
 
+    void buildToolsVersion(String version) {
+        buildToolsRevision = FullRevision.parseRevision(version)
+    }
+
+    void setBuildToolsVersion(String version) {
+        buildToolsVersion(version)
+    }
+
     void sourceSets(Action<NamedDomainObjectContainer<AndroidSourceSet>> action) {
         action.execute(sourceSetsContainer)
     }
@@ -146,5 +157,9 @@ public abstract class BaseExtension {
 
     public String getCompileSdkVersion() {
         return target
+    }
+
+    public FullRevision getBuildToolsRevision() {
+        return buildToolsRevision
     }
 }

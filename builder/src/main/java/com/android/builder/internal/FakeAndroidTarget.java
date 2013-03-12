@@ -66,11 +66,6 @@ public class FakeAndroidTarget implements IAndroidTarget {
             mPaths.put(ANDROID_JAR, apiPrebuilts + SdkConstants.FN_FRAMEWORK_LIBRARY);
             mPaths.put(ANDROID_AIDL, apiPrebuilts + SdkConstants.FN_FRAMEWORK_AIDL);
         }
-
-        // location of the renderscript imports.
-        String rsPrebuilts = mSdkLocation + "/prebuilts/sdk/renderscript/";
-        mPaths.put(ANDROID_RS, rsPrebuilts + SdkConstants.OS_FRAMEWORK_RS);
-        mPaths.put(ANDROID_RS_CLANG, rsPrebuilts + SdkConstants.OS_FRAMEWORK_RS_CLANG);
     }
 
     private int getApiLevel(String target) {

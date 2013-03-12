@@ -18,13 +18,13 @@ package com.android.builder;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
+import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.SdkManager;
 import com.android.sdklib.repository.FullRevision;
 import com.android.sdklib.repository.PkgProps;
 import com.android.utils.ILogger;
 import com.google.common.base.Charsets;
-import com.google.common.collect.Maps;
 import com.google.common.io.Closeables;
 
 import java.io.File;
@@ -33,7 +33,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.Map;
 import java.util.Properties;
 
 import static com.android.SdkConstants.FD_PLATFORM_TOOLS;
@@ -50,9 +49,13 @@ public class DefaultSdkParser implements SdkParser {
     private final String mSdkLocation;
     private SdkManager mManager;
 
+    private IAndroidTarget mTarget;
+    private BuildToolInfo mBuildToolInfo;
+
     private File mTools;
     private File mPlatformTools;
-    private final Map<String, File> mToolsMap = Maps.newHashMapWithExpectedSize(6);
+    private File mAdb;
+    private File mZipAlign;
 
     public DefaultSdkParser(@NonNull String sdkLocation) {
         if (!sdkLocation.endsWith(File.separator)) {
@@ -63,15 +66,44 @@ public class DefaultSdkParser implements SdkParser {
     }
 
     @Override
-    public IAndroidTarget resolveTarget(@NonNull String target, @NonNull ILogger logger) {
+    public void initParser(@NonNull String target,
+                           @NonNull FullRevision buildToolRevision,
+                           @NonNull ILogger logger) {
         if (mManager == null) {
             mManager = SdkManager.createManager(mSdkLocation, logger);
             if (mManager == null) {
-                throw new RuntimeException("failed to parse SDK!");
+                throw new IllegalStateException("failed to parse SDK!");
+            }
+
+            mTarget = mManager.getTargetFromHashString(target);
+            if (mTarget == null) {
+                throw new IllegalStateException("failed to find target " + target);
+            }
+
+            mBuildToolInfo = mManager.getBuildTool(buildToolRevision);
+            if (mBuildToolInfo == null) {
+                throw new IllegalStateException("failed to find Build Tools revision "
+                        + buildToolRevision.toString());
             }
         }
+    }
 
-        return mManager.getTargetFromHashString(target);
+    @NonNull
+    @Override
+    public IAndroidTarget getTarget() {
+        if (mManager == null) {
+            throw new IllegalStateException("SdkParser was not initialized.");
+        }
+        return mTarget;
+    }
+
+    @NonNull
+    @Override
+    public BuildToolInfo getBuildTools() {
+        if (mManager == null) {
+            throw new IllegalStateException("SdkParser was not initialized.");
+        }
+        return mBuildToolInfo;
     }
 
     @Override
@@ -114,76 +146,42 @@ public class DefaultSdkParser implements SdkParser {
     }
 
     @Override
-    public File getAapt() {
-        return getPlatformTool(SdkConstants.FN_AAPT);
-    }
-
-    @Override
-    public File getAidlCompiler() {
-        return getPlatformTool(SdkConstants.FN_AIDL);
-    }
-
-    @Override
-    public File getRenderscriptCompiler() {
-        return getPlatformTool(SdkConstants.FN_RENDERSCRIPT);
-    }
-
-    @Override
-    public File getDx() {
-        return getPlatformTool(SdkConstants.FN_DX);
-    }
-
-    @Override
     public File getZipAlign() {
-        return getTool(SdkConstants.FN_ZIPALIGN);
+        if (mZipAlign == null) {
+            mZipAlign = new File(getToolsFolder(), SdkConstants.FN_ZIPALIGN);
+        }
+        return mZipAlign;
     }
 
     @Override
     public File getAdb() {
-        return getPlatformTool(SdkConstants.FN_ADB);
-    }
-
-    private File getPlatformTool(String filename) {
-        File f = mToolsMap.get(filename);
-        if (f == null) {
-            File platformTools = getPlatformToolsFolder();
-            if (!platformTools.isDirectory()) {
-                return null;
-            }
-
-            f = new File(platformTools, filename);
-            mToolsMap.put(filename, f);
+        if (mAdb == null) {
+            mAdb = new File(getPlatformToolsFolder(), SdkConstants.FN_ADB);
         }
-
-        return f;
+        return mAdb;
     }
 
-    private File getTool(String filename) {
-        File f = mToolsMap.get(filename);
-        if (f == null) {
-            File platformTools = getToolsFolder();
-            if (!platformTools.isDirectory()) {
-                return null;
-            }
-
-            f = new File(platformTools, filename);
-            mToolsMap.put(filename, f);
-        }
-
-        return f;
-    }
-
+    @NonNull
     private File getPlatformToolsFolder() {
         if (mPlatformTools == null) {
             mPlatformTools = new File(mSdkLocation, FD_PLATFORM_TOOLS);
+            if (!mPlatformTools.isDirectory()) {
+                throw new IllegalStateException("Platform-tools folder missing: " +
+                        mPlatformTools.getAbsolutePath());
+            }
         }
 
         return mPlatformTools;
     }
 
+    @NonNull
     private File getToolsFolder() {
         if (mTools == null) {
             mTools = new File(mSdkLocation, FD_TOOLS);
+            if (!mTools.isDirectory()) {
+                throw new IllegalStateException("Platform-tools folder missing: " +
+                        mTools.getAbsolutePath());
+            }
         }
 
         return mTools;

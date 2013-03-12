@@ -19,13 +19,12 @@ package com.android.builder;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.builder.internal.FakeAndroidTarget;
+import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.repository.FullRevision;
 import com.android.utils.ILogger;
-import com.google.common.collect.Maps;
 
 import java.io.File;
-import java.util.Map;
 
 /**
  * Implementation of {@link SdkParser} for the SDK prebuilds in the Android source tree.
@@ -33,9 +32,12 @@ import java.util.Map;
 public class PlatformSdkParser implements SdkParser {
     private final String mPlatformRootFolder;
 
+    private boolean mInitialized = false;
+    private IAndroidTarget mTarget;
+    private BuildToolInfo mBuildToolInfo;
+
     private File mHostTools;
-    private final Map<String, File> mToolsMap = Maps.newHashMapWithExpectedSize(6);
-    private File mDx;
+    private File mZipAlign;
     private File mAdb;
 
     PlatformSdkParser(@NonNull String sdkLocation) {
@@ -43,8 +45,39 @@ public class PlatformSdkParser implements SdkParser {
     }
 
     @Override
-    public IAndroidTarget resolveTarget(String target, ILogger logger) {
-        return new FakeAndroidTarget(mPlatformRootFolder, target);
+    public void initParser(@NonNull String target,
+                           @NonNull FullRevision buildToolRevision,
+                           @NonNull ILogger logger) {
+        if (!mInitialized) {
+            mTarget = new FakeAndroidTarget(mPlatformRootFolder, target);
+
+            mBuildToolInfo = new BuildToolInfo(buildToolRevision, new File(mPlatformRootFolder),
+                    new File(getHostToolsFolder(), SdkConstants.FN_AAPT),
+                    new File(getHostToolsFolder(), SdkConstants.FN_AIDL),
+                    new File(mPlatformRootFolder, "prebuilts/sdk/tools/dx"),
+                    new File(mPlatformRootFolder, "prebuilts/sdk/tools/lib/dx.jar"),
+                    new File(getHostToolsFolder(), SdkConstants.FN_RENDERSCRIPT),
+                    new File(mPlatformRootFolder, "prebuilts/sdk/renderscript/include"),
+                    new File(mPlatformRootFolder, "prebuilts/sdk/renderscript/clang-include"));
+        }
+    }
+
+    @NonNull
+    @Override
+    public IAndroidTarget getTarget() {
+        if (!mInitialized) {
+            throw new IllegalStateException("SdkParser was not initialized.");
+        }
+        return mTarget;
+    }
+
+    @NonNull
+    @Override
+    public BuildToolInfo getBuildTools() {
+        if (!mInitialized) {
+            throw new IllegalStateException("SdkParser was not initialized.");
+        }
+        return mBuildToolInfo;
     }
 
     @Override
@@ -67,32 +100,12 @@ public class PlatformSdkParser implements SdkParser {
     }
 
     @Override
-    public File getAapt() {
-        return getTool(SdkConstants.FN_AAPT);
-    }
-
-    @Override
-    public File getAidlCompiler() {
-        return getTool(SdkConstants.FN_AIDL);
-    }
-
-    @Override
-    public File getRenderscriptCompiler() {
-        return getTool(SdkConstants.FN_RENDERSCRIPT);
-    }
-
-    @Override
-    public File getDx() {
-        if (mDx == null) {
-            mDx =  new File(mPlatformRootFolder, "prebuilts/sdk/tools/dx");
+    public File getZipAlign() {
+        if (mZipAlign == null) {
+            mZipAlign = new File(getHostToolsFolder(), SdkConstants.FN_ZIPALIGN);
         }
 
-        return mDx;
-    }
-
-    @Override
-    public File getZipAlign() {
-        return getTool(SdkConstants.FN_ZIPALIGN);
+        return mZipAlign;
     }
 
     @Override
@@ -104,28 +117,15 @@ public class PlatformSdkParser implements SdkParser {
             } else if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_LINUX) {
                 mAdb = new File(mPlatformRootFolder, "out/host/linux-x86/bin/adb");
             } else {
-                throw new IllegalStateException("Windows is not supported for platform development");
+                throw new IllegalStateException(
+                        "Windows is not supported for platform development");
             }
         }
 
         return mAdb;
     }
 
-    private File getTool(String filename) {
-        File f = mToolsMap.get(filename);
-        if (f == null) {
-            File platformTools = getHostToolsFolder();
-            if (!platformTools.isDirectory()) {
-                return null;
-            }
-
-            f = new File(platformTools, filename);
-            mToolsMap.put(filename, f);
-        }
-
-        return f;
-    }
-
+    @NonNull
     private File getHostToolsFolder() {
         if (mHostTools == null) {
             File tools = new File(mPlatformRootFolder, "prebuilts/sdk/tools");
@@ -134,7 +134,13 @@ public class PlatformSdkParser implements SdkParser {
             } else if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_LINUX) {
                 mHostTools = new File(tools, "linux");
             } else {
-                throw new IllegalStateException("Windows is not supported for platform development");
+                throw new IllegalStateException(
+                        "Windows is not supported for platform development");
+            }
+
+            if (!mHostTools.isDirectory()) {
+                throw new IllegalStateException("Host tools folder missing: " +
+                        mHostTools.getAbsolutePath());
             }
         }
         return mHostTools;

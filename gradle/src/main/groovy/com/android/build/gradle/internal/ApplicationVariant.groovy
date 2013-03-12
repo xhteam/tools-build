@@ -114,8 +114,6 @@ public abstract class ApplicationVariant {
         return config.getPackageName()
     }
 
-    abstract AndroidBuilder createBuilder(BasePlugin androidBasePlugin)
-
     protected String getFlavoredName(boolean capitalized) {
         StringBuilder builder = new StringBuilder()
         for (ProductFlavor flavor : config.flavorConfigs) {

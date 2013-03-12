@@ -2,4 +2,5 @@ apply plugin: 'android-library'
 
 android {
     compileSdkVersion 15
+    buildToolsVersion "1.0"
 }

@@ -14,6 +14,8 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 15
+    buildToolsVersion "1.0"
+
     testBuildType "debug"
 
     signingConfigs {
