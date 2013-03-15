@@ -16,6 +16,7 @@
 
 package com.android.builder.resources;
 
+import com.android.builder.internal.packaging.PackagingUtils;
 import com.android.utils.ILogger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Node;
@@ -44,14 +45,11 @@ public class AssetSet extends DataSet<AssetItem, AssetFile> {
     }
 
     @Override
-    protected AssetFile createFileAndItems(File file, ILogger logger) {
-        // key is going to be the full filename, since you can have both
-        //     icon.png
-        // and
-        //     icon.txt
-        // in the asset folder.
+    protected AssetFile createFileAndItems(File sourceFolder, File file, ILogger logger) {
+        // key is the relative path to the sourceFolder
+        // e.g. foo/icon.png
 
-        return new AssetFile(file, new AssetItem(file.getName()));
+        return new AssetFile(file, AssetItem.create(sourceFolder, file));
     }
 
     @Override
@@ -68,21 +66,33 @@ public class AssetSet extends DataSet<AssetItem, AssetFile> {
     @Override
     protected boolean isValidSourceFile(File sourceFolder, File file) {
         // valid files are right under the source folder
-        return file.getParentFile().equals(sourceFolder);
+        File parent = file.getParentFile();
+        while (parent != null && !parent.equals(sourceFolder)) {
+            parent = parent.getParentFile();
+        }
+
+        return parent != null;
     }
 
     @Override
     protected void readSourceFolder(File sourceFolder, ILogger logger)
             throws DuplicateDataException, IOException {
-        // get the files
-        File[] files = sourceFolder.listFiles();
+        readFiles(sourceFolder, sourceFolder, logger);
+    }
+
+    private void readFiles(File sourceFolder, File folder, ILogger logger) throws IOException {
+        File[] files = folder.listFiles();
         if (files != null && files.length > 0) {
             for (File file : files) {
-                if (!file.isFile() || !checkFileForAndroidRes(file)) {
-                    continue;
+                if (file.isFile()) {
+                    if (checkFileForAndroidRes(file)) {
+                        handleNewFile(sourceFolder, file, logger);
+                    }
+                } else if (file.isDirectory()) {
+                    if (PackagingUtils.checkFolderForPackaging(folder.getName())) {
+                        readFiles(sourceFolder, file, logger);
+                    }
                 }
-
-                handleNewFile(sourceFolder, file, logger);
             }
         }
     }

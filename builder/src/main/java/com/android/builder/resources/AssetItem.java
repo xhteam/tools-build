@@ -18,6 +18,8 @@ package com.android.builder.resources;
 
 import com.android.annotations.NonNull;
 
+import java.io.File;
+
 /**
  * An asset.
  *
@@ -27,13 +29,31 @@ import com.android.annotations.NonNull;
 class AssetItem extends DataItem<AssetFile> {
 
     /**
-     * Constructs the object with a name, type and optional value.
+     * Constructs the object with a name
      *
-     * Note that the object is not fully usable as-is. It must be added to a ResourceFile first.
+     * Note that the object is not fully usable as-is. It must be added to an AssetFile first.
      *
-     * @param name the name of the resource
+     * @param name the name of the asset
      */
     AssetItem(@NonNull String name) {
         super(name);
+    }
+
+    static AssetItem create(@NonNull File sourceFolder, @NonNull File file) {
+        // compute the relative path
+        StringBuilder sb = new StringBuilder();
+        computePath(sb, file.getParentFile(), sourceFolder);
+        sb.append(file.getName());
+
+        return new AssetItem(sb.toString());
+    }
+
+    private static void computePath(StringBuilder sb, File current, File stop) {
+        if (current.equals(stop)) {
+            return;
+        }
+
+        computePath(sb, current.getParentFile(), stop);
+        sb.append(current.getName()).append('/');
     }
 }

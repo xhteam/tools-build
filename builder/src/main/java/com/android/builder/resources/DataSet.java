@@ -112,7 +112,8 @@ abstract class DataSet<I extends DataItem<F>, F extends DataFile<I>> implements 
     protected abstract void readSourceFolder(File sourceFolder, ILogger logger)
             throws DuplicateDataException, IOException;
 
-    protected abstract F createFileAndItems(File file, ILogger logger) throws IOException;
+    protected abstract F createFileAndItems(File sourceFolder, File file, ILogger logger)
+            throws IOException;
 
 
     /**
@@ -401,7 +402,7 @@ abstract class DataSet<I extends DataItem<F>, F extends DataFile<I>> implements 
 
     protected boolean handleNewFile(File sourceFolder, File file, ILogger logger)
             throws IOException {
-        F dataFile = createFileAndItems(file, logger);
+        F dataFile = createFileAndItems(sourceFolder, file, logger);
         processNewDataFile(sourceFolder, dataFile, true /*setTouched*/);
         return true;
     }

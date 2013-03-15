@@ -37,15 +37,15 @@ public class AssetMergerTest extends BaseTestCase {
         assertEquals(5, merger.size());
     }
 
-    public void testMergedResourcesByName() throws Exception {
+    public void testMergedAssetsByName() throws Exception {
         AssetMerger merger = getAssetMerger();
 
         verifyResourceExists(merger,
-                "icon.png",
+                "foo/icon.png",
                 "icon2.png",
                 "main.xml",
                 "values.xml",
-                "foo.dat"
+                "foo/foo.dat"
         );
     }
 
@@ -140,7 +140,7 @@ public class AssetMergerTest extends BaseTestCase {
         File overlayFolder = new File(root, "overlay");
 
         // new/removed files:
-        File overlayAdded = new File(overlayFolder, "overlay_added.png");
+        File overlayAdded = new File(new File(overlayFolder, "foo"), "overlay_added.png");
         overlaySet.updateWith(overlayFolder, overlayAdded, FileStatus.NEW, logger);
         checkLogger(logger);
 
@@ -175,7 +175,7 @@ public class AssetMergerTest extends BaseTestCase {
         assertTrue(removedItem.get(0).isRemoved());
 
         // check new overlay: two objects, last one is TOUCHED
-        List<AssetItem> overlayAddedItem = mergedMap.get("overlay_added.png");
+        List<AssetItem> overlayAddedItem = mergedMap.get("foo/overlay_added.png");
         assertEquals(2, overlayAddedItem.size());
         AssetItem newOverlay0 = overlayAddedItem.get(0);
         assertTrue(newOverlay0.isWritten());
@@ -208,7 +208,7 @@ public class AssetMergerTest extends BaseTestCase {
         checkImageColor(new File(resFolder, "touched.png"), (int) 0xFF00FF00);
         checkImageColor(new File(resFolder, "added.png"), (int) 0xFF00FF00);
         checkImageColor(new File(resFolder, "overlay_removed.png"), (int) 0xFF00FF00);
-        checkImageColor(new File(resFolder, "overlay_added.png"), (int) 0xFF00FF00);
+        checkImageColor(new File(new File(resFolder, "foo"), "overlay_added.png"), (int) 0xFF00FF00);
 
         // also check the removed file is not there.
         assertFalse(new File(resFolder, "removed.png").isFile());

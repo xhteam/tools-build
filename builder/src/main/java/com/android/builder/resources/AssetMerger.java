@@ -50,11 +50,17 @@ public class AssetMerger extends DataMerger<AssetItem, AssetFile, AssetSet> {
                 public Object call() throws Exception {
                     AssetFile assetFile = item.getSource();
 
-                    File file = assetFile.getFile();
-                    String filename = file.getName();
+                    File fromFile = assetFile.getFile();
 
-                    File outFile = new File(rootFolder, filename);
-                    Files.copy(file, outFile);
+                    // the out file is computed from the item key since that includes the
+                    // relative folder.
+                    File toFile = new File(rootFolder,
+                            item.getKey().replace('/', File.separatorChar));
+
+                    // make sure the folders are created
+                    toFile.getParentFile().mkdirs();
+
+                    Files.copy(fromFile, toFile);
 
                     return null;
                 }
