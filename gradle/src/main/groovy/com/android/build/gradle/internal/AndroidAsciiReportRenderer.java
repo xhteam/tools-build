@@ -16,8 +16,8 @@
 
 package com.android.build.gradle.internal;
 
-import com.android.builder.AndroidDependency;
-import com.android.builder.BundleDependency;
+import com.android.builder.dependency.AndroidDependency;
+import com.android.builder.dependency.BundleDependency;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;

@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.dependency;
 
-import com.android.builder.ManifestDependency;
+import com.android.builder.dependency.ManifestDependency;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Nested;
 

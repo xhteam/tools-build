@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.builder;
+package com.android.builder.dependency;
 
 import com.android.annotations.NonNull;
 
-import java.util.List;
+import java.io.File;
 
 /**
- * Represents the manifest of a dependency as well as the dependencies
+ * Provides a path to the Android Manifest
  */
-public interface ManifestDependency extends ManifestProvider {
+public interface ManifestProvider {
 
     /**
-     * Returns the direct dependency of this dependency.
+     * Returns the location of the manifest.
      */
     @NonNull
-    List<? extends ManifestDependency> getManifestDependencies();
+    File getManifest();
 }

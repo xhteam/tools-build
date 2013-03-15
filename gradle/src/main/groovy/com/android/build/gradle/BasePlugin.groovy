@@ -48,10 +48,10 @@ import com.android.build.gradle.tasks.ProcessTestManifest
 import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
-import com.android.builder.AndroidDependency
+import com.android.builder.dependency.AndroidDependency
 import com.android.builder.DefaultSdkParser
-import com.android.builder.JarDependency
-import com.android.builder.ManifestDependency
+import com.android.builder.dependency.JarDependency
+import com.android.builder.dependency.ManifestDependency
 import com.android.builder.PlatformSdkParser
 import com.android.builder.ProductFlavor
 import com.android.builder.SdkParser

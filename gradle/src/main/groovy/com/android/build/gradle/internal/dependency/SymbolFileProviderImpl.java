@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.dependency;
 
-import com.android.builder.SymbolFileProvider;
+import com.android.builder.dependency.SymbolFileProvider;
 import org.gradle.api.tasks.InputFile;
 
 import java.io.File;
