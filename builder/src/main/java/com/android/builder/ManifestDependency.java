@@ -16,6 +16,8 @@
 
 package com.android.builder;
 
+import com.android.annotations.NonNull;
+
 import java.util.List;
 
 /**
@@ -26,5 +28,6 @@ public interface ManifestDependency extends ManifestProvider {
     /**
      * Returns the direct dependency of this dependency.
      */
+    @NonNull
     List<? extends ManifestDependency> getManifestDependencies();
 }

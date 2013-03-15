@@ -16,6 +16,8 @@
 
 package com.android.builder;
 
+import com.android.annotations.NonNull;
+
 import java.io.File;
 import java.util.List;
 
@@ -27,51 +29,83 @@ public interface AndroidDependency extends ManifestDependency, SymbolFileProvide
     /**
      * Returns the location of the unarchived bundle.
      */
+    @NonNull
     File getFolder();
 
     /**
      * Returns the direct dependency of this dependency.
      */
+    @NonNull
     List<AndroidDependency> getDependencies();
 
     /**
      * Returns the location of the jar file to use for packaging.
-     * Cannot be null.
+     *
+     * @return a File for the jar file. The file may not point to an existing file.
      */
+    @NonNull
     File getJarFile();
 
     /**
-     * Returns the location of the res folder.
+     * Returns the list of local Jar files that are included in the dependency.
+     * @return a list of JarDependency. May be empty but not null.
      */
+    @NonNull
+    List<JarDependency> getLocalDependencies();
+
+    /**
+     * Returns the location of the res folder.
+     *
+     * @return a File for the res folder. The file may not point to an existing folder.
+     */
+    @NonNull
     File getResFolder();
 
     /**
      * Returns the location of the assets folder.
+     *
+     * @return a File for the assets folder. The file may not point to an existing folder.
      */
+    @NonNull
     File getAssetsFolder();
 
     /**
      * Returns the location of the jni libraries folder.
+     *
+     * @return a File for the folder. The file may not point to an existing folder.
      */
+    @NonNull
     File getJniFolder();
 
     /**
      * Returns the location of the aidl import folder.
+     *
+     * @return a File for the folder. The file may not point to an existing folder.
      */
+    @NonNull
     File getAidlFolder();
 
     /**
      * Returns the location of the renderscript import folder.
+     *
+     * @return a File for the folder. The file may not point to an existing folder.
      */
+    @NonNull
     File getRenderscriptFolder();
 
     /**
      * Returns the location of the proguard files.
+     *
+     * @return a File for the file. The file may not point to an existing file.
      */
+    @NonNull
     File getProguardRules();
 
     /**
      * Returns the location of the lint jar.
+     *
+     * @return a File for the jar file. The file may not point to an existing file.
      */
+    @NonNull
     File getLintJar();
 }

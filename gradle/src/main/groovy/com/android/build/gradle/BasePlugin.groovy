@@ -903,7 +903,7 @@ public abstract class BasePlugin {
     }
 
     def resolveDependencies(List<ConfigurationDependencies> configs) {
-        Map<ModuleVersionIdentifier, List<AndroidDependency>> modules = [:]
+        Map<ModuleVersionIdentifier, List<AndroidDependencyImpl>> modules = [:]
         Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts = [:]
         Multimap<AndroidDependency, ConfigurationDependencies> reverseMap = ArrayListMultimap.create()
 
@@ -950,7 +950,7 @@ public abstract class BasePlugin {
 
     def resolveDependencyForConfig(
             ConfigurationDependencies configDependencies,
-            Map<ModuleVersionIdentifier, List<AndroidDependency>> modules,
+            Map<ModuleVersionIdentifier, List<AndroidDependencyImpl>> modules,
             Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
             Multimap<AndroidDependency, ConfigurationDependencies> reverseMap) {
 
@@ -963,27 +963,30 @@ public abstract class BasePlugin {
         configDependencies.checker = new DependencyChecker(configDependencies, logger)
 
         // TODO - defer downloading until required -- This is hard to do as we need the info to build the variant config.
-        List<AndroidDependency> bundles = []
+        List<AndroidDependencyImpl> bundles = []
         List<JarDependency> jars = []
+        List<JarDependency> localJars = []
         collectArtifacts(compileClasspath, artifacts)
         compileClasspath.incoming.resolutionResult.root.dependencies.each { ResolvedDependencyResult dep ->
             addDependency(dep.selected, configDependencies, bundles, jars, modules,
                     artifacts, reverseMap)
         }
+
         // also need to process local jar files, as they are not processed by the
-        // resolvedConfiguration result
+        // resolvedConfiguration result. This only includes the local jar files for this project.
         compileClasspath.allDependencies.each { dep ->
             if (dep instanceof SelfResolvingDependency &&
                     !(dep instanceof ProjectDependency)) {
                 Set<File> files = ((SelfResolvingDependency) dep).resolve()
                 for (File f : files) {
-                    jars << new JarDependency(f.absolutePath, true, true, true)
+                    localJars << new JarDependency(f)
                 }
             }
         }
 
-        configDependencies.libraries = bundles
-        configDependencies.jars = jars
+        configDependencies.addLibraries(bundles)
+        configDependencies.addJars(jars)
+        configDependencies.addLocalJars(localJars)
 
         // TODO - filter bundles out of source set classpath
 
@@ -1012,9 +1015,9 @@ public abstract class BasePlugin {
 
     def addDependency(ResolvedModuleVersionResult moduleVersion,
                       ConfigurationDependencies configDependencies,
-                      Collection<AndroidDependency> bundles,
-                      Collection<JarDependency> jars,
-                      Map<ModuleVersionIdentifier, List<AndroidDependency>> modules,
+                      Collection<AndroidDependencyImpl> bundles,
+                      List<JarDependency> jars,
+                      Map<ModuleVersionIdentifier, List<AndroidDependencyImpl>> modules,
                       Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
                       Multimap<AndroidDependency, ConfigurationDependencies> reverseMap) {
         def id = moduleVersion.id
@@ -1022,7 +1025,7 @@ public abstract class BasePlugin {
             return
         }
 
-        List<AndroidDependency> bundlesForThisModule = modules[id]
+        List<AndroidDependencyImpl> bundlesForThisModule = modules[id]
         if (bundlesForThisModule == null) {
             bundlesForThisModule = []
             modules[id] = bundlesForThisModule
@@ -1039,13 +1042,13 @@ public abstract class BasePlugin {
                     def explodedDir = project.file(
                             "$project.buildDir/exploded-bundles/$artifact.file.name")
                     AndroidDependencyImpl adep = new AndroidDependencyImpl(
-                            id.group + ":" + id.name + ":" + id.version,
-                            explodedDir, nestedBundles, artifact.file)
+                            explodedDir, nestedBundles, artifact.file,
+                            id.group + ":" + id.name + ":" + id.version)
                     bundlesForThisModule << adep
                     reverseMap.put(adep, configDependencies)
                 } else {
                     // TODO - need the correct values for the boolean flags
-                    jars << new JarDependency(artifact.file.absolutePath, true, true, true)
+                    jars << new JarDependency(artifact.file)
                 }
             }
 
@@ -1096,22 +1099,6 @@ public abstract class BasePlugin {
 
     protected static File getOptionalDir(File dir) {
         if (dir.isDirectory()) {
-            return dir
-        }
-
-        return null
-    }
-
-    /**
-     * TODO: remove once assets support more than one folder.
-     * @param dirs
-     * @return
-     */
-    protected static File getFirstOptionalDir(Set<File> dirs) {
-        Iterator<File> iterator = dirs.iterator();
-
-        File dir = iterator.hasNext() ? iterator.next() : null;
-        if (dir != null && dir.isDirectory()) {
             return dir
         }
 

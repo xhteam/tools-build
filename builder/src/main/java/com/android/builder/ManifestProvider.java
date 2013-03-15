@@ -16,6 +16,8 @@
 
 package com.android.builder;
 
+import com.android.annotations.NonNull;
+
 import java.io.File;
 
 /**
@@ -26,5 +28,6 @@ public interface ManifestProvider {
     /**
      * Returns the location of the manifest.
      */
+    @NonNull
     File getManifest();
 }

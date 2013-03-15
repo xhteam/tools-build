@@ -74,7 +74,8 @@ public class DependencyData {
      *
      * @param dependencyFile the dependency file
      */
-    public static DependencyData parseDependencyFile(File dependencyFile) throws IOException {
+    public static DependencyData parseDependencyFile(@NonNull File dependencyFile)
+            throws IOException {
         // first check if the dependency file is here.
         if (!dependencyFile.isFile()) {
             return null;
@@ -90,7 +91,7 @@ public class DependencyData {
     }
 
     @VisibleForTesting
-    static DependencyData processDependencyData(List<String> content) {
+    static DependencyData processDependencyData(@NonNull List<String> content) {
         // The format is technically:
         // output1 output2 [...]: dep1 dep2 [...]
         // However, the current tools generating those files guarantee that each file path

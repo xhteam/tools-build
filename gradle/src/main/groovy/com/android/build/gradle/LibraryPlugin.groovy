@@ -24,9 +24,11 @@ import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.builder.AndroidDependency
 import com.android.builder.BuilderConstants
 import com.android.builder.BundleDependency
+import com.android.builder.DependencyContainer
 import com.android.builder.JarDependency
 import com.android.builder.ManifestDependency
 import com.android.builder.VariantConfiguration
+import com.google.common.collect.Sets
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.internal.project.ProjectInternal
@@ -132,28 +134,18 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
                                                     boolean publishArtifact) {
         ProductFlavorData defaultConfigData = getDefaultConfigData();
 
-        List<ConfigurationDependencies> configDependencies = []
-        configDependencies.add(defaultConfigData)
-        configDependencies.add(buildTypeData)
-
-        // list of dependency to set on the variantConfig
-        List<JarDependency> jars = []
-        jars.addAll(defaultConfigData.jars)
-        jars.addAll(buildTypeData.jars)
-
         // the order of the libraries is important. In descending order:
-        // build types, defaultConfig.
-        List<AndroidDependency> libs = []
-        libs.addAll(buildTypeData.libraries)
-        libs.addAll(defaultConfigData.libraries)
+        // build type, defaultConfig.
+        List<ConfigurationDependencies> configDependencies = []
+        configDependencies.add(buildTypeData)
+        configDependencies.add(defaultConfigData)
 
         def variantConfig = new VariantConfiguration(
                 defaultConfigData.productFlavor, defaultConfigData.sourceSet,
                 buildTypeData.buildType, buildTypeData.sourceSet,
-                VariantConfiguration.Type.LIBRARY)
+                VariantConfiguration.Type.LIBRARY, project.name)
 
-        variantConfig.setJarDependencies(jars)
-        variantConfig.setAndroidDependencies(libs)
+        variantConfig.setDependencies(configDependencies)
 
         String packageName = variantConfig.getPackageFromManifest()
         if (packageName == null) {
@@ -217,14 +209,20 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
 
         // package the renderscript header files files into the bundle folder
         Sync packageRenderscript = project.tasks.add("package${variant.name}Renderscript", Sync)
-        // packageAidl from 3 sources. the order is important to make sure the override works well.
+        // package from 3 sources. the order is important to make sure the override works well.
         packageRenderscript.from(defaultConfigData.sourceSet.renderscript.directories,
                 buildTypeData.sourceSet.renderscript.directories).include("**/*.rsh")
         packageRenderscript.into(project.file(
                 "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_RENDERSCRIPT"))
 
+        // package the renderscript header files files into the bundle folder
+        Sync packageLocalJar = project.tasks.add("package${variant.name}LocalJar", Sync)
+        packageLocalJar.from(getLocalJarFileList(configDependencies))
+        packageLocalJar.into(project.file(
+                "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.LIBS_FOLDER"))
+
         Zip bundle = project.tasks.add("bundle${variant.name}", Zip)
-        bundle.dependsOn jar, packageAidl, packageRenderscript
+        bundle.dependsOn jar, packageAidl, packageRenderscript, packageLocalJar
         bundle.setDescription("Assembles a bundle containing the library in ${variant.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
         bundle.extension = BuilderConstants.EXT_LIB_ARCHIVE
@@ -263,28 +261,31 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         return variant
     }
 
+    static Object[] getLocalJarFileList(List<? extends DependencyContainer> containerList) {
+        Set<File> files = Sets.newHashSet()
+        for (DependencyContainer dependencyContainer : containerList) {
+            for (JarDependency jarDependency : dependencyContainer.localDependencies) {
+                files.add(jarDependency.jarFile)
+            }
+        }
+
+        return files.toArray()
+    }
+
     private TestAppVariant createTestTasks(ProductionAppVariant testedVariant) {
         ProductFlavorData defaultConfigData = getDefaultConfigData();
 
-        List<ConfigurationDependencies> configDependencies = []
-        configDependencies.add(defaultConfigData.testConfigDependencies)
-
-        // list of dependency to set on the variantConfig
-        List<JarDependency> jars = []
-        jars.addAll(defaultConfigData.testConfigDependencies.jars)
-
         // the order of the libraries is important. In descending order:
         // build types, defaultConfig.
-        List<AndroidDependency> libs = []
-        libs.addAll(defaultConfigData.testConfigDependencies.libraries)
+        List<ConfigurationDependencies> configDependencies = []
+        configDependencies.add(defaultConfigData.testConfigDependencies)
 
         def testVariantConfig = new VariantConfiguration(
                 defaultConfigData.productFlavor, defaultConfigData.testSourceSet,
                 debugBuildTypeData.buildType, null,
-                VariantConfiguration.Type.TEST, testedVariant.config)
+                VariantConfiguration.Type.TEST, testedVariant.config, project.name)
 
-        testVariantConfig.setJarDependencies(jars)
-        testVariantConfig.setAndroidDependencies(libs)
+        testVariantConfig.setDependencies(configDependencies)
 
         def testVariant = new TestAppVariant(testVariantConfig,)
         variants.add(testVariant)
