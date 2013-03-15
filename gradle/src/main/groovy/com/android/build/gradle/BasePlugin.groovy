@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 package com.android.build.gradle
+
 import com.android.SdkConstants
 import com.android.build.gradle.internal.ApplicationVariant
+import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
@@ -48,15 +50,15 @@ import com.android.build.gradle.tasks.ProcessTestManifest
 import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
-import com.android.builder.dependency.AndroidDependency
 import com.android.builder.DefaultSdkParser
-import com.android.builder.dependency.JarDependency
-import com.android.builder.dependency.ManifestDependency
 import com.android.builder.PlatformSdkParser
 import com.android.builder.ProductFlavor
 import com.android.builder.SdkParser
 import com.android.builder.SourceProvider
 import com.android.builder.VariantConfiguration
+import com.android.builder.dependency.AndroidDependency
+import com.android.builder.dependency.JarDependency
+import com.android.builder.dependency.ManifestDependency
 import com.android.builder.signing.SigningConfig
 import com.android.utils.ILogger
 import com.google.common.collect.ArrayListMultimap
@@ -76,6 +78,7 @@ import org.gradle.api.artifacts.result.ResolvedModuleVersionResult
 import org.gradle.api.internal.plugins.ProcessResources
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
@@ -88,6 +91,7 @@ import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_TEST
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
 import static com.android.builder.BuilderConstants.REPORTS
+
 /**
  * Base class for all Android plugins
  */
@@ -172,6 +176,12 @@ public abstract class BasePlugin {
     }
 
     final void createAndroidTasks() {
+        // get current plugins and look for the default Java plugin.
+        if (project.plugins.hasPlugin(JavaPlugin.class)) {
+            throw new BadPluginException(
+                    "The 'java' plugin has been applied, but it is not compatible with the Android plugins.")
+        }
+
         findSdk(project)
 
         if (hasCreatedTasks) {

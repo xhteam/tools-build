@@ -17,6 +17,7 @@
 package com.android.build.gradle
 
 import com.android.build.gradle.internal.ApplicationVariant
+import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.test.BaseTest
 import com.android.build.gradle.internal.test.PluginHolder
 import com.android.builder.BuildType
@@ -401,6 +402,29 @@ public class AppPluginInternalTest extends BaseTest {
         assertEquals(debugSC.getStorePassword(), fooSC.getStorePassword());
         assertEquals(debugSC.getKeyAlias(), fooSC.getKeyAlias());
         assertEquals(debugSC.getKeyPassword(), fooSC.getKeyPassword());
+    }
+
+    public void testPluginDetection() {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
+
+        project.apply plugin: 'android'
+        project.apply plugin: 'java'
+
+        project.android {
+            compileSdkVersion 15
+        }
+
+        AppPlugin plugin = AppPlugin.pluginHolder.plugin
+        Exception recordedException = null;
+        try {
+            plugin.createAndroidTasks()
+        } catch (Exception e) {
+            recordedException = e;
+        }
+
+        assertNotNull(recordedException)
+        assertEquals(BadPluginException.class, recordedException.getClass())
     }
 
     private static ApplicationVariant findVariant(Collection<ApplicationVariant> variants,
