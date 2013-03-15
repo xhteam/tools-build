@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
 import com.android.SdkConstants
+import com.android.annotations.NonNull
 import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.LoggerWrapper
@@ -58,7 +58,6 @@ import com.android.builder.SourceProvider
 import com.android.builder.VariantConfiguration
 import com.android.builder.dependency.AndroidDependency
 import com.android.builder.dependency.JarDependency
-import com.android.builder.dependency.ManifestDependency
 import com.android.builder.signing.SigningConfig
 import com.android.utils.ILogger
 import com.google.common.collect.ArrayListMultimap
@@ -91,7 +90,6 @@ import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_TEST
 import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
 import static com.android.builder.BuilderConstants.REPORTS
-
 /**
  * Base class for all Android plugins
  */
@@ -1115,6 +1113,7 @@ public abstract class BasePlugin {
         return null
     }
 
+    @NonNull
     protected List<ManifestDependencyImpl> getManifestDependencies(
             List<AndroidDependency> libraries) {
 
@@ -1122,13 +1121,14 @@ public abstract class BasePlugin {
 
         for (AndroidDependency lib : libraries) {
             // get the dependencies
-            List<ManifestDependency> children = getManifestDependencies(lib.dependencies)
+            List<ManifestDependencyImpl> children = getManifestDependencies(lib.dependencies)
             list.add(new ManifestDependencyImpl(lib.manifest, children))
         }
 
         return list
     }
 
+    @NonNull
     protected static List<SymbolFileProviderImpl> getTextSymbolDependencies(
             List<AndroidDependency> libraries) {
 

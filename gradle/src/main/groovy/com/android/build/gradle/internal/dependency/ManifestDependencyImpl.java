@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.dependency;
 
+import com.android.annotations.NonNull;
 import com.android.builder.dependency.ManifestDependency;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Nested;
@@ -28,27 +29,31 @@ import java.util.List;
  */
 public class ManifestDependencyImpl implements ManifestDependency{
 
-    private File manifest;
-    private List<? extends ManifestDependency> dependencies;
+    private final File manifest;
+    private final List<ManifestDependencyImpl> dependencies;
 
-    public ManifestDependencyImpl(File manifest, List<? extends ManifestDependency> dependencies) {
+    public ManifestDependencyImpl(@NonNull File manifest,
+                                  @NonNull List<ManifestDependencyImpl> dependencies) {
         this.manifest = manifest;
         this.dependencies = dependencies;
     }
 
     @InputFile
     @Override
+    @NonNull
     public File getManifest() {
         return manifest;
     }
 
     @Override
+    @NonNull
     public List<? extends ManifestDependency> getManifestDependencies() {
         return dependencies;
     }
 
     @Nested
+    @NonNull
     public List<ManifestDependencyImpl> getManifestDependenciesForInput() {
-        return (List<ManifestDependencyImpl>) dependencies;
+        return dependencies;
     }
 }

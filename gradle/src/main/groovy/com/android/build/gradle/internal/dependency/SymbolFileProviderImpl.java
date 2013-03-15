@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.dependency;
 
+import com.android.annotations.NonNull;
 import com.android.builder.dependency.SymbolFileProvider;
 import org.gradle.api.tasks.InputFile;
 
@@ -26,22 +27,24 @@ import java.io.File;
  */
 public class SymbolFileProviderImpl implements SymbolFileProvider {
 
-    private File manifest;
-    private File symbolFile;
+    private final File manifest;
+    private final File symbolFile;
 
-    public SymbolFileProviderImpl(File manifest, File symbolFile) {
+    public SymbolFileProviderImpl(@NonNull File manifest, @NonNull File symbolFile) {
         this.manifest = manifest;
         this.symbolFile = symbolFile;
     }
 
     @InputFile
     @Override
+    @NonNull
     public File getManifest() {
         return manifest;
     }
 
     @InputFile
     @Override
+    @NonNull
     public File getSymbolFile() {
         return symbolFile;
     }
