@@ -21,12 +21,12 @@ import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.ProductionAppVariant
 import com.android.build.gradle.internal.TestAppVariant
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
-import com.android.builder.AndroidDependency
+import com.android.builder.dependency.AndroidDependency
 import com.android.builder.BuilderConstants
-import com.android.builder.BundleDependency
-import com.android.builder.DependencyContainer
-import com.android.builder.JarDependency
-import com.android.builder.ManifestDependency
+import com.android.builder.dependency.BundleDependency
+import com.android.builder.dependency.DependencyContainer
+import com.android.builder.dependency.JarDependency
+import com.android.builder.dependency.ManifestDependency
 import com.android.builder.VariantConfiguration
 import com.google.common.collect.Sets
 import org.gradle.api.Plugin

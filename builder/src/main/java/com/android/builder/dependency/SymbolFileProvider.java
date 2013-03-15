@@ -14,20 +14,20 @@
  * limitations under the License.
  */
 
-package com.android.builder;
+package com.android.builder.dependency;
 
 import com.android.annotations.NonNull;
 
 import java.io.File;
 
 /**
- * Provides a path to the Android Manifest
+ * Provides a path to the Text Symbol file and to the Android Manifest
  */
-public interface ManifestProvider {
+public interface SymbolFileProvider extends ManifestProvider {
 
     /**
-     * Returns the location of the manifest.
+     * Returns the location of the text symbol file
      */
     @NonNull
-    File getManifest();
+    File getSymbolFile();
 }

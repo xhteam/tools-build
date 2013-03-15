@@ -17,9 +17,9 @@
 package com.android.build.gradle.internal.dependency
 import com.android.annotations.NonNull
 import com.android.build.gradle.AndroidSourceSet
-import com.android.builder.AndroidDependency
-import com.android.builder.DependencyContainer
-import com.android.builder.JarDependency
+import com.android.builder.dependency.AndroidDependency
+import com.android.builder.dependency.DependencyContainer
+import com.android.builder.dependency.JarDependency
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 /**

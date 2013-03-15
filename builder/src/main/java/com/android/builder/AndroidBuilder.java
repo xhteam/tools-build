@@ -21,6 +21,8 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
 import com.android.builder.compiling.DependencyFileProcessor;
+import com.android.builder.dependency.ManifestDependency;
+import com.android.builder.dependency.SymbolFileProvider;
 import com.android.builder.internal.BuildConfigGenerator;
 import com.android.builder.internal.CommandLineRunner;
 import com.android.builder.internal.SymbolLoader;

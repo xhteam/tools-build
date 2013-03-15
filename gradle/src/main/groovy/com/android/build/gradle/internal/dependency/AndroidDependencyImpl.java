@@ -17,9 +17,9 @@ package com.android.build.gradle.internal.dependency;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.builder.AndroidDependency;
-import com.android.builder.BundleDependency;
-import com.android.builder.ManifestDependency;
+import com.android.builder.dependency.AndroidDependency;
+import com.android.builder.dependency.BundleDependency;
+import com.android.builder.dependency.ManifestDependency;
 
 import java.io.File;
 import java.util.List;
