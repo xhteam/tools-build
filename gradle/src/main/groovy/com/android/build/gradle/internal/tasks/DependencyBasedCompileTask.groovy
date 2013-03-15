@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.annotations.NonNull
 import com.android.builder.compiling.DependencyFileProcessor
 import com.android.builder.internal.incremental.DependencyData
 import com.android.builder.internal.incremental.DependencyDataStore
@@ -50,7 +51,7 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
         }
 
         @Override
-        boolean processFile(File dependencyFile) {
+        boolean processFile(@NonNull File dependencyFile) {
             DependencyData data = DependencyData.parseDependencyFile(dependencyFile)
             if (data != null) {
                 dependencyDataList.add(data)

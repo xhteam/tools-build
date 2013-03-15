@@ -35,7 +35,7 @@ public class AutomatedBuildTest extends BuildTest {
 
     private static final String[] sBuiltProjects = new String[] {
             "aidl", "api", "applibtest", "assets", "basic", "dependencies", "flavored",
-            "flavorlib", "flavors", "libsTest", "migrated", "multiproject", "multires",
+            "flavorlib", "flavors", "libsTest", "localJars", "migrated", "multiproject", "multires",
             "overlay1", "overlay2", "renderscript", "renderscriptInLib", "renderscriptMultiSrc",
             "tictactoe"
     };

@@ -14,6 +14,7 @@ tests/flavorlib/*/build
 tests/flavorlibWithFailedTests/*/build
 tests/libsTest/*/build
 tests/multiproject/*/build
+tests/localJars/*/build
 tests/renderscriptInLib/*/build
 tests/repo/*/build
 tests/tictactoe/*/build

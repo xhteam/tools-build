@@ -31,9 +31,7 @@ import com.android.build.gradle.internal.tasks.AndroidReportTask
 import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.test.PluginHolder
 import com.android.build.gradle.internal.test.report.ReportType
-import com.android.builder.AndroidDependency
 import com.android.builder.BuildType
-import com.android.builder.JarDependency
 import com.android.builder.VariantConfiguration
 import com.android.builder.signing.SigningConfig
 import com.google.common.collect.ArrayListMultimap
@@ -324,28 +322,19 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         ProductFlavorData defaultConfigData = getDefaultConfigData();
 
         for (BuildTypeData buildTypeData : buildTypes.values()) {
-            List<ConfigurationDependencies> configDependencies = []
-            configDependencies.add(defaultConfigData)
-            configDependencies.add(buildTypeData)
-
-            // list of dependency to set on the variantConfig
-            List<JarDependency> jars = []
-            jars.addAll(defaultConfigData.jars)
-            jars.addAll(buildTypeData.jars)
-
+            /// add the container of dependencies
             // the order of the libraries is important. In descending order:
             // build types, flavors, defaultConfig.
-            List<AndroidDependency> libs = []
-            libs.addAll(buildTypeData.libraries)
+            List<ConfigurationDependencies> configDependencies = []
+            configDependencies.add(buildTypeData)
             // no flavors, just add the default config
-            libs.addAll(defaultConfigData.libraries)
+            configDependencies.add(defaultConfigData)
 
             def variantConfig = new VariantConfiguration(
                     defaultConfigData.productFlavor, defaultConfigData.sourceSet,
-                    buildTypeData.buildType, buildTypeData.sourceSet)
+                    buildTypeData.buildType, buildTypeData.sourceSet, project.name)
 
-            variantConfig.setJarDependencies(jars)
-            variantConfig.setAndroidDependencies(libs)
+            variantConfig.setDependencies(configDependencies)
 
             ProductionAppVariant productionAppVariant = addVariant(variantConfig,
                     buildTypeData.assembleTask, configDependencies)
@@ -366,19 +355,13 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         def testVariantConfig = new VariantConfiguration(
                 defaultConfigData.productFlavor, defaultConfigData.testSourceSet,
                 testData.buildType, null,
-                VariantConfiguration.Type.TEST, testedVariant.config)
+                VariantConfiguration.Type.TEST, testedVariant.config, project.name)
 
+        // dependencies for the test variant
         List<ConfigurationDependencies> testConfigDependencies = []
         testConfigDependencies.add(defaultConfigData.testConfigDependencies)
 
-        // list of dependency to set on the variantConfig
-        List<JarDependency> testJars = []
-        testJars.addAll(defaultConfigData.testConfigDependencies.jars)
-        List<AndroidDependency> testLibs = []
-        testLibs.addAll(defaultConfigData.testConfigDependencies.libraries)
-
-        testVariantConfig.setJarDependencies(testJars)
-        testVariantConfig.setAndroidDependencies(testLibs)
+        testVariantConfig.setDependencies(testConfigDependencies)
 
         def testVariant = new TestAppVariant(testVariantConfig)
         variants.add(testVariant)
@@ -411,36 +394,25 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         def assembleTask
 
         for (BuildTypeData buildTypeData : buildTypes.values()) {
-            List<ConfigurationDependencies> configDependencies = []
-            configDependencies.add(defaultConfigData)
-            configDependencies.add(buildTypeData)
-
-            // list of dependency to set on the variantConfig
-            List<JarDependency> jars = []
-            jars.addAll(defaultConfigData.jars)
-            jars.addAll(buildTypeData.jars)
-
+            /// add the container of dependencies
             // the order of the libraries is important. In descending order:
             // build types, flavors, defaultConfig.
-            List<AndroidDependency> libs = []
-            libs.addAll(buildTypeData.libraries)
+            List<ConfigurationDependencies> configDependencies = []
+            configDependencies.add(buildTypeData)
 
             def variantConfig = new VariantConfiguration(
                     extension.defaultConfig, getDefaultConfigData().sourceSet,
-                    buildTypeData.buildType, buildTypeData.sourceSet)
+                    buildTypeData.buildType, buildTypeData.sourceSet, project.name)
 
             for (ProductFlavorData data : flavorDataList) {
                 variantConfig.addProductFlavor(data.productFlavor, data.sourceSet)
-                jars.addAll(data.jars)
-                libs.addAll(data.libraries)
                 configDependencies.add(data)
             }
 
             // now add the defaultConfig
-            libs.addAll(defaultConfigData.libraries)
+            configDependencies.add(defaultConfigData)
 
-            variantConfig.setJarDependencies(jars)
-            variantConfig.setAndroidDependencies(libs)
+            variantConfig.setDependencies(configDependencies)
 
             ProductionAppVariant productionAppVariant = addVariant(variantConfig, null,
                     configDependencies)
@@ -470,30 +442,22 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         def testVariantConfig = new VariantConfiguration(
                 extension.defaultConfig, getDefaultConfigData().testSourceSet,
                 testData.buildType, null,
-                VariantConfiguration.Type.TEST, testedVariant.config)
+                VariantConfiguration.Type.TEST, testedVariant.config, project.name)
 
-        List<ConfigurationDependencies> testConfigDependencies = []
-        testConfigDependencies.add(defaultConfigData.testConfigDependencies)
-
-        // list of dependency to set on the variantConfig
-        List<JarDependency> testJars = []
-        testJars.addAll(defaultConfigData.testConfigDependencies.jars)
-
+        /// add the container of dependencies
         // the order of the libraries is important. In descending order:
-        // flavors, defaultConfig.
-        List<AndroidDependency> testLibs = []
+        // flavors, defaultConfig. No build type for tests
+        List<ConfigurationDependencies> testConfigDependencies = []
 
         for (ProductFlavorData data : flavorDataList) {
             testVariantConfig.addProductFlavor(data.productFlavor, data.testSourceSet)
-            testJars.addAll(data.testConfigDependencies.jars)
-            testLibs.addAll(data.testConfigDependencies.libraries)
+            testConfigDependencies.add(data.testConfigDependencies)
         }
 
         // now add the default config
-        testLibs.addAll(defaultConfigData.testConfigDependencies.libraries)
+        testConfigDependencies.add(defaultConfigData.testConfigDependencies)
 
-        testVariantConfig.setJarDependencies(testJars)
-        testVariantConfig.setAndroidDependencies(testLibs)
+        testVariantConfig.setDependencies(testConfigDependencies)
 
         def testVariant = new TestAppVariant(testVariantConfig)
         variants.add(testVariant)

@@ -20,8 +20,10 @@ import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Default implementation of the AndroidDependency interface that handles a default bundle project
@@ -31,6 +33,7 @@ public abstract class BundleDependency implements AndroidDependency {
 
     private final String mName;
     private final File mBundleFolder;
+    private List<JarDependency> mLocalDependencies;
 
     /**
      * Creates the bundle dependency with an optional name
@@ -56,60 +59,93 @@ public abstract class BundleDependency implements AndroidDependency {
     }
 
     @Override
+    @NonNull
     public File getManifest() {
         return new File(mBundleFolder, SdkConstants.FN_ANDROID_MANIFEST_XML);
     }
 
     @Override
+    @NonNull
     public File getSymbolFile() {
         return new File(mBundleFolder, "R.txt");
     }
 
     @Override
+    @NonNull
     public File getFolder() {
         return mBundleFolder;
     }
 
     @Override
+    @NonNull
     public File getJarFile() {
         return new File(mBundleFolder, SdkConstants.FN_CLASSES_JAR);
     }
 
     @Override
+    @NonNull
+    public List<JarDependency> getLocalDependencies() {
+        synchronized (this) {
+            if (mLocalDependencies == null) {
+                mLocalDependencies = Lists.newArrayList();
+                File[] jarList = new File(mBundleFolder, SdkConstants.LIBS_FOLDER).listFiles();
+                if (jarList != null) {
+                    for (File jars : jarList) {
+                        if (jars.isFile() && jars.getName().endsWith(".jar")) {
+                            mLocalDependencies.add(new JarDependency(jars));
+                        }
+                    }
+                }
+            }
+
+            return mLocalDependencies;
+        }
+    }
+
+
+    @Override
+    @NonNull
     public File getResFolder() {
         return new File(mBundleFolder, SdkConstants.FD_RES);
     }
 
     @Override
+    @NonNull
     public File getAssetsFolder() {
         return new File(mBundleFolder, SdkConstants.FD_ASSETS);
     }
 
     @Override
+    @NonNull
     public File getJniFolder() {
         return new File(mBundleFolder, "jni");
     }
 
     @Override
+    @NonNull
     public File getAidlFolder() {
         return new File(mBundleFolder, SdkConstants.FD_AIDL);
     }
 
     @Override
+    @NonNull
     public File getRenderscriptFolder() {
         return new File(mBundleFolder, SdkConstants.FD_RENDERSCRIPT);
     }
 
     @Override
+    @NonNull
     public File getProguardRules() {
         return new File(mBundleFolder, "proguard.txt");
     }
 
     @Override
+    @NonNull
     public File getLintJar() {
         return new File(mBundleFolder, "lint.jar");
     }
 
+    @NonNull
     public File getBundleFolder() {
         return mBundleFolder;
     }

@@ -1,0 +1,14 @@
+//
+// A basic Android application split over a couple of Gradle projects.
+//
+
+apply plugin: 'android'
+
+android {
+    compileSdkVersion 15
+//    buildToolsVersion "1.0"
+}
+
+dependencies {
+    compile project(':library')
+}

@@ -16,6 +16,8 @@
 
 package com.android.builder.compiling;
 
+import com.android.annotations.NonNull;
+
 import java.io.File;
 
 /**
@@ -32,8 +34,7 @@ import java.io.File;
  *
  * @see com.android.builder.AndroidBuilder#compileAllAidlFiles(java.util.List, java.io.File, java.util.List, DependencyFileProcessor)
  * @see com.android.builder.AndroidBuilder#compileAidlFile(java.io.File, java.io.File, java.util.List, DependencyFileProcessor)
- * @see com.android.builder.AndroidBuilder#compileAllRenderscriptFiles(java.util.List, java.util.List, java.io.File, java.io.File, int, boolean, int, DependencyFileProcessor)
- * @see com.android.builder.AndroidBuilder#compileRenderscriptFile(java.io.File, java.util.List, java.io.File, java.io.File, int, boolean, int, DependencyFileProcessor)
+ * @see com.android.builder.AndroidBuilder#compileAllRenderscriptFiles(java.util.List, java.util.List, java.io.File, java.io.File, int, boolean, int)
  */
 public interface DependencyFileProcessor {
 
@@ -42,5 +43,5 @@ public interface DependencyFileProcessor {
      * @param dependencyFile the dependency file.
      * @return true if the dependency file can be deleted by the caller.
      */
-    boolean processFile(File dependencyFile);
+    boolean processFile(@NonNull File dependencyFile);
 }

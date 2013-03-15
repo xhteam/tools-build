@@ -92,7 +92,7 @@ public class AndroidBuilder {
 
     private static final DependencyFileProcessor sNoOpDependencyFileProcessor = new DependencyFileProcessor() {
         @Override
-        public boolean processFile(File dependencyFile) {
+        public boolean processFile(@NonNull File dependencyFile) {
             return true;
         }
     };

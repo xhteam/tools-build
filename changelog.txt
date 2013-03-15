@@ -1,3 +1,9 @@
+0.4
+
+* Fixes:
+   - Fix support for subfolders in assets/
+   - Fix cases where Android Libraries have local Jars dependencies
+
 0.3
 
 * System requirements:

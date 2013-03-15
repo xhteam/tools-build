@@ -53,6 +53,7 @@ public class VariantConfiguration {
     private final Type mType;
     /** Optional tested config in case type is Type#TEST */
     private final VariantConfiguration mTestedConfig;
+    private final String mDebugName;
     /** An optional output that is only valid if the type is Type#LIBRARY so that the test
      * for the library can use the library as if it was a normal dependency. */
     private AndroidDependency mOutput;
@@ -92,13 +93,16 @@ public class VariantConfiguration {
      * @param defaultSourceProvider the default source provider. Required
      * @param buildType the build type for this variant. Required.
      * @param buildTypeSourceProvider the source provider for the build type. Required.
+     * @param debugName an optional debug name
      */
     public VariantConfiguration(
             @NonNull ProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
-            @NonNull BuildType buildType, @NonNull SourceProvider buildTypeSourceProvider) {
+            @NonNull BuildType buildType, @NonNull SourceProvider buildTypeSourceProvider,
+            @Nullable String debugName) {
         this(defaultConfig, defaultSourceProvider,
                 buildType, buildTypeSourceProvider,
-                Type.DEFAULT, null /*testedConfig*/);
+                Type.DEFAULT, null /*testedConfig*/,
+                debugName);
     }
 
     /**
@@ -109,14 +113,16 @@ public class VariantConfiguration {
      * @param buildType the build type for this variant. Required.
      * @param buildTypeSourceProvider the source provider for the build type. Required.
      * @param type the type of the project.
+     * @param debugName an optional debug name
      */
     public VariantConfiguration(
             @NonNull ProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
             @NonNull BuildType buildType, @NonNull SourceProvider buildTypeSourceProvider,
-            @NonNull Type type) {
+            @NonNull Type type, @Nullable String debugName) {
         this(defaultConfig, defaultSourceProvider,
                 buildType, buildTypeSourceProvider,
-                type, null /*testedConfig*/);
+                type, null /*testedConfig*/,
+                debugName);
     }
 
     /**
@@ -128,17 +134,20 @@ public class VariantConfiguration {
      * @param buildTypeSourceProvider the source provider for the build type. Required.
      * @param type the type of the project.
      * @param testedConfig the reference to the tested project. Required if type is Type.TEST
+     * @param debugName an optional debug name
      */
     public VariantConfiguration(
             @NonNull ProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
             @NonNull BuildType buildType, SourceProvider buildTypeSourceProvider,
-            @NonNull Type type, @Nullable VariantConfiguration testedConfig) {
+            @NonNull Type type, @Nullable VariantConfiguration testedConfig,
+            @Nullable String debugName) {
         mDefaultConfig = checkNotNull(defaultConfig);
         mDefaultSourceProvider = checkNotNull(defaultSourceProvider);
         mBuildType = checkNotNull(buildType);
         mBuildTypeSourceProvider = buildTypeSourceProvider;
         mType = checkNotNull(type);
         mTestedConfig = testedConfig;
+        mDebugName = debugName;
         checkState(mType != Type.TEST || mTestedConfig != null);
 
         mMergedFlavor = mDefaultConfig;
@@ -162,6 +171,7 @@ public class VariantConfiguration {
      * @param sourceProvider the configured product flavor
      * @return the config object
      */
+    @NonNull
     public VariantConfiguration addProductFlavor(@NonNull ProductFlavor productFlavor,
                                                  @NonNull SourceProvider sourceProvider) {
         mFlavorConfigs.add(productFlavor);
@@ -172,14 +182,25 @@ public class VariantConfiguration {
     }
 
     /**
-     * Sets the library dependencies.
+     * Sets the dependencies
      *
-     * @param jars list of jar dependency. This should include the jar dependencies of Android
-     *             projects.
+     * @param containers a list of DependencyContainer.
      * @return the config object
      */
-    public VariantConfiguration setJarDependencies(List<JarDependency> jars) {
-        mJars.addAll(jars);
+    @NonNull
+    public VariantConfiguration setDependencies(
+            @NonNull List<? extends DependencyContainer> containers) {
+
+        for (DependencyContainer container : containers) {
+            mDirectLibraries.addAll(container.getAndroidDependencies());
+            mJars.addAll(container.getJarDependencies());
+            mJars.addAll(container.getLocalDependencies());
+        }
+        resolveIndirectLibraryDependencies(mDirectLibraries, mFlatLibraries);
+
+        for (AndroidDependency androidDependency : mFlatLibraries) {
+            mJars.addAll(androidDependency.getLocalDependencies());
+        }
         return this;
     }
 
@@ -187,25 +208,9 @@ public class VariantConfiguration {
      * Returns the list of jar dependencies
      * @return a non null collection of Jar dependencies.
      */
+    @NonNull
     public Collection<JarDependency> getJars() {
         return mJars;
-    }
-
-    /**
-     * Set the Library Project dependencies.
-     * @param directLibraries list of direct dependencies. Each library object should contain
-     *            its own dependencies. This is actually a dependency graph.
-     * @return the config object
-     */
-    public VariantConfiguration setAndroidDependencies(
-            @NonNull List<AndroidDependency> directLibraries) {
-        if (directLibraries != null) {
-            mDirectLibraries.addAll(directLibraries);
-        }
-
-        resolveIndirectLibraryDependencies(mDirectLibraries, mFlatLibraries);
-
-        return this;
     }
 
     /**
@@ -217,23 +222,28 @@ public class VariantConfiguration {
      *               location of all the created items.
      * @return the config object
      */
+    @NonNull
     public VariantConfiguration setOutput(AndroidDependency output) {
         mOutput = output;
         return this;
     }
 
+    @NonNull
     public ProductFlavor getDefaultConfig() {
         return mDefaultConfig;
     }
 
+    @NonNull
     public SourceProvider getDefaultSourceSet() {
         return mDefaultSourceProvider;
     }
 
+    @NonNull
     public ProductFlavor getMergedFlavor() {
         return mMergedFlavor;
     }
 
+    @NonNull
     public BuildType getBuildType() {
         return mBuildType;
     }
@@ -241,6 +251,7 @@ public class VariantConfiguration {
     /**
      * The SourceProvider for the BuildType. Can be null.
      */
+    @Nullable
     public SourceProvider getBuildTypeSourceSet() {
         return mBuildTypeSourceProvider;
     }
@@ -249,10 +260,12 @@ public class VariantConfiguration {
         return !mFlavorConfigs.isEmpty();
     }
 
+    @NonNull
     public List<ProductFlavor> getFlavorConfigs() {
         return mFlavorConfigs;
     }
 
+    @NonNull
     public Iterable<SourceProvider> getFlavorSourceSets() {
         return mFlavorSourceProviders;
     }
@@ -277,30 +290,12 @@ public class VariantConfiguration {
         return mFlatLibraries;
     }
 
-    public List<File> getPackagedJars() {
-        List<File> jars = Lists.newArrayListWithCapacity(mJars.size() + mFlatLibraries.size());
-
-        for (JarDependency jar : mJars) {
-            File jarFile = new File(jar.getLocation());
-            if (jarFile.exists()) {
-                jars.add(jarFile);
-            }
-        }
-
-        for (AndroidDependency androidDependency : mFlatLibraries) {
-            File libJar = androidDependency.getJarFile();
-            if (libJar.exists()) {
-                jars.add(libJar);
-            }
-        }
-
-        return jars;
-    }
-
+    @NonNull
     public Type getType() {
         return mType;
     }
 
+    @Nullable
     public VariantConfiguration getTestedConfig() {
         return mTestedConfig;
     }
@@ -342,6 +337,7 @@ public class VariantConfiguration {
      * configuration of the tested variant, and this call is similar to #getPackageName()
      * @return the package name
      */
+    @Nullable
     public String getOriginalPackageName() {
         if (mType == VariantConfiguration.Type.TEST) {
             return getPackageName();
@@ -355,6 +351,7 @@ public class VariantConfiguration {
      * could be overridden through the product flavors.
      * @return the package
      */
+    @Nullable
     public String getPackageName() {
         String packageName;
 
@@ -375,6 +372,7 @@ public class VariantConfiguration {
         return packageName;
     }
 
+    @Nullable
     public String getTestedPackageName() {
         if (mType == Type.TEST) {
             if (mTestedConfig.mType == Type.LIBRARY) {
@@ -392,6 +390,7 @@ public class VariantConfiguration {
      * overridden then this returns null.
      * @return the package override or null
      */
+    @Nullable
     public String getPackageOverride() {
         String packageName = mMergedFlavor.getPackageName();
         String packageSuffix = mBuildType.getPackageNameSuffix();
@@ -418,6 +417,7 @@ public class VariantConfiguration {
      *
      * @return the version name
      */
+    @Nullable
     public String getVersionName() {
         String versionName = mMergedFlavor.getVersionName();
         String versionSuffix = mBuildType.getVersionNameSuffix();
@@ -436,10 +436,11 @@ public class VariantConfiguration {
     private final static String DEFAULT_TEST_RUNNER = "android.test.InstrumentationTestRunner";
 
     /**
-     * Returns the instrumentionRunner to use to test this variant, or if the
+     * Returns the instrumentationRunner to use to test this variant, or if the
      * variant is a test, the one to use to test the tested variant.
      * @return the instrumentation test runner name
      */
+    @Nullable
     public String getInstrumentationRunner() {
         VariantConfiguration config = this;
         if (mType == Type.TEST) {
@@ -452,6 +453,7 @@ public class VariantConfiguration {
     /**
      * Reads the package name from the manifest.
      */
+    @Nullable
     public String getPackageFromManifest() {
         File manifestLocation = mDefaultSourceProvider.getManifestFile();
         return sManifestParser.getPackage(manifestLocation);
@@ -460,6 +462,7 @@ public class VariantConfiguration {
     /**
      * Reads the version name from the manifest.
      */
+    @Nullable
     public String getVersionNameFromManifest() {
         File manifestLocation = mDefaultSourceProvider.getManifestFile();
         return sManifestParser.getVersionName(manifestLocation);
@@ -486,6 +489,7 @@ public class VariantConfiguration {
         return minSdkVersion;
     }
 
+    @Nullable
     public File getMainManifest() {
         File defaultManifest = mDefaultSourceProvider.getManifestFile();
 
@@ -528,7 +532,8 @@ public class VariantConfiguration {
      *
      * @return a list ResourceSet.
      */
-    @NonNull public List<ResourceSet> getResourceSets(@Nullable File generatedResFolder) {
+    @NonNull
+    public List<ResourceSet> getResourceSets(@Nullable File generatedResFolder) {
         List<ResourceSet> resourceSets = Lists.newArrayList();
 
         // the list of dependency must be reversed to use the right overlay order.
@@ -583,7 +588,8 @@ public class VariantConfiguration {
      *
      * @return a list ResourceSet.
      */
-    @NonNull public List<AssetSet> getAssetSets() {
+    @NonNull
+    public List<AssetSet> getAssetSets() {
         List<AssetSet> assetSets = Lists.newArrayList();
 
         // the list of dependency must be reversed to use the right overlay order.
@@ -702,21 +708,57 @@ public class VariantConfiguration {
     /**
      * Returns the compile classpath for this config. If the config tests a library, this
      * will include the classpath of the tested config
+     *
+     * @return a non null, but possibly empty set.
      */
+    @NonNull
     public Set<File> getCompileClasspath() {
         Set<File> classpath = Sets.newHashSet();
 
         for (AndroidDependency lib : mFlatLibraries) {
             classpath.add(lib.getJarFile());
+            for (JarDependency jarDependency : lib.getLocalDependencies()) {
+                classpath.add(jarDependency.getJarFile());
+            }
         }
 
         for (JarDependency jar : mJars) {
-            classpath.add(new File(jar.getLocation()));
+            if (jar.isCompiled()) {
+                classpath.add(jar.getJarFile());
+            }
         }
 
         return classpath;
     }
 
+    /**
+     * Returns the list of packaged jars for this config. If the config tests a library, this
+     * will include the jars of the tested config
+     *
+     * @return a non null, but possibly empty list.
+     */
+    @NonNull
+    public List<File> getPackagedJars() {
+        List<File> jars = Lists.newArrayListWithCapacity(mJars.size() + mFlatLibraries.size());
+
+        for (JarDependency jar : mJars) {
+            File jarFile = jar.getJarFile();
+            if (jar.isPackaged() && jarFile.exists()) {
+                jars.add(jarFile);
+            }
+        }
+
+        for (AndroidDependency androidDependency : mFlatLibraries) {
+            File libJar = androidDependency.getJarFile();
+            if (libJar.exists()) {
+                jars.add(libJar);
+            }
+        }
+
+        return jars;
+    }
+
+    @NonNull
     public List<String> getBuildConfigLines() {
         List<String> fullList = Lists.newArrayList();
 
@@ -743,6 +785,7 @@ public class VariantConfiguration {
         return fullList;
     }
 
+    @Nullable
     public SigningConfig getSigningConfig() {
         SigningConfig signingConfig = mBuildType.getSigningConfig();
         if (signingConfig != null) {
