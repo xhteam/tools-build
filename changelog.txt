@@ -3,6 +3,7 @@
 * Fixes:
    - Fix support for subfolders in assets/
    - Fix cases where Android Libraries have local Jars dependencies
+   - Fix renaming of package through DSL to ensure resources are compiled in the new namespace
 
 0.3
 
