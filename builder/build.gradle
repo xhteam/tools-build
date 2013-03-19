@@ -4,6 +4,10 @@ apply plugin: 'signing'
 
 project.ext.baseAndroidVersion = "22.0-SNAPSHOT"
 
+configurations {
+    fakeMaven
+}
+
 dependencies {
     compile "com.android.tools:sdklib:$project.ext.baseAndroidVersion"
     compile "com.android.tools:sdk-common:$project.ext.baseAndroidVersion"
@@ -24,16 +28,48 @@ def getVersion() {
 version = getVersion()
 archivesBaseName = 'builder'
 
+def getInternalDependencies() {
+    def list = []
+
+    Set<ResolvedArtifact> artifacts = configurations.runtime.resolvedConfiguration.resolvedArtifacts
+    for (ResolvedArtifact artifact : artifacts) {
+        def group = artifact.moduleVersion.id.group
+        if (group.startsWith('com.android.tools') || group == 'base' || group == 'swt') {
+            list << artifact.file
+        }
+    }
+
+    list
+}
+
 jar {
-    from { configurations.runtime.collect { it.directory ? it : zipTree(it) } }
+    // gather the local dependencies and package them in the builder jar.
+    def internalDep = getInternalDependencies()
+    from { internalDep.collect { it.directory ? it : zipTree(it) } }
+}
+
+// add the external dependencies to the fakeMaven configuration.
+task mavenSetup << {
+    Set<ResolvedArtifact> artifacts = configurations.runtime.resolvedConfiguration.resolvedArtifacts
+    for (ResolvedArtifact artifact : artifacts) {
+        def group = artifact.moduleVersion.id.group
+        if (!(group.startsWith('com.android.tools') || group == 'base' || group == 'swt')) {
+            def id = artifact.moduleVersion.id
+            project.dependencies {
+                fakeMaven "${id.group}:${id.name}:${id.version}"
+            }
+        }
+    }
 }
 
 configure(install.repositories.mavenInstaller) {
     // Discard all the dependencies from the POM, as they are packaged in the JAR.
     pom.scopeMappings.mappings.clear()
+    // add the fake ones from fakeMaven
+    pom.scopeMappings.addMapping(300, configurations.fakeMaven, "compile")
 }
 
-task publishLocal(type: Upload) {
+task publishLocal(type: Upload, dependsOn: mavenSetup) {
     configuration = configurations.archives
     repositories {
         mavenDeployer {
@@ -41,6 +77,8 @@ task publishLocal(type: Upload) {
 
             // Discard all the dependencies from the POM, as they are packaged in the JAR.
             pom.scopeMappings.mappings.clear()
+            // add the fake ones from fakeMaven
+            pom.scopeMappings.addMapping(300, configurations.fakeMaven, "compile")
         }
     }
 }
@@ -97,6 +135,8 @@ uploadArchives {
         }
     }
 }
+
+uploadArchives.dependsOn mavenSetup
 
 
 // custom tasks for creating source/javadoc jars
