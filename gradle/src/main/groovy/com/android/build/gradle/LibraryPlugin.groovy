@@ -23,6 +23,7 @@ import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.api.LibraryVariantImpl
 import com.android.build.gradle.internal.api.TestVariantImpl
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
+import com.android.build.gradle.internal.tasks.MergeFileTask
 import com.android.build.gradle.internal.variant.LibraryVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.builder.BuilderConstants
@@ -240,8 +241,17 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         packageLocalJar.into(project.file(
                 "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/$SdkConstants.LIBS_FOLDER"))
 
+        // merge the proguard files together
+        MergeFileTask mergeFileTask = project.tasks.create("merge${variantData.name}ProguardFiles",
+                MergeFileTask)
+        mergeFileTask.conventionMapping.inputFiles = { project.files(variantConfig.getProguardFiles(false)).files }
+        mergeFileTask.conventionMapping.outputFile = {
+            project.file(
+                    "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/$LibraryBundle.FN_PROGUARD_TXT")
+        }
+
         Zip bundle = project.tasks.create("bundle${variantData.name}", Zip)
-        bundle.dependsOn jar, packageAidl, packageRenderscript, packageLocalJar
+        bundle.dependsOn jar, packageAidl, packageRenderscript, packageLocalJar, mergeFileTask
         bundle.setDescription("Assembles a bundle containing the library in ${variantData.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
         bundle.extension = BuilderConstants.EXT_LIB_ARCHIVE

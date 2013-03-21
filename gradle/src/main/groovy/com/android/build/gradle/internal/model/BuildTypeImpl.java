@@ -113,4 +113,9 @@ class BuildTypeImpl implements BuildType, Serializable {
     public List<String> getBuildConfig() {
         return Collections.emptyList();
     }
+
+    @Override
+    public @NonNull List<Object> getProguardFiles() {
+        return Collections.emptyList();
+    }
 }

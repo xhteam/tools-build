@@ -15,6 +15,7 @@
  */
 package com.android.build.gradle
 
+import com.android.SdkConstants
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.CompileOptions
@@ -165,5 +166,16 @@ public abstract class BaseExtension {
 
     public FullRevision getBuildToolsRevision() {
         return buildToolsRevision
+    }
+
+    public File getSdkDir() {
+        return plugin.getSdkDir()
+    }
+
+    public File getDefaultProguardFile(String name) {
+        return new File(plugin.sdkDir,
+                SdkConstants.FD_TOOLS + File.separatorChar
+                        + SdkConstants.FD_PROGUARD + File.separatorChar
+                        + name);
     }
 }

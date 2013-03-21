@@ -15,14 +15,16 @@
  */
 
 package com.android.build.gradle.internal.dsl
-
+import com.android.annotations.NonNull
 import com.android.builder.DefaultProductFlavor
-
+import com.google.common.collect.Lists
 /**
  * DSL overlay to make methods that accept String... work.
  */
 class ProductFlavorDsl extends DefaultProductFlavor {
     private static final long serialVersionUID = 1L
+
+    private List<Object> proguardFiles = Lists.newArrayList();
 
     ProductFlavorDsl(String name) {
         super(name)
@@ -38,4 +40,30 @@ class ProductFlavorDsl extends DefaultProductFlavor {
         setBuildConfig(line)
     }
 
+    @NonNull
+    public ProductFlavorDsl proguardFile(Object srcDir) {
+        proguardFiles.add(srcDir);
+        return this;
+    }
+
+    @NonNull
+    public ProductFlavorDsl proguardFiles(Object... srcDirs) {
+        Collections.addAll(proguardFiles, srcDirs);
+        return this;
+    }
+
+    @NonNull
+    public ProductFlavorDsl setProguardFiles(Iterable<?> srcDirs) {
+        proguardFiles.clear();
+        for (Object srcDir : srcDirs) {
+            proguardFiles.add(srcDir);
+        }
+        return this;
+    }
+
+    @Override
+    @NonNull
+    public List<Object> getProguardFiles() {
+        return proguardFiles;
+    }
 }

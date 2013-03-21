@@ -30,6 +30,8 @@ dependencies {
     compile project(':builder')
     compile project(':gradle-model')
 
+    runtime 'net.sf.proguard:proguard-gradle:4.9'
+
     testCompile 'junit:junit:3.8.1'
 
     buildTestCompile sourceSets.main.output
@@ -61,6 +63,8 @@ sourceSets.main.compileClasspath += configurations.provided
 idea {
     module {
         testSourceDirs += files('src/build-test/groovy', 'src/device-test/groovy').files
+
+        scopes.COMPILE.plus += configurations.provided
     }
 }
 

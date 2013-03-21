@@ -83,7 +83,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * {@link #processTestManifest(String, int, int, String, String, java.util.List, String)}
  * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
  * {@link #compileAllAidlFiles(java.util.List, java.io.File, java.util.List, com.android.builder.compiling.DependencyFileProcessor)}
- * {@link #convertByteCode(Iterable, Iterable, String, DexOptions, boolean)}
+ * {@link #convertByteCode(Iterable, Iterable, File, String, DexOptions, boolean)}
  * {@link #packageApk(String, String, java.util.List, String, String, boolean, com.android.builder.signing.SigningConfig, String)}
  *
  * Java compilation is not handled but the builder provides the runtime classpath with
@@ -904,6 +904,7 @@ public class AndroidBuilder {
     public void convertByteCode(
             @NonNull Iterable<File> classesLocation,
             @NonNull Iterable<File> libraries,
+            @Nullable File proguardFile,
             @NonNull String outDexFile,
             @NonNull DexOptions dexOptions,
             boolean incremental) throws IOException, InterruptedException {
@@ -940,6 +941,7 @@ public class AndroidBuilder {
         command.add("--output");
         command.add(outDexFile);
 
+        // clean up and add class inputs
         List<String> classesList = Lists.newArrayList();
         for (File f : classesLocation) {
             if (f != null && f.exists()) {
@@ -947,6 +949,12 @@ public class AndroidBuilder {
             }
         }
 
+        if (!classesList.isEmpty()) {
+            mLogger.verbose("Dex class inputs: " + classesList);
+            command.addAll(classesList);
+        }
+
+        // clean up and add library inputs.
         List<String> libraryList = Lists.newArrayList();
         for (File f : libraries) {
             if (f != null && f.exists()) {
@@ -954,16 +962,15 @@ public class AndroidBuilder {
             }
         }
 
+        if (!libraryList.isEmpty()) {
+            mLogger.verbose("Dex library inputs: " + libraryList);
+            command.addAll(libraryList);
+        }
 
-        mLogger.info("dx command: %s", command.toString());
-
-        mLogger.verbose("Dex class inputs: " + classesList);
-
-        command.addAll(classesList);
-
-        mLogger.verbose("Dex library inputs: " + libraryList);
-
-        command.addAll(libraryList);
+        if (proguardFile != null && proguardFile.exists()) {
+            mLogger.verbose("ProGuarded inputs " + proguardFile);
+            command.add(proguardFile.getAbsolutePath());
+        }
 
         mCmdLineRunner.runCmdLine(command);
     }

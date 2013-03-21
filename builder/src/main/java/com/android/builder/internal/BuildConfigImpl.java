@@ -18,10 +18,11 @@ package com.android.builder.internal;
 
 import com.android.annotations.NonNull;
 import com.android.builder.model.BuildConfig;
+import com.google.common.collect.Lists;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ import java.util.List;
 public class BuildConfigImpl implements Serializable, BuildConfig {
     private static final long serialVersionUID = 1L;
 
-    private final List<String> mBuildConfigLines = new ArrayList<String>();
+    private final List<String> mBuildConfigLines = Lists.newArrayList();
 
     public void setBuildConfig(String... lines) {
         mBuildConfigLines.clear();
@@ -46,6 +47,12 @@ public class BuildConfigImpl implements Serializable, BuildConfig {
     @NonNull
     public List<String> getBuildConfig() {
         return mBuildConfigLines;
+    }
+
+    @Override
+    @NonNull
+    public List<Object> getProguardFiles() {
+        return Collections.emptyList();
     }
 
     @Override

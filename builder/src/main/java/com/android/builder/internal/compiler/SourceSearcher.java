@@ -16,6 +16,7 @@
 
 package com.android.builder.internal.compiler;
 
+import com.android.annotations.Nullable;
 import com.android.ide.common.internal.WaitableExecutor;
 
 import java.io.File;
@@ -31,7 +32,8 @@ public class SourceSearcher {
 
     private final List<File> mSourceFolders;
     private final String[] mExtensions;
-    private WaitableExecutor mExecutor;
+    @Nullable
+    private WaitableExecutor<Void> mExecutor;
 
     public interface SourceFileProcessor {
         void processFile(File sourceFile) throws IOException, InterruptedException;
@@ -44,7 +46,7 @@ public class SourceSearcher {
 
     public void setUseExecutor(boolean useExecutor) {
         if (useExecutor) {
-            mExecutor = new WaitableExecutor();
+            mExecutor = new WaitableExecutor<Void>();
         } else {
             mExecutor = null;
         }
@@ -67,9 +69,9 @@ public class SourceSearcher {
             // get the extension of the file.
             if (checkExtension(file)) {
                 if (mExecutor != null) {
-                    mExecutor.execute(new Callable() {
+                    mExecutor.execute(new Callable<Void>() {
                         @Override
-                        public Object call() throws Exception {
+                        public Void call() throws Exception {
                             processor.processFile(file);
                             return null;
                         }

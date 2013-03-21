@@ -31,4 +31,7 @@ public interface BuildConfig {
      */
     @NonNull
     List<String> getBuildConfig();
+
+    @NonNull
+    List<Object> getProguardFiles();
 }

@@ -826,6 +826,31 @@ public class VariantConfiguration {
         return signingConfig != null && signingConfig.isSigningReady();
     }
 
+    @NonNull
+    public List<Object> getProguardFiles(boolean includeLibraries) {
+        List<Object> fullList = Lists.newArrayList();
+
+        // add the config files from the build type, main config and flavors
+        fullList.addAll(mDefaultConfig.getProguardFiles());
+        fullList.addAll(mBuildType.getProguardFiles());
+
+        for (DefaultProductFlavor flavor : mFlavorConfigs) {
+            fullList.addAll(flavor.getProguardFiles());
+        }
+
+        // now add the one coming from the library dependencies
+        if (includeLibraries) {
+            for (LibraryDependency libraryDependency : mFlatLibraries) {
+                File proguardRules = libraryDependency.getProguardRules();
+                if (proguardRules.exists()) {
+                    fullList.add(proguardRules);
+                }
+            }
+        }
+
+        return fullList;
+    }
+
     protected void validate() {
         if (mType != Type.TEST) {
             File manifest = mDefaultSourceProvider.getManifestFile();

@@ -18,8 +18,10 @@ package com.android.build.gradle.tasks
 import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.builder.DexOptions
 import com.android.ide.common.res2.FileStatus
+import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 
 public class Dex extends IncrementalTask {
@@ -37,6 +39,9 @@ public class Dex extends IncrementalTask {
     @InputFiles
     Iterable<File> libraries
 
+    @InputFile @Optional
+    File proguardedJar
+
     @Nested
     DexOptions dexOptions
 
@@ -45,6 +50,7 @@ public class Dex extends IncrementalTask {
         getBuilder().convertByteCode(
                 getSourceFiles(),
                 getLibraries(),
+                getProguardedJar(),
                 getOutputFile().absolutePath,
                 getDexOptions(),
                 false)
@@ -55,6 +61,7 @@ public class Dex extends IncrementalTask {
         getBuilder().convertByteCode(
                 getSourceFiles(),
                 getLibraries(),
+                getProguardedJar(),
                 getOutputFile().absolutePath,
                 getDexOptions(),
                 true)
