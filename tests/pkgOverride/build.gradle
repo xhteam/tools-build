@@ -1,0 +1,17 @@
+buildscript {
+    repositories {
+        maven { url '../../repo' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.4-SNAPSHOT'
+    }
+}
+apply plugin: 'android'
+
+android {
+    compileSdkVersion 15
+
+    defaultConfig {
+        packageName "com.android.tests.basic.foo"
+    }
+}

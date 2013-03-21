@@ -311,6 +311,9 @@ public abstract class BasePlugin {
         processManifestTask.conventionMapping.manifestOverlays = {
             config.manifestOverlays
         }
+        processManifestTask.conventionMapping.packageName = {
+            config.packageOverride
+        }
         processManifestTask.conventionMapping.versionName = {
             config.versionName
         }
@@ -494,11 +497,8 @@ public abstract class BasePlugin {
         processResources.conventionMapping.libraries = {
             getTextSymbolDependencies(config.allLibraries)
         }
-        processResources.conventionMapping.packageOverride = {
-            if (config.testedConfig != null) {
-                return config.testedConfig.packageOverride
-            }
-            config.packageOverride
+        processResources.conventionMapping.packageForR = {
+            config.originalPackageName
         }
 
         // TODO: unify with generateBuilderConfig, compileAidl, and library packaging somehow?

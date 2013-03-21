@@ -109,7 +109,6 @@ public class TestFlavorTask extends BaseTask implements AndroidTestTask {
                 mLogger.info("Device '%s': installing %s", mDeviceName, mTestApk.absolutePath)
                 mDevice.installPackage(mTestApk.absolutePath, true /*reinstall*/)
 
-
                 RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(
                         mVariant.config.packageName, mVariant.config.instrumentationRunner,
                         mDevice)

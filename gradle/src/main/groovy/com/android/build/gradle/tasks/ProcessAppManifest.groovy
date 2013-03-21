@@ -36,6 +36,9 @@ public class ProcessAppManifest extends ProcessManifest {
     @Nested
     List<ManifestDependencyImpl> libraries
 
+    @Input @Optional
+    String packageName
+
     @Input
     int versionCode
 
@@ -54,6 +57,7 @@ public class ProcessAppManifest extends ProcessManifest {
                 getMainManifest(),
                 getManifestOverlays(),
                 getLibraries(),
+                getPackageName(),
                 getVersionCode(),
                 getVersionName(),
                 getMinSdkVersion(),

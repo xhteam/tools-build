@@ -59,6 +59,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -78,7 +79,7 @@ import static com.google.common.base.Preconditions.checkState;
  *
  * then build steps can be done with
  * {@link #generateBuildConfig(String, boolean, java.util.List, String)}
- * {@link #processManifest(java.io.File, java.util.List, java.util.List, int, String, int, int, String)}
+ * {@link #processManifest(java.io.File, java.util.List, java.util.List, String, int, String, int, int, String)}
  * {@link #processTestManifest(String, int, String, String, java.util.List, String)}
  * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
  * {@link #compileAllAidlFiles(java.util.List, java.io.File, java.util.List, com.android.builder.compiling.DependencyFileProcessor)}
@@ -237,6 +238,7 @@ public class AndroidBuilder {
      * @param mainManifest The main manifest of the application.
      * @param manifestOverlays manifest overlays coming from flavors and build types
      * @param libraries the library dependency graph
+     * @param packageOverride a package name override. Can be null.
      * @param versionCode a version code to inject in the manifest or -1 to do nothing.
      * @param versionName a version name to inject in the manifest or null to do nothing.
      * @param minSdkVersion a minSdkVersion to inject in the manifest or -1 to do nothing.
@@ -256,6 +258,7 @@ public class AndroidBuilder {
             @NonNull File mainManifest,
             @NonNull List<File> manifestOverlays,
             @NonNull List<? extends ManifestDependency> libraries,
+                     String packageOverride,
                      int versionCode,
                      String versionName,
                      int minSdkVersion,
@@ -274,17 +277,12 @@ public class AndroidBuilder {
             if (manifestOverlays.isEmpty() && libraries.isEmpty()) {
                 // if no manifest to merge, just copy to location, unless we have to inject
                 // attributes
-                if (attributeInjection.isEmpty()) {
+                if (attributeInjection.isEmpty() && packageOverride == null) {
                     Files.copy(mainManifest, new File(outManifestLocation));
                 } else {
                     ManifestMerger merger = new ManifestMerger(MergerLog.wrapSdkLog(mLogger), null);
-                    if (!merger.process(
-                            new File(outManifestLocation),
-                            mainManifest,
-                            new File[0],
-                            attributeInjection)) {
-                        throw new RuntimeException();
-                    }
+                    doMerge(merger, new File(outManifestLocation), mainManifest,
+                            attributeInjection, packageOverride);
                 }
             } else {
                 File outManifest = new File(outManifestLocation);
@@ -301,13 +299,8 @@ public class AndroidBuilder {
                     }
 
                     ManifestMerger merger = new ManifestMerger(MergerLog.wrapSdkLog(mLogger), null);
-                    if (!merger.process(
-                            mainManifestOut,
-                            mainManifest,
-                            manifestOverlays.toArray(new File[manifestOverlays.size()]),
-                            attributeInjection)) {
-                        throw new RuntimeException();
-                    }
+                    doMerge(merger, mainManifestOut, mainManifest, manifestOverlays,
+                            attributeInjection, packageOverride);
 
                     // now the main manifest is the newly merged one
                     mainManifest = mainManifestOut;
@@ -319,12 +312,13 @@ public class AndroidBuilder {
                     // recursively merge all manifests starting with the leaves and up toward the
                     // root (the app)
                     mergeLibraryManifests(mainManifest, libraries,
-                            new File(outManifestLocation), attributeInjection);
+                            new File(outManifestLocation), attributeInjection, packageOverride);
                 }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
-        }    }
+        }
+    }
 
     /**
      * Creates the manifest for a test variant
@@ -373,7 +367,7 @@ public class AndroidBuilder {
                         generatedTestManifest,
                         libraries,
                         new File(outManifestLocation),
-                        null);
+                        null, null);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -406,11 +400,12 @@ public class AndroidBuilder {
         }
     }
 
+    @NonNull
     private Map<String, String> getAttributeInjectionMap(
-            int versionCode,
-            String versionName,
-            int minSdkVersion,
-            int targetSdkVersion) {
+                      int versionCode,
+            @Nullable String versionName,
+                      int minSdkVersion,
+                      int targetSdkVersion) {
 
         Map<String, String> attributeInjection = Maps.newHashMap();
 
@@ -450,12 +445,13 @@ public class AndroidBuilder {
     private void mergeLibraryManifests(
             File mainManifest,
             Iterable<? extends ManifestDependency> directLibraries,
-            File outManifest, Map<String, String> attributeInjection) throws IOException {
+            File outManifest, Map<String, String> attributeInjection, String packageOverride)
+            throws IOException {
 
         List<File> manifests = Lists.newArrayList();
         for (ManifestDependency library : directLibraries) {
             List<? extends ManifestDependency> subLibraries = library.getManifestDependencies();
-            if (subLibraries == null || subLibraries.size() == 0) {
+            if (subLibraries.isEmpty()) {
                 manifests.add(library.getManifest());
             } else {
                 File mergeLibManifest = File.createTempFile("manifestMerge", ".xml");
@@ -463,17 +459,27 @@ public class AndroidBuilder {
 
                 // don't insert the attribute injection into libraries
                 mergeLibraryManifests(
-                        library.getManifest(), subLibraries, mergeLibManifest, null);
+                        library.getManifest(), subLibraries, mergeLibManifest, null, null);
 
                 manifests.add(mergeLibManifest);
             }
         }
 
         ManifestMerger merger = new ManifestMerger(MergerLog.wrapSdkLog(mLogger), null);
-        if (!merger.process(
-                outManifest,
-                mainManifest,
-                manifests.toArray(new File[manifests.size()]), attributeInjection)) {
+        doMerge(merger, outManifest, mainManifest, manifests, attributeInjection, packageOverride);
+    }
+
+    private void doMerge(ManifestMerger merger, File output, File input,
+                               Map<String, String> injectionMap, String packageOverride) {
+        List<File> list = Collections.emptyList();
+        doMerge(merger, output, input, list, injectionMap, packageOverride);
+    }
+
+    private void doMerge(ManifestMerger merger, File output, File input, List<File> subManifests,
+                               Map<String, String> injectionMap, String packageOverride) {
+        if (!merger.process(output, input,
+                subManifests.toArray(new File[subManifests.size()]),
+                injectionMap, packageOverride)) {
             throw new RuntimeException();
         }
     }
@@ -485,6 +491,7 @@ public class AndroidBuilder {
      * @param resFolder the merged res folder
      * @param assetsDir the merged asset folder
      * @param libraries the flat list of libraries
+     * @param packageForR Package override to generate the R class in a different package.
      * @param sourceOutputDir optional source folder to generate R.java
      * @param resPackageOutput optional filepath for packaged resources
      * @param proguardOutput optional filepath for proguard file to generate
@@ -501,7 +508,7 @@ public class AndroidBuilder {
             @NonNull  File resFolder,
             @Nullable File assetsDir,
             @NonNull  List<? extends SymbolFileProvider> libraries,
-            @Nullable String packageOverride,
+            @Nullable String packageForR,
             @Nullable String sourceOutputDir,
             @Nullable String symbolOutputDir,
             @Nullable String resPackageOutput,
@@ -581,10 +588,10 @@ public class AndroidBuilder {
         }
 
         if (type == VariantConfiguration.Type.DEFAULT) {
-            if (packageOverride != null) {
-                command.add("--rename-manifest-package");
-                command.add(packageOverride);
-                mLogger.verbose("Inserting package '%s' in AndroidManifest.xml", packageOverride);
+            if (packageForR != null) {
+                command.add("--custom-package");
+                command.add(packageForR);
+                mLogger.verbose("Custom package for R class: '%s'", packageForR);
             }
         }
 
@@ -624,7 +631,7 @@ public class AndroidBuilder {
             // First pass processing the libraries, collecting them by packageName,
             // and ignoring the ones that have the same package name as the application
             // (since that R class was already created).
-            String appPackageName = packageOverride;
+            String appPackageName = packageForR;
             if (appPackageName == null) {
                 appPackageName = VariantConfiguration.getManifestPackage(manifestFile);
             }

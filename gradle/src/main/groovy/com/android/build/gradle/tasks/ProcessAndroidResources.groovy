@@ -57,7 +57,7 @@ public class ProcessAndroidResources extends IncrementalTask {
     List<SymbolFileProviderImpl> libraries
 
     @Input @Optional
-    String packageOverride
+    String packageForR
 
     // this doesn't change from one build to another, so no need to annotate
     VariantConfiguration.Type type
@@ -75,7 +75,7 @@ public class ProcessAndroidResources extends IncrementalTask {
                 getResDir(),
                 getAssetsDir(),
                 getLibraries(),
-                getPackageOverride(),
+                getPackageForR(),
                 getSourceOutputDir()?.absolutePath,
                 getTextSymbolOutputDir()?.absolutePath,
                 getPackageOutputFile()?.absolutePath,

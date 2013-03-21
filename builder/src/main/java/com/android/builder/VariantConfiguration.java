@@ -351,7 +351,7 @@ public class VariantConfiguration {
 
     /**
      * Returns the package name for this variant. This could be coming from the manifest or
-     * could be overridden through the product flavors.
+     * could be overridden through the product flavors and/or the build Type.
      * @return the package
      */
     @Nullable
@@ -389,8 +389,8 @@ public class VariantConfiguration {
     }
 
     /**
-     * Returns the package override values coming from the Product Flavor. If the package is not
-     * overridden then this returns null.
+     * Returns the package override values coming from the Product Flavor and/or the Build Type.
+     * If the package is not overridden then this returns null.
      * @return the package override or null
      */
     @Nullable
