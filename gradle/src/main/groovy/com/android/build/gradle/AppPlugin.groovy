@@ -73,6 +73,11 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     }
 
     @Override
+    protected BaseExtension getAndroidExtension() {
+        return extension;
+    }
+
+    @Override
     void apply(Project project) {
         super.apply(project)
 
@@ -529,10 +534,5 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         addPackageTasks(variant, assembleTask)
 
         return variant;
-    }
-
-    @Override
-    protected String getTarget() {
-        return extension.compileSdkVersion;
     }
 }

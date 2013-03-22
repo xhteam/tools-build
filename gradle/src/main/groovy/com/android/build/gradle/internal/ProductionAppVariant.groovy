@@ -15,8 +15,6 @@
  */
 package com.android.build.gradle.internal
 
-import com.android.build.gradle.BasePlugin
-import com.android.builder.AndroidBuilder
 import com.android.builder.VariantConfiguration
 
 class ProductionAppVariant extends ApplicationVariant {
@@ -63,17 +61,5 @@ class ProductionAppVariant extends ApplicationVariant {
     @Override
     boolean getRunProguard() {
         return config.buildType.runProguard
-    }
-
-    @Override
-    AndroidBuilder createBuilder(BasePlugin androidBasePlugin) {
-        AndroidBuilder androidBuilder = new AndroidBuilder(
-                androidBasePlugin.sdkParser,
-                androidBasePlugin.logger,
-                androidBasePlugin.verbose)
-
-        androidBuilder.setTarget(androidBasePlugin.target)
-
-        return androidBuilder
     }
 }

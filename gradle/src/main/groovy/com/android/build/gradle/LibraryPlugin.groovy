@@ -57,6 +57,11 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
     }
 
     @Override
+    protected BaseExtension getAndroidExtension() {
+        return extension;
+    }
+
+    @Override
     void apply(Project project) {
         super.apply(project)
 
@@ -292,10 +297,5 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         createTestTasks(testVariant, testedVariant, configDependencies, true /*mainTestTask*/)
 
         return testVariant
-    }
-
-    @Override
-    protected String getTarget() {
-        return extension.compileSdkVersion
     }
 }

@@ -59,6 +59,7 @@ import com.android.builder.VariantConfiguration
 import com.android.builder.dependency.AndroidDependency
 import com.android.builder.dependency.JarDependency
 import com.android.builder.signing.SigningConfig
+import com.android.sdklib.repository.FullRevision
 import com.android.utils.ILogger
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
@@ -123,7 +124,7 @@ public abstract class BasePlugin {
     protected Task assembleTest
     protected Task deviceCheck
 
-    protected abstract String getTarget()
+    protected abstract BaseExtension getAndroidExtension()
 
     protected BasePlugin(Instantiator instantiator) {
         this.instantiator = instantiator
@@ -224,7 +225,20 @@ public abstract class BasePlugin {
         AndroidBuilder androidBuilder = builders.get(variant)
 
         if (androidBuilder == null) {
-            androidBuilder = variant.createBuilder(this)
+            String target = androidExtension.getCompileSdkVersion()
+            if (target == null) {
+                throw new IllegalArgumentException("android.compileSdkVersion is missing!")
+            }
+
+            FullRevision buildToolsRevision = androidExtension.buildToolsRevision
+            if (buildToolsRevision == null) {
+                throw new IllegalArgumentException("android.buildToolsVersion is missing!")
+
+            }
+
+            sdkParser.initParser(target, buildToolsRevision, logger)
+            androidBuilder = new AndroidBuilder(sdkParser, logger, verbose)
+
             builders.put(variant, androidBuilder)
         }
 

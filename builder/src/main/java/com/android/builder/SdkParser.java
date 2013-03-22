@@ -17,6 +17,7 @@
 package com.android.builder;
 
 import com.android.annotations.NonNull;
+import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.repository.FullRevision;
 import com.android.utils.ILogger;
@@ -30,20 +31,44 @@ import java.io.File;
 public interface SdkParser {
 
     /**
-     * Resolves a target hash string and returns the corresponding {@link IAndroidTarget}
-     * @param target the target hash string.
-     * @param logger a logger object.
-     * @return the target or null if no match is found.
+     * Inits the parser with a target hash string and a build tools FullRevision.
      *
-     * @throws RuntimeException if the SDK cannot parsed.
+     * Note that this may be called several times on the same object, though it will always
+     * be with the same values. Extra calls can be ignored.
+     *
+     * @param target the target hash string.
+     * @param buildToolRevision the build tools revision
+     * @param logger a logger object.
+     *
+     * @throws IllegalStateException if the SDK cannot parsed.
      *
      * @see IAndroidTarget#hashString()
      */
-    IAndroidTarget resolveTarget(@NonNull String target, @NonNull ILogger logger);
+    public void initParser(@NonNull String target,
+                           @NonNull FullRevision buildToolRevision,
+                           @NonNull ILogger logger);
 
     /**
-     * Returns the location of the annotations jar for compilation targets that are <= 15.
+     * Returns the compilation target
+     * @return the target.
+     *
+     * @throws IllegalStateException if the sdk was not initialized.
      */
+    @NonNull
+    IAndroidTarget getTarget();
+
+    /**
+     * Returns the BuildToolInfo
+     * @return the build tool info
+     *
+     * @throws IllegalStateException if the sdk was not initialized.
+     */
+    @NonNull
+    BuildToolInfo getBuildTools();
+
+    /**
+      * Returns the location of the annotations jar for compilation targets that are <= 15.
+      */
     String getAnnotationsJar();
 
     /**
@@ -52,26 +77,6 @@ public interface SdkParser {
      * @return the FullRevision or null if the revision couldn't not be found
      */
     FullRevision getPlatformToolsRevision();
-
-    /**
-     * Returns the location of the aapt tool.
-     */
-    File getAapt();
-
-    /**
-     * Returns the location of the aidl compiler.
-     */
-    File getAidlCompiler();
-
-    /**
-     * Returns the location of the renderscript compiler.
-     */
-    File getRenderscriptCompiler();
-
-    /**
-     * Returns the location of the dx tool.
-     */
-    File getDx();
 
     /**
      * Returns the location of the zip align tool.

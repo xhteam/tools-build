@@ -11,6 +11,8 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 15
+    buildToolsVersion "1.0"
+
     flavorGroups   "group1", "group2"
 
     productFlavors {

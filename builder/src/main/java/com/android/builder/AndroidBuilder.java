@@ -44,6 +44,7 @@ import com.android.builder.signing.KeytoolException;
 import com.android.builder.signing.SigningConfig;
 import com.android.manifmerger.ManifestMerger;
 import com.android.manifmerger.MergerLog;
+import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.IAndroidTarget.IOptionalLibrary;
 import com.android.sdklib.repository.FullRevision;
@@ -66,7 +67,6 @@ import java.util.concurrent.ExecutionException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 /**
  * This is the main builder class. It is given all the data to process the build (such as
@@ -74,8 +74,7 @@ import static com.google.common.base.Preconditions.checkState;
  * build steps.
  *
  * To use:
- * create a builder with {@link #AndroidBuilder(SdkParser, ILogger, boolean)},
- * configure compile target with {@link #setTarget(String)}
+ * create a builder with {@link #AndroidBuilder(SdkParser, ILogger, boolean)}
  *
  * then build steps can be done with
  * {@link #generateBuildConfig(String, boolean, java.util.List, String)}
@@ -105,7 +104,10 @@ public class AndroidBuilder {
     private final CommandLineRunner mCmdLineRunner;
     private final boolean mVerboseExec;
 
-    private IAndroidTarget mTarget;
+    @NonNull
+    private final IAndroidTarget mTarget;
+    @NonNull
+    private final BuildToolInfo mBuildTools;
 
     /**
      * Creates an AndroidBuilder
@@ -140,6 +142,9 @@ public class AndroidBuilder {
                     platformToolsRevision, MIN_PLATFORM_TOOLS_REV));
 
         }
+
+        mTarget = mSdkParser.getTarget();
+        mBuildTools = mSdkParser.getBuildTools();
     }
 
     @VisibleForTesting
@@ -152,36 +157,15 @@ public class AndroidBuilder {
         mCmdLineRunner = checkNotNull(cmdLineRunner);
         mLogger = checkNotNull(logger);
         mVerboseExec = verboseExec;
-    }
 
-    /**
-     * Sets the compilation target hash string.
-     *
-     * @param target the compilation target
-     *
-     * @see IAndroidTarget#hashString()
-     */
-    public void setTarget(@NonNull String target) {
-        checkNotNull(target, "target cannot be null.");
-
-        mTarget = mSdkParser.resolveTarget(target, mLogger);
-
-        if (mTarget == null) {
-            throw new RuntimeException("Unknown target: " + target);
-        }
-    }
-
-    public int getTargetApiLevel() {
-        checkState(mTarget != null, "Target not set.");
-
-        return mTarget.getVersion().getApiLevel();
+        mTarget = mSdkParser.getTarget();
+        mBuildTools = mSdkParser.getBuildTools();
     }
 
     /**
      * Returns the runtime classpath to be used during compilation.
      */
     public List<String> getRuntimeClasspath() {
-        checkState(mTarget != null, "Target not set.");
 
         List<String> classpath = Lists.newArrayList();
 
@@ -208,7 +192,9 @@ public class AndroidBuilder {
      * @return an AaptRunner object
      */
     public AaptRunner getAaptRunner() {
-        return new AaptRunner(mSdkParser.getAapt().getAbsolutePath(), mCmdLineRunner);
+        return new AaptRunner(
+                mBuildTools.getPath(BuildToolInfo.PathId.AAPT),
+                mCmdLineRunner);
     }
 
     /**
@@ -225,7 +211,6 @@ public class AndroidBuilder {
                      boolean debuggable,
             @NonNull List<String> javaLines,
             @NonNull String sourceOutputDir) throws IOException {
-        checkState(mTarget != null, "Target not set.");
 
         BuildConfigGenerator generator = new BuildConfigGenerator(
                 sourceOutputDir, packageName, debuggable);
@@ -264,7 +249,6 @@ public class AndroidBuilder {
                      int minSdkVersion,
                      int targetSdkVersion,
             @NonNull String outManifestLocation) {
-        checkState(mTarget != null, "Target not set.");
         checkNotNull(mainManifest, "mainManifest cannot be null.");
         checkNotNull(manifestOverlays, "manifestOverlays cannot be null.");
         checkNotNull(libraries, "libraries cannot be null.");
@@ -344,7 +328,6 @@ public class AndroidBuilder {
             @NonNull String instrumentationRunner,
             @NonNull List<? extends ManifestDependency> libraries,
             @NonNull String outManifestLocation) {
-        checkState(mTarget != null, "Target not set.");
         checkNotNull(testPackageName, "testPackageName cannot be null.");
         checkNotNull(testedPackageName, "testedPackageName cannot be null.");
         checkNotNull(instrumentationRunner, "instrumentationRunner cannot be null.");
@@ -518,7 +501,6 @@ public class AndroidBuilder {
             @NonNull  AaptOptions options)
             throws IOException, InterruptedException {
 
-        checkState(mTarget != null, "Target not set.");
         checkNotNull(manifestFile, "manifestFile cannot be null.");
         checkNotNull(resFolder, "resFolder cannot be null.");
         checkNotNull(libraries, "libraries cannot be null.");
@@ -530,12 +512,12 @@ public class AndroidBuilder {
         // launch aapt: create the command line
         ArrayList<String> command = Lists.newArrayList();
 
-        File aapt = mSdkParser.getAapt();
-        if (aapt == null || !aapt.isFile()) {
+        String aapt = mBuildTools.getPath(BuildToolInfo.PathId.AAPT);
+        if (aapt == null || !new File(aapt).isFile()) {
             throw new IllegalStateException("aapt is missing");
         }
 
-        command.add(aapt.getAbsolutePath());
+        command.add(aapt);
         command.add("package");
 
         if (mVerboseExec) {
@@ -698,13 +680,12 @@ public class AndroidBuilder {
                                     @NonNull List<File> importFolders,
                                     @Nullable DependencyFileProcessor dependencyFileProcessor)
             throws IOException, InterruptedException, ExecutionException {
-        checkState(mTarget != null, "Target not set.");
         checkNotNull(sourceFolders, "sourceFolders cannot be null.");
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
 
-        File aidl = mSdkParser.getAidlCompiler();
-        if (aidl == null || !aidl.isFile()) {
+        String aidl = mBuildTools.getPath(BuildToolInfo.PathId.AIDL);
+        if (aidl == null || !new File(aidl).isFile()) {
             throw new IllegalStateException("aidl is missing");
         }
 
@@ -714,7 +695,7 @@ public class AndroidBuilder {
         fullImportList.addAll(importFolders);
 
         AidlProcessor processor = new AidlProcessor(
-                aidl.getAbsolutePath(),
+                aidl,
                 mTarget.getPath(IAndroidTarget.ANDROID_AIDL),
                 fullImportList,
                 sourceOutputDir,
@@ -743,18 +724,17 @@ public class AndroidBuilder {
                                 @NonNull List<File> importFolders,
                                 @Nullable DependencyFileProcessor dependencyFileProcessor)
             throws IOException, InterruptedException {
-        checkState(mTarget != null, "Target not set.");
         checkNotNull(aidlFile, "aidlFile cannot be null.");
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
 
-        File aidl = mSdkParser.getAidlCompiler();
-        if (aidl == null || !aidl.isFile()) {
+        String aidl = mBuildTools.getPath(BuildToolInfo.PathId.AIDL);
+        if (aidl == null || !new File(aidl).isFile()) {
             throw new IllegalStateException("aidl is missing");
         }
 
         AidlProcessor processor = new AidlProcessor(
-                aidl.getAbsolutePath(),
+                aidl,
                 mTarget.getPath(IAndroidTarget.ANDROID_AIDL),
                 importFolders,
                 sourceOutputDir,
@@ -791,14 +771,13 @@ public class AndroidBuilder {
                                             boolean debugBuild,
                                             int optimLevel)
             throws IOException, InterruptedException, ExecutionException {
-        checkState(mTarget != null, "Target not set.");
         checkNotNull(sourceFolders, "sourceFolders cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
         checkNotNull(resOutputDir, "resOutputDir cannot be null.");
 
-        File renderscript = mSdkParser.getRenderscriptCompiler();
-        if (renderscript == null || !renderscript.isFile()) {
+        String renderscript = mBuildTools.getPath(BuildToolInfo.PathId.LLVM_RS_CC);
+        if (renderscript == null || !new File(renderscript).isFile()) {
             throw new IllegalStateException("llvm-rs-cc is missing");
         }
 
@@ -814,21 +793,17 @@ public class AndroidBuilder {
             return;
         }
 
-        @SuppressWarnings("deprecation")
-        String rsPath = mTarget.getPath(IAndroidTarget.ANDROID_RS);
-
-        @SuppressWarnings("deprecation")
-        String rsClangPath = mTarget.getPath(IAndroidTarget.ANDROID_RS_CLANG);
+        String rsPath = mBuildTools.getPath(BuildToolInfo.PathId.ANDROID_RS);
+        String rsClangPath = mBuildTools.getPath(BuildToolInfo.PathId.ANDROID_RS_CLANG);
 
         // the renderscript compiler doesn't expect the top res folder,
         // but the raw folder directly.
         File rawFolder = new File(resOutputDir, SdkConstants.FD_RES_RAW);
 
-
         // compile all the files in a single pass
         ArrayList<String> command = Lists.newArrayList();
 
-        command.add(renderscript.getAbsolutePath());
+        command.add(renderscript);
 
         if (debugBuild) {
             command.add("-g");
@@ -925,7 +900,6 @@ public class AndroidBuilder {
             @NonNull String outDexFile,
             @NonNull DexOptions dexOptions,
             boolean incremental) throws IOException, InterruptedException {
-        checkState(mTarget != null, "Target not set.");
         checkNotNull(classesLocation, "classesLocation cannot be null.");
         checkNotNull(libraries, "libraries cannot be null.");
         checkNotNull(outDexFile, "outDexFile cannot be null.");
@@ -934,12 +908,12 @@ public class AndroidBuilder {
         // launch dx: create the command line
         ArrayList<String> command = Lists.newArrayList();
 
-        File dx = mSdkParser.getDx();
-        if (dx == null || !dx.isFile()) {
+        String dx = mBuildTools.getPath(BuildToolInfo.PathId.DX);
+        if (dx == null || !new File(dx).isFile()) {
             throw new IllegalStateException("dx is missing");
         }
 
-        command.add(dx.getAbsolutePath());
+        command.add(dx);
 
         command.add("--dex");
 
@@ -1016,7 +990,6 @@ public class AndroidBuilder {
             @Nullable SigningConfig signingConfig,
             @NonNull String outApkLocation) throws DuplicateFileException, FileNotFoundException,
             KeytoolException, PackagerException, SigningException {
-        checkState(mTarget != null, "Target not set.");
         checkNotNull(androidResPkgLocation, "androidResPkgLocation cannot be null.");
         checkNotNull(classesDexLocation, "classesDexLocation cannot be null.");
         checkNotNull(outApkLocation, "outApkLocation cannot be null.");
