@@ -19,6 +19,7 @@ package com.android.builder.internal;
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
 import com.android.sdklib.AndroidVersion;
+import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.ISystemImage;
 import com.android.sdklib.util.SparseArray;
@@ -36,7 +37,6 @@ public class FakeAndroidTarget implements IAndroidTarget {
     private final List<String> mBootClasspath = Lists.newArrayListWithExpectedSize(2);
     private final int mApiLevel;
 
-    @SuppressWarnings("deprecation")
     public FakeAndroidTarget(String sdkLocation, String target) {
         mSdkLocation = sdkLocation;
         mApiLevel = getApiLevel(target);
@@ -79,6 +79,13 @@ public class FakeAndroidTarget implements IAndroidTarget {
     @Override
     public String getPath(int pathId) {
         return mPaths.get(pathId);
+    }
+
+    @Override
+    public BuildToolInfo getBuildToolInfo() {
+        // this is not used internally since we properly query for the right Build Tools from
+        // the SdkManager.
+        return null;
     }
 
     @Override @NonNull
