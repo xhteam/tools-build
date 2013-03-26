@@ -229,6 +229,25 @@ public class AppPluginDslTest extends BaseTest {
         checkNonTestedVariant("F2FcRelease", variants)
     }
 
+    public void testSourceSetsApi() {
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
+
+        project.apply plugin: 'android'
+
+        project.android {
+            compileSdkVersion 15
+        }
+
+        // query the sourceSets, will throw if missing
+        println project.android.sourceSets.main.java.srcDirs
+        println project.android.sourceSets.main.resources.srcDirs
+        println project.android.sourceSets.main.manifest.srcFile
+        println project.android.sourceSets.main.res.srcDirs
+        println project.android.sourceSets.main.assets.srcDirs
+    }
+
+
     private void checkTestedVariant(String variantName, String testedVariantName,
                                     Set<BuildVariant> variants, Set<BuildVariant> testVariants) {
         BuildVariant variant = findVariant(variants, variantName)

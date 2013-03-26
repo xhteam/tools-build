@@ -543,7 +543,7 @@ public class VariantConfiguration {
         for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
             AndroidDependency dependency = mFlatLibraries.get(n);
             File resFolder = dependency.getResFolder();
-            if (resFolder != null) {
+            if (resFolder.isDirectory()) {
                 ResourceSet resourceSet = new ResourceSet(dependency.getFolder().getName());
                 resourceSet.addSource(resFolder);
                 resourceSets.add(resourceSet);
@@ -599,7 +599,7 @@ public class VariantConfiguration {
         for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
             AndroidDependency dependency = mFlatLibraries.get(n);
             File assetFolder = dependency.getAssetsFolder();
-            if (assetFolder != null) {
+            if (assetFolder.isDirectory()) {
                 AssetSet assetSet = new AssetSet(dependency.getFolder().getName());
                 assetSet.addSource(assetFolder);
                 assetSets.add(assetSet);
@@ -643,7 +643,7 @@ public class VariantConfiguration {
 
         for (AndroidDependency lib : mFlatLibraries) {
             File rsLib = lib.getRenderscriptFolder();
-            if (rsLib != null && rsLib.isDirectory()) {
+            if (rsLib.isDirectory()) {
                 list.add(rsLib);
             }
         }
@@ -683,7 +683,7 @@ public class VariantConfiguration {
 
         for (AndroidDependency lib : mFlatLibraries) {
             File aidlLib = lib.getAidlFolder();
-            if (aidlLib != null && aidlLib.isDirectory()) {
+            if (aidlLib.isDirectory()) {
                 list.add(aidlLib);
             }
         }

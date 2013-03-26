@@ -4,6 +4,7 @@
    - Fix support for subfolders in assets/
    - Fix cases where Android Libraries have local Jars dependencies
    - Fix renaming of package through DSL to ensure resources are compiled in the new namespace
+   - Fix DSL to add getSourceSets on the "android" extension.
 
 0.3
 

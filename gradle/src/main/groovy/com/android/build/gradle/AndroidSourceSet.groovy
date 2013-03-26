@@ -16,6 +16,7 @@
 
 package com.android.build.gradle
 
+import com.android.annotations.NonNull
 import org.gradle.api.file.SourceDirectorySet
 
 /**
@@ -29,6 +30,7 @@ public interface AndroidSourceSet {
      *
      * @return The name. Never returns null.
      */
+    @NonNull
     String getName();
 
     /**
@@ -36,6 +38,7 @@ public interface AndroidSourceSet {
      *
      * @return the java resources. Never returns null.
      */
+    @NonNull
     SourceDirectorySet getResources();
 
     /**
@@ -47,6 +50,7 @@ public interface AndroidSourceSet {
      * @param configureClosure The closure to use to configure the javaResources.
      * @return this
      */
+    @NonNull
     AndroidSourceSet resources(Closure configureClosure);
 
     /**
@@ -55,6 +59,7 @@ public interface AndroidSourceSet {
      *
      * @return the Java source. Never returns null.
      */
+    @NonNull
     SourceDirectorySet getJava();
 
     /**
@@ -66,6 +71,7 @@ public interface AndroidSourceSet {
      * @param configureClosure The closure to use to configure the Java source.
      * @return this
      */
+    @NonNull
     AndroidSourceSet java(Closure configureClosure);
 
     /**
@@ -74,6 +80,7 @@ public interface AndroidSourceSet {
      *
      * @return the Java source. Never returns null.
      */
+    @NonNull
     SourceDirectorySet getAllJava();
 
     /**
@@ -81,18 +88,21 @@ public interface AndroidSourceSet {
      *
      * @return the source. Never returns null.
      */
+    @NonNull
     SourceDirectorySet getAllSource();
 
     /**
      * Returns the name of the compile configuration for this source set.
      * @return The configuration name
      */
+    @NonNull
     String getCompileConfigurationName();
 
     /**
      * Returns the name of the runtime configuration for this source set.
      * @return The runtime configuration name
      */
+    @NonNull
     String getPackageConfigurationName();
 
     /**
@@ -100,6 +110,7 @@ public interface AndroidSourceSet {
      *
      * @return the manifest. Never returns null.
      */
+    @NonNull
     AndroidSourceFile getManifest();
 
     /**
@@ -111,6 +122,7 @@ public interface AndroidSourceSet {
      * @param configureClosure The closure to use to configure the Android Manifest.
      * @return this
      */
+    @NonNull
     AndroidSourceSet manifest(Closure configureClosure);
 
     /**
@@ -118,6 +130,7 @@ public interface AndroidSourceSet {
      *
      * @return the resources. Never returns null.
      */
+    @NonNull
     AndroidSourceDirectorySet getRes();
 
     /**
@@ -129,6 +142,7 @@ public interface AndroidSourceSet {
      * @param configureClosure The closure to use to configure the Resources.
      * @return this
      */
+    @NonNull
     AndroidSourceSet res(Closure configureClosure);
 
     /**
@@ -136,6 +150,7 @@ public interface AndroidSourceSet {
      *
      * @return the assets. Never returns null.
      */
+    @NonNull
     AndroidSourceDirectorySet getAssets();
 
     /**
@@ -147,6 +162,7 @@ public interface AndroidSourceSet {
      * @param configureClosure The closure to use to configure the Assets.
      * @return this
      */
+    @NonNull
     AndroidSourceSet assets(Closure configureClosure);
 
     /**
@@ -154,6 +170,7 @@ public interface AndroidSourceSet {
      *
      * @return the source. Never returns null.
      */
+    @NonNull
     AndroidSourceDirectorySet getAidl();
 
     /**
@@ -165,6 +182,7 @@ public interface AndroidSourceSet {
      * @param configureClosure The closure to use to configure the AIDL source.
      * @return this
      */
+    @NonNull
     AndroidSourceSet aidl(Closure configureClosure);
 
     /**
@@ -172,6 +190,7 @@ public interface AndroidSourceSet {
      *
      * @return the source. Never returns null.
      */
+    @NonNull
     AndroidSourceDirectorySet getRenderscript();
 
     /**
@@ -183,6 +202,7 @@ public interface AndroidSourceSet {
      * @param configureClosure The closure to use to configure the Renderscript source.
      * @return this
      */
+    @NonNull
     AndroidSourceSet renderscript(Closure configureClosure);
 
     /**
@@ -190,6 +210,7 @@ public interface AndroidSourceSet {
      *
      * @return the source. Never returns null.
      */
+    @NonNull
     AndroidSourceDirectorySet getJni();
 
     /**
@@ -201,6 +222,7 @@ public interface AndroidSourceSet {
      * @param configureClosure The closure to use to configure the JNI source.
      * @return this
      */
+    @NonNull
     AndroidSourceSet jni(Closure configureClosure);
 
     /**
@@ -211,6 +233,6 @@ public interface AndroidSourceSet {
      * @param path the root directory.
      * @return this
      */
+    @NonNull
     AndroidSourceSet setRoot(String path);
-
 }

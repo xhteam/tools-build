@@ -16,6 +16,7 @@
 
 package com.android.build.gradle.internal;
 
+import com.android.annotations.NonNull;
 import com.android.build.gradle.AndroidSourceDirectorySet;
 import com.google.common.collect.Lists;
 import org.gradle.api.internal.file.FileResolver;
@@ -34,29 +35,33 @@ public class DefaultAndroidSourceDirectorySet implements AndroidSourceDirectoryS
     private final FileResolver fileResolver;
     private List<Object> source = Lists.newArrayList();
 
-    DefaultAndroidSourceDirectorySet(String name, FileResolver fileResolver) {
+    DefaultAndroidSourceDirectorySet(@NonNull String name, @NonNull FileResolver fileResolver) {
         this.name = name;
         this.fileResolver = fileResolver;
     }
 
     @Override
+    @NonNull
     public String getName() {
         return name;
     }
 
     @Override
+    @NonNull
     public AndroidSourceDirectorySet srcDir(Object srcDir) {
         source.add(srcDir);
         return this;
     }
 
     @Override
+    @NonNull
     public AndroidSourceDirectorySet srcDirs(Object... srcDirs) {
         Collections.addAll(source, srcDirs);
         return this;
     }
 
     @Override
+    @NonNull
     public AndroidSourceDirectorySet setSrcDirs(Iterable<?> srcDirs) {
         source.clear();
         for (Object srcDir : srcDirs) {
@@ -66,11 +71,13 @@ public class DefaultAndroidSourceDirectorySet implements AndroidSourceDirectoryS
     }
 
     @Override
-    public Set<File> getDirectories() {
+    @NonNull
+    public Set<File> getSrcDirs() {
         return fileResolver.resolveFiles(source.toArray()).getFiles();
     }
 
     @Override
+    @NonNull
     public String toString() {
         return source.toString();
     }

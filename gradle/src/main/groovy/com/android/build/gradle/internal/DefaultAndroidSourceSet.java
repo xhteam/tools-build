@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal;
 
 import com.android.SdkConstants;
+import com.android.annotations.NonNull;
 import com.android.build.gradle.AndroidSourceDirectorySet;
 import com.android.build.gradle.AndroidSourceFile;
 import com.android.build.gradle.AndroidSourceSet;
@@ -98,11 +99,13 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
+    @NonNull
     public String getName() {
         return name;
     }
 
     @Override
+    @NonNull
     public String toString() {
         return String.format("source set %s", getDisplayName());
     }
@@ -112,6 +115,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
+    @NonNull
     public String getCompileConfigurationName() {
         if (name.equals(SourceSet.MAIN_SOURCE_SET_NAME)) {
             return "compile";
@@ -121,6 +125,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
+    @NonNull
     public String getPackageConfigurationName() {
         if (name.equals(SourceSet.MAIN_SOURCE_SET_NAME)) {
             return "package";
@@ -130,104 +135,123 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     }
 
     @Override
+    @NonNull
     public AndroidSourceFile getManifest() {
         return manifest;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet manifest(Closure configureClosure) {
         ConfigureUtil.configure(configureClosure, getManifest());
         return this;
     }
 
     @Override
+    @NonNull
     public AndroidSourceDirectorySet getRes() {
         return res;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet res(Closure configureClosure) {
         ConfigureUtil.configure(configureClosure, getRes());
         return this;
     }
 
     @Override
+    @NonNull
     public AndroidSourceDirectorySet getAssets() {
         return assets;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet assets(Closure configureClosure) {
         ConfigureUtil.configure(configureClosure, getAssets());
         return this;
     }
 
     @Override
+    @NonNull
     public AndroidSourceDirectorySet getAidl() {
         return aidl;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet aidl(Closure configureClosure) {
         ConfigureUtil.configure(configureClosure, getAidl());
         return this;
     }
 
     @Override
+    @NonNull
     public AndroidSourceDirectorySet getRenderscript() {
         return renderscript;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet renderscript(Closure configureClosure) {
         ConfigureUtil.configure(configureClosure, getRenderscript());
         return this;
     }
 
     @Override
+    @NonNull
     public AndroidSourceDirectorySet getJni() {
         return jni;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet jni(Closure configureClosure) {
         ConfigureUtil.configure(configureClosure, getJni());
         return this;
     }
 
     @Override
+    @NonNull
     public SourceDirectorySet getJava() {
         return javaSource;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet java(Closure configureClosure) {
         ConfigureUtil.configure(configureClosure, getJava());
         return this;
     }
 
     @Override
+    @NonNull
     public SourceDirectorySet getAllJava() {
         return allJavaSource;
     }
 
     @Override
+    @NonNull
     public SourceDirectorySet getResources() {
         return javaResources;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet resources(Closure configureClosure) {
         ConfigureUtil.configure(configureClosure, getResources());
         return this;
     }
 
     @Override
+    @NonNull
     public SourceDirectorySet getAllSource() {
         return allSource;
     }
 
     @Override
+    @NonNull
     public AndroidSourceSet setRoot(String path) {
         javaSource.setSrcDirs(Collections.singletonList(path + "/java"));
         javaResources.setSrcDirs(Collections.singletonList(path + "/resources"));
@@ -243,32 +267,38 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     // --- SourceProvider
 
     @Override
+    @NonNull
     public File getManifestFile() {
-        return getManifest().getFile();
+        return getManifest().getSrcFile();
     }
 
     @Override
+    @NonNull
     public Set<File> getAidlDirectories() {
-        return getAidl().getDirectories();
+        return getAidl().getSrcDirs();
     }
 
     @Override
+    @NonNull
     public Set<File> getRenderscriptDirectories() {
-        return getRenderscript().getDirectories();
+        return getRenderscript().getSrcDirs();
     }
 
     @Override
+    @NonNull
     public Set<File> getJniDirectories() {
-        return getJni().getDirectories();
+        return getJni().getSrcDirs();
     }
 
     @Override
+    @NonNull
     public Set<File> getResourcesDirectories() {
-        return getRes().getDirectories();
+        return getRes().getSrcDirs();
     }
 
     @Override
+    @NonNull
     public Set<File> getAssetsDirectories() {
-        return getAssets().getDirectories();
+        return getAssets().getSrcDirs();
     }
 }

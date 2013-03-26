@@ -46,7 +46,7 @@ public class DefaultAndroidSourceFile implements AndroidSourceFile {
     }
 
     @Override
-    public File getFile() {
+    public File getSrcFile() {
         return fileResolver.resolve(source);
     }
 

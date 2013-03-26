@@ -16,6 +16,8 @@
 
 package com.android.build.gradle;
 
+import com.android.annotations.NonNull;
+
 import java.io.File;
 import java.util.Set;
 
@@ -27,6 +29,7 @@ public interface AndroidSourceDirectorySet {
     /**
      * A concise name for the source directory (typically used to identify it in a collection).
      */
+    @NonNull
     String getName();
 
     /**
@@ -34,8 +37,9 @@ public interface AndroidSourceDirectorySet {
      *
      * @param srcDir The source directory. This is evaluated as for
      *                {@link org.gradle.api.Project#file(Object)}
-     * @return the AndroidSourceDirectorySet object
+     * @return this
      */
+    @NonNull
     AndroidSourceDirectorySet srcDir(Object srcDir);
 
     /**
@@ -43,8 +47,9 @@ public interface AndroidSourceDirectorySet {
      *
      * @param srcDirs The source directories. These are evaluated as for
      *                {@link org.gradle.api.Project#files(Object...)}
-     * @return the AndroidSourceDirectorySet object
+     * @return this
      */
+    @NonNull
     AndroidSourceDirectorySet srcDirs(Object... srcDirs);
 
     /**
@@ -52,13 +57,15 @@ public interface AndroidSourceDirectorySet {
      *
      * @param srcDirs The source directories. These are evaluated as for
      *                {@link org.gradle.api.Project#files(Object...)}
-     * @return
+     * @return this
      */
+    @NonNull
     AndroidSourceDirectorySet setSrcDirs(Iterable<?> srcDirs);
 
     /**
      * Returns the resolved directories.
      * @return a non null set of File objects.
      */
-    Set<File> getDirectories();
+    @NonNull
+    Set<File> getSrcDirs();
 }
