@@ -14,7 +14,7 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 15
-    buildToolsVersion "1.0"
+    buildToolsVersion "17.0"
 
     testBuildType = "staging"
 
