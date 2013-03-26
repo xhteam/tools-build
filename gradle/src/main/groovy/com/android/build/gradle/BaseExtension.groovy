@@ -125,6 +125,10 @@ public abstract class BaseExtension {
         action.execute(sourceSetsContainer)
     }
 
+    NamedDomainObjectContainer<AndroidSourceSet> getSourceSets() {
+        sourceSetsContainer
+    }
+
     void defaultConfig(Action<ProductFlavor> action) {
         action.execute(defaultConfig)
     }

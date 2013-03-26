@@ -207,16 +207,16 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         // package the aidl files into the bundle folder
         Sync packageAidl = project.tasks.add("package${variant.name}Aidl", Sync)
         // packageAidl from 3 sources. the order is important to make sure the override works well.
-        packageAidl.from(defaultConfigData.sourceSet.aidl.directories,
-                buildTypeData.sourceSet.aidl.directories).include("**/*.aidl")
+        packageAidl.from(defaultConfigData.sourceSet.aidl.srcDirs,
+                buildTypeData.sourceSet.aidl.srcDirs).include("**/*.aidl")
         packageAidl.into(project.file(
                 "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_AIDL"))
 
         // package the renderscript header files files into the bundle folder
         Sync packageRenderscript = project.tasks.add("package${variant.name}Renderscript", Sync)
         // package from 3 sources. the order is important to make sure the override works well.
-        packageRenderscript.from(defaultConfigData.sourceSet.renderscript.directories,
-                buildTypeData.sourceSet.renderscript.directories).include("**/*.rsh")
+        packageRenderscript.from(defaultConfigData.sourceSet.renderscript.srcDirs,
+                buildTypeData.sourceSet.renderscript.srcDirs).include("**/*.rsh")
         packageRenderscript.into(project.file(
                 "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_RENDERSCRIPT"))
 
