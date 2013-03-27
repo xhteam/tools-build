@@ -16,12 +16,13 @@
 package com.android.build.gradle.internal.test.report;
 
 import org.gradle.api.Action;
-import org.gradle.api.internal.tasks.testing.junit.report.TestResultModel;
-import org.gradle.reporting.DomReportRenderer;
+import org.gradle.api.internal.ErroringAction;
+import org.gradle.api.internal.html.SimpleHtmlWriter;
+import org.gradle.reporting.ReportRenderer;
 import org.gradle.reporting.TabbedPageRenderer;
 import org.gradle.reporting.TabsRenderer;
-import org.w3c.dom.Element;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -40,29 +41,29 @@ abstract class PageRenderer<T extends CompositeTestResults> extends TabbedPageRe
         return results;
     }
 
-    protected abstract void renderBreadcrumbs(Element parent);
+    protected abstract void renderBreadcrumbs(SimpleHtmlWriter htmlWriter) throws IOException;
 
     protected abstract void registerTabs();
 
-    protected void addTab(String title, final Action<Element> contentRenderer) {
-        tabsRenderer.add(title, new DomReportRenderer<T>() {
+    protected void addTab(String title, final Action<SimpleHtmlWriter> contentRenderer) {
+        tabsRenderer.add(title, new ReportRenderer<T, SimpleHtmlWriter>() {
             @Override
-            public void render(T model, Element parent) {
-                contentRenderer.execute(parent);
+            public void render(T model, SimpleHtmlWriter writer) {
+                contentRenderer.execute(writer);
             }
         });
     }
 
-    protected void renderTabs(Element element) {
-        tabsRenderer.render(getModel(), element);
+    protected void renderTabs(SimpleHtmlWriter htmlWriter) throws IOException {
+        tabsRenderer.render(getModel(), htmlWriter);
     }
 
     protected void addFailuresTab() {
         if (!results.getFailures().isEmpty()) {
-            addTab("Failed tests", new Action<Element>() {
+            addTab("Failed tests", new ErroringAction<SimpleHtmlWriter>() {
                 @Override
-                public void execute(Element element) {
-                    renderFailures(element);
+                public void doExecute(SimpleHtmlWriter writer) throws IOException {
+                    renderFailures(writer);
                 }
             });
         }
@@ -70,122 +71,112 @@ abstract class PageRenderer<T extends CompositeTestResults> extends TabbedPageRe
 
     protected void addDeviceAndVariantTabs() {
         if (results.getResultsPerDevices().size() > 1) {
-            addTab("Devices", new Action<Element>() {
+            addTab("Devices", new ErroringAction<SimpleHtmlWriter>() {
                 @Override
-                public void execute(Element element) {
-                    renderCompositeResults(element, results.getResultsPerDevices(), "Devices");
+                public void doExecute(SimpleHtmlWriter writer) throws IOException {
+                    renderCompositeResults(writer, results.getResultsPerDevices(), "Devices");
                 }
             });
 
         }
 
         if (results.getResultsPerVariants().size() > 1) {
-            addTab("Variants", new Action<Element>() {
+            addTab("Variants", new ErroringAction<SimpleHtmlWriter>() {
                 @Override
-                public void execute(Element element) {
-                    renderCompositeResults(element, results.getResultsPerVariants(), "Variants");
+                public void doExecute(SimpleHtmlWriter writer) throws IOException {
+                    renderCompositeResults(writer, results.getResultsPerVariants(), "Variants");
                 }
             });
         }
     }
 
-    protected void renderFailures(Element parent) {
-        Element ul = append(parent, "ul");
-        ul.setAttribute("class", "linkList");
+    protected void renderFailures(SimpleHtmlWriter htmlWriter) throws IOException {
+
+        htmlWriter.startElement("ul").attribute("class", "linkList");
 
         boolean multiDevices = results.getResultsPerDevices().size() > 1;
         boolean multiVariants = results.getResultsPerVariants().size() > 1;
 
-        Element table = append(parent, "table");
-        Element thead = append(table, "thead");
-        Element tr = append(thead, "tr");
+        htmlWriter.startElement("table");
+        htmlWriter.startElement("thead");
+
+        htmlWriter.startElement("tr");
         if (multiDevices) {
-            appendWithText(tr, "th", "Devices");
+            htmlWriter.startElement("th").characters("Devices").endElement();
         }
         if (multiVariants) {
             if (reportType == ReportType.MULTI_PROJECT) {
-                appendWithText(tr, "th", "Project");
-                appendWithText(tr, "th", "Flavor");
+                htmlWriter.startElement("th").characters("Project").endElement();
+                htmlWriter.startElement("th").characters("Flavor").endElement();
             } else if (reportType == ReportType.MULTI_FLAVOR) {
-                appendWithText(tr, "th", "Flavor");
+                htmlWriter.startElement("th").characters("Flavor").endElement();
             }
-
         }
-        appendWithText(tr, "th", "Class");
-        appendWithText(tr, "th", "Test");
+        htmlWriter.startElement("th").characters("Class").endElement();
+        htmlWriter.startElement("th").characters("Test").endElement();
+
+        htmlWriter.endElement(); //tr
+        htmlWriter.endElement(); //thead
+
         for (TestResult test : results.getFailures()) {
-            tr = append(table, "tr");
-            Element td;
+            htmlWriter.startElement("tr");
 
             if (multiDevices) {
-                appendWithText(tr, "td", test.getDevice());
+                htmlWriter.startElement("td").characters(test.getDevice()).endElement();
             }
             if (multiVariants) {
                 if (reportType == ReportType.MULTI_PROJECT) {
-                    appendWithText(tr, "td", test.getProject());
-                    appendWithText(tr, "td", test.getFlavor());
+                    htmlWriter.startElement("td").characters(test.getProject()).endElement();
+                    htmlWriter.startElement("td").characters(test.getFlavor()).endElement();
                 } else if (reportType == ReportType.MULTI_FLAVOR) {
-                    appendWithText(tr, "td", test.getFlavor());
+                    htmlWriter.startElement("td").characters(test.getFlavor()).endElement();
                 }
-
             }
 
-            td = append(tr, "td");
-            appendLink(td,
-                    String.format("%s.html", test.getClassResults().getFilename(reportType)),
-                    test.getClassResults().getSimpleName());
+            htmlWriter.startElement("td").attribute("class", test.getStatusClass());
+            htmlWriter.endElement();
 
-            td = append(tr, "td");
-            appendLink(td,
-                    String.format("%s.html#%s",
-                            test.getClassResults().getFilename(reportType),
-                            test.getName()),
-                    test.getName());
+            htmlWriter.startElement("td")
+                .startElement("a").attribute("href", String.format("%s.html", test.getClassResults().getFilename(reportType)))
+                    .characters(test.getClassResults().getSimpleName()).endElement()
+            .endElement();
+
+            htmlWriter.startElement("td")
+                    .startElement("a").attribute("href", String.format("%s.html#s", test.getClassResults().getFilename(reportType), test.getName()))
+                    .characters(test.getName()).endElement()
+                    .endElement();
+            htmlWriter.endElement(); //tr
         }
+        htmlWriter.endElement(); //table
+        htmlWriter.endElement(); // ul
+
     }
 
-    protected void renderCompositeResults(Element parent,
+    protected void renderCompositeResults(SimpleHtmlWriter htmlWriter,
                                           Map<String, ? extends CompositeTestResults> map,
-                                          String name) {
-        Element table = append(parent, "table");
-        Element thead = append(table, "thead");
-        Element tr = append(thead, "tr");
-        appendWithText(tr, "th", name);
-        appendWithText(tr, "th", "Tests");
-        appendWithText(tr, "th", "Failures");
-        appendWithText(tr, "th", "Duration");
-        appendWithText(tr, "th", "Success rate");
+                                          String name) throws IOException {
+        htmlWriter.startElement("table");
+        htmlWriter.startElement("thead");
+        htmlWriter.startElement("tr");
+        htmlWriter.startElement("th").characters(name).endElement();
+        htmlWriter.startElement("th").characters("Tests").endElement();
+        htmlWriter.startElement("th").characters("Failures").endElement();
+        htmlWriter.startElement("th").characters("Duration").endElement();
+        htmlWriter.startElement("th").characters("Success rate").endElement();
+        htmlWriter.endElement(); //tr
+        htmlWriter.endElement(); //thead
+
         for (CompositeTestResults results : map.values()) {
-            tr = append(table, "tr");
-            Element td;
-
-            td = appendWithText(tr, "td", results.getName());
-            td.setAttribute("class", results.getStatusClass());
-            appendWithText(tr, "td", results.getTestCount());
-            appendWithText(tr, "td", results.getFailureCount());
-            appendWithText(tr, "td", results.getFormattedDuration());
-            td = appendWithText(tr, "td", results.getFormattedSuccessRate());
-            td.setAttribute("class", results.getStatusClass());
+            htmlWriter.startElement("tr");
+            htmlWriter.startElement("td").attribute("class", results.getStatusClass()).characters(results.getName()).endElement();
+            htmlWriter.startElement("td").characters(Integer.toString(results.getTestCount())).endElement();
+            htmlWriter.startElement("td").characters(Integer.toString(results.getFailureCount())).endElement();
+            htmlWriter.startElement("td").characters(results.getFormattedDuration()).endElement();
+            htmlWriter.startElement("td").characters(results.getFormattedSuccessRate()).endElement();
+            htmlWriter.endElement(); //tr
         }
-    }
 
-    protected Element appendTableAndRow(Element parent) {
-        return append(append(parent, "table"), "tr");
-    }
-
-    protected Element appendCell(Element parent) {
-        return append(append(parent, "td"), "div");
-    }
-
-    protected <T extends TestResultModel> DomReportRenderer<T> withStatus(
-            final DomReportRenderer<T> renderer) {
-        return new DomReportRenderer<T>() {
-            @Override
-            public void render(T model, Element parent) {
-                parent.setAttribute("class", model.getStatusClass());
-                renderer.render(model, parent);
-            }
-        };
+        htmlWriter.endElement(); //table
     }
 
     @Override
@@ -199,61 +190,65 @@ abstract class PageRenderer<T extends CompositeTestResults> extends TabbedPageRe
     }
 
     @Override
-    protected DomReportRenderer<T> getHeaderRenderer() {
-        return new DomReportRenderer<T>() {
+    protected ReportRenderer<T, SimpleHtmlWriter> getHeaderRenderer() {
+        return new ReportRenderer<T, SimpleHtmlWriter>() {
             @Override
-            public void render(T model, Element content) {
+            public void render(T model, SimpleHtmlWriter htmlWriter) throws IOException {
                 PageRenderer.this.results = model;
-                renderBreadcrumbs(content);
+                renderBreadcrumbs(htmlWriter);
 
                 // summary
-                Element summary = appendWithId(content, "div", "summary");
-                Element row = appendTableAndRow(summary);
-                Element group = appendCell(row);
-                group.setAttribute("class", "summaryGroup");
-                Element summaryRow = appendTableAndRow(group);
-
-                Element tests = appendCell(summaryRow);
-                tests.setAttribute("id", "tests");
-                tests.setAttribute("class", "infoBox");
-                Element div = appendWithText(tests, "div", results.getTestCount());
-                div.setAttribute("class", "counter");
-                appendWithText(tests, "p", "tests");
-
-                Element failures = appendCell(summaryRow);
-                failures.setAttribute("id", "failures");
-                failures.setAttribute("class", "infoBox");
-                div = appendWithText(failures, "div", results.getFailureCount());
-                div.setAttribute("class", "counter");
-                appendWithText(failures, "p", "failures");
-
-                Element duration = appendCell(summaryRow);
-                duration.setAttribute("id", "duration");
-                duration.setAttribute("class", "infoBox");
-                div = appendWithText(duration, "div", results.getFormattedDuration());
-                div.setAttribute("class", "counter");
-                appendWithText(duration, "p", "duration");
-
-                Element successRate = appendCell(row);
-                successRate.setAttribute("id", "successRate");
-                successRate.setAttribute("class",
-                        String.format("infoBox %s", results.getStatusClass()));
-                div = appendWithText(successRate, "div", results.getFormattedSuccessRate());
-                div.setAttribute("class", "percent");
-                appendWithText(successRate, "p", "successful");
+                htmlWriter.startElement("div").attribute("id", "summary");
+                htmlWriter.startElement("table");
+                htmlWriter.startElement("tr");
+                htmlWriter.startElement("td");
+                htmlWriter.startElement("div").attribute("class", "summaryGroup");
+                htmlWriter.startElement("table");
+                htmlWriter.startElement("tr");
+                htmlWriter.startElement("td");
+                htmlWriter.startElement("div").attribute("class", "infoBox").attribute("id", "tests");
+                htmlWriter.startElement("div").attribute("class", "counter").characters(Integer.toString(results.getTestCount())).endElement();
+                htmlWriter.startElement("p").characters("tests").endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.startElement("td");
+                htmlWriter.startElement("div").attribute("class", "infoBox").attribute("id", "failures");
+                htmlWriter.startElement("div").attribute("class", "counter").characters(Integer.toString(results.getFailureCount())).endElement();
+                htmlWriter.startElement("p").characters("failures").endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.startElement("td");
+                htmlWriter.startElement("div").attribute("class", "infoBox").attribute("id", "duration");
+                htmlWriter.startElement("div").attribute("class", "counter").characters(results.getFormattedDuration()).endElement();
+                htmlWriter.startElement("p").characters("duration").endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.startElement("td");
+                htmlWriter.startElement("div").attribute("class", String.format("infoBox %s", results.getStatusClass())).attribute("id", "successRate");
+                htmlWriter.startElement("div").attribute("class", "percent").characters(results.getFormattedSuccessRate()).endElement();
+                htmlWriter.startElement("p").characters("successful").endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
+                htmlWriter.endElement();
             }
         };
     }
 
     @Override
-    protected DomReportRenderer<T> getContentRenderer() {
-        return new DomReportRenderer<T>() {
+    protected ReportRenderer<T, SimpleHtmlWriter> getContentRenderer() {
+        return new ReportRenderer<T, SimpleHtmlWriter>() {
             @Override
-            public void render(T model, Element content) {
+            public void render(T model, SimpleHtmlWriter htmlWriter) throws IOException {
                 PageRenderer.this.results = model;
                 tabsRenderer.clear();
                 registerTabs();
-                renderTabs(content);
+                renderTabs(htmlWriter);
             }
         };
     }

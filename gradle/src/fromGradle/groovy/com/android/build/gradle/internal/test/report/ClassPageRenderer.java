@@ -19,11 +19,12 @@ package com.android.build.gradle.internal.test.report;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import org.gradle.api.Action;
+import org.gradle.api.internal.ErroringAction;
+import org.gradle.api.internal.html.SimpleHtmlWriter;
 import org.gradle.api.internal.tasks.testing.junit.report.TestFailure;
 import org.gradle.reporting.CodePanelRenderer;
-import org.w3c.dom.Element;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -46,21 +47,21 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
         return getModel().getTitle();
     }
 
-    @Override protected void renderBreadcrumbs(Element parent) {
-        Element div = append(parent, "div");
-        div.setAttribute("class", "breadcrumbs");
-        appendLink(div, "index.html", "all");
-        appendText(div, " > ");
-        appendLink(div,
-                String.format("%s.html", getResults().getPackageResults().getFilename(reportType)),
-                getResults().getPackageResults().getName());
-        appendText(div, String.format(" > %s", getResults().getSimpleName()));
+    @Override
+    protected void renderBreadcrumbs(SimpleHtmlWriter htmlWriter) throws IOException {
+        htmlWriter.startElement("div").attribute("class", "breadcrumbs")
+                .startElement("a").attribute("href", "index.html").characters("all").endElement()
+                .characters(" > ")
+                .startElement("a").attribute("href", String.format("%s.html", getResults().getPackageResults().getFilename(reportType))).characters(getResults().getPackageResults().getName()).endElement()
+                .characters(String.format(" > %s", getResults().getSimpleName()))
+        .endElement();
     }
 
-    private void renderTests(Element parent) {
-        Element table = append(parent, "table");
-        Element thead = append(table, "thead");
-        Element tr = append(thead, "tr");
+    private void renderTests(SimpleHtmlWriter htmlWriter) throws IOException {
+        htmlWriter.startElement("table")
+                .startElement("thead")
+                .startElement("tr")
+                .startElement("th").characters("Test").endElement();
 
         // get all the results per device and per test name
         Map<String, Map<String, TestResult>> results = getResults().getTestResultsMap();
@@ -69,10 +70,10 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
         List<String> devices = Lists.newArrayList(results.keySet());
         Collections.sort(devices);
 
-        appendWithText(tr, "th", "Test");
         for (String device : devices) {
-            appendWithText(tr, "th", device);
+            htmlWriter.startElement("th").characters(device).endElement();
         }
+        htmlWriter.endElement().endElement(); // tr/thead
 
         // gather all tests
         Set<String> tests = Sets.newHashSet();
@@ -83,8 +84,7 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
         Collections.sort(sortedTests);
 
         for (String testName : sortedTests) {
-            tr = append(table, "tr");
-            Element td = appendWithText(tr, "td", testName);
+            htmlWriter.startElement("tr").startElement("td").characters(testName).endElement();
 
             ResultType currentType = ResultType.SKIPPED;
 
@@ -93,17 +93,20 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
                 Map<String, TestResult> deviceMap = results.get(device);
                 TestResult test = deviceMap.get(testName);
 
-                Element deviceTd = appendWithText(tr, "td",
-                        String.format("%s (%s)",
-                                test.getFormattedResultType(), test.getFormattedDuration()));
-                deviceTd.setAttribute("class", test.getStatusClass());
+                htmlWriter.startElement("td").attribute("class", test.getStatusClass())
+                        .characters(String.format("%s (%s)",
+                            test.getFormattedResultType(), test.getFormattedDuration()))
+                .endElement();
 
                 currentType = combineResultType(currentType, test.getResultType());
             }
 
             // finally based on whether if a single test failed, set the class on the test name.
-            td.setAttribute("class", getStatusClass(currentType));
+//todo            td.setAttribute("class", getStatusClass(currentType));
+
+            htmlWriter.endElement(); //tr
         }
+        htmlWriter.endElement(); // table
     }
 
     public static ResultType combineResultType(ResultType currentType, ResultType newType) {
@@ -153,7 +156,7 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
     }
 
     @Override
-    protected void renderFailures(Element parent) {
+    protected void renderFailures(SimpleHtmlWriter htmlWriter) throws IOException {
         // get all the results per device and per test name
         Map<String, Map<String, TestResult>> results = getResults().getTestResultsMap();
 
@@ -189,10 +192,6 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
                 testPassPercent.put(testName, percent);
             }
 
-            Element div = append(parent, "div");
-            div.setAttribute("class", "test");
-            append(div, "a").setAttribute("name", test.getId().toString());
-
             String name;
             if (percent.total == 1) {
                 name = testName;
@@ -203,45 +202,25 @@ class ClassPageRenderer extends PageRenderer<ClassTestResults> {
                         percent.failed, percent.total);
             }
 
-            appendWithText(div, "h3", name).setAttribute("class", test.getStatusClass());
+            htmlWriter.startElement("div").attribute("class", "test")
+                .startElement("a").attribute("name", test.getId().toString()).characters("").endElement() //browsers dont understand <a name="..."/>
+                    .startElement("h3").attribute("class", test.getStatusClass()).characters(name).endElement();
             for (TestFailure failure : test.getFailures()) {
-                codePanelRenderer.render(failure.getStackTrace(), div);
+                codePanelRenderer.render(failure.getStackTrace(), htmlWriter);
             }
+            htmlWriter.endElement();
         }
     }
 
-    private void renderStdOut(Element parent) {
-        codePanelRenderer.render(getResults().getStandardOutput().toString(), parent);
-    }
-
-    private void renderStdErr(Element parent) {
-        codePanelRenderer.render(getResults().getStandardError().toString(), parent);
-    }
-
-    @Override protected void registerTabs() {
+    @Override
+    protected void registerTabs() {
         addFailuresTab();
-        addTab("Tests", new Action<Element>() {
+        addTab("Tests", new ErroringAction<SimpleHtmlWriter>() {
             @Override
-            public void execute(Element element) {
-                renderTests(element);
+            public void doExecute(SimpleHtmlWriter writer) throws IOException {
+                renderTests(writer);
             }
         });
-        if (getResults().getStandardOutput().length() > 0) {
-            addTab("Standard output", new Action<Element>() {
-                @Override
-                public void execute(Element element) {
-                    renderStdOut(element);
-                }
-            });
-        }
-        if (getResults().getStandardError().length() > 0) {
-            addTab("Standard error", new Action<Element>() {
-                @Override
-                public void execute(Element element) {
-                    renderStdErr(element);
-                }
-            });
-        }
         addDeviceAndVariantTabs();
     }
 }

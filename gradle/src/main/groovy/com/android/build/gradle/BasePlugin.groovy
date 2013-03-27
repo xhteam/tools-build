@@ -95,8 +95,8 @@ import static com.android.builder.BuilderConstants.REPORTS
  * Base class for all Android plugins
  */
 public abstract class BasePlugin {
-    public static final String[] GRADLE_SUPPORTED_VERSIONS = [ "1.3", "1.4" ]
-    public static final String GRADLE_MIN_VERSION = "1.3"
+    public static final String[] GRADLE_SUPPORTED_VERSIONS = [ "1.5" ]
+    public static final String GRADLE_MIN_VERSION = "1.5"
 
     public static final String INSTALL_GROUP = "Install"
 
