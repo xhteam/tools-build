@@ -16,20 +16,21 @@
 
 package com.android.builder;
 
+import com.android.builder.model.ProductFlavor;
 import junit.framework.TestCase;
 
-public class ProductFlavorTest extends TestCase {
+public class DefaultProductFlavorTest extends TestCase {
 
-    private ProductFlavor mDefault;
-    private ProductFlavor mDefault2;
-    private ProductFlavor mCustom;
+    private DefaultProductFlavor mDefault;
+    private DefaultProductFlavor mDefault2;
+    private DefaultProductFlavor mCustom;
 
     @Override
     protected void setUp() throws Exception {
-        mDefault = new ProductFlavor("default");
-        mDefault2 = new ProductFlavor("default2");
+        mDefault = new DefaultProductFlavor("default");
+        mDefault2 = new DefaultProductFlavor("default2");
 
-        mCustom = new ProductFlavor("custom");
+        mCustom = new DefaultProductFlavor("custom");
         mCustom.setMinSdkVersion(42);
         mCustom.setTargetSdkVersion(43);
         mCustom.setRenderscriptTargetApi(17);

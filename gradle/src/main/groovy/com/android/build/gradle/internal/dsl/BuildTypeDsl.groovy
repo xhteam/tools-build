@@ -17,14 +17,14 @@
 package com.android.build.gradle.internal.dsl
 
 import com.android.annotations.NonNull
-import com.android.builder.BuildType
+import com.android.builder.DefaultBuildType
 import com.android.builder.BuilderConstants
 import com.android.builder.signing.SigningConfig
 
 /**
  * DSL overlay to make methods that accept String... work.
  */
-public class BuildTypeDsl extends BuildType implements Serializable {
+public class BuildTypeDsl extends DefaultBuildType implements Serializable {
     private static final long serialVersionUID = 1L
 
     BuildTypeDsl(@NonNull String name) {
@@ -43,7 +43,7 @@ public class BuildTypeDsl extends BuildType implements Serializable {
         }
     }
 
-    public BuildTypeDsl initWith(BuildType that) {
+    public BuildTypeDsl initWith(DefaultBuildType that) {
         setDebuggable(that.isDebuggable())
         setJniDebugBuild(that.isJniDebugBuild())
         setRenderscriptDebugBuild(that.isRenderscriptDebugBuild())

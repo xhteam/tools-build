@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.builder;
+package com.android.builder.model;
 
 import com.android.annotations.NonNull;
 
@@ -21,19 +21,33 @@ import java.io.File;
 import java.util.Set;
 
 /**
- * Represent an Android SourceProvider for a given configuration.
+ * Represent a SourceProvider for a given configuration.
+ *
+ * TODO: source filters?
  */
 public interface SourceProvider {
+
+    @NonNull
     File getManifestFile();
 
-    Set<File> getAidlDirectories();
-
-    Set<File> getRenderscriptDirectories();
-
-    Set<File> getJniDirectories();
+    @NonNull
+    Set<File> getJavaDirectories();
 
     @NonNull
     Set<File> getResourcesDirectories();
 
+    @NonNull
+    Set<File> getAidlDirectories();
+
+    @NonNull
+    Set<File> getRenderscriptDirectories();
+
+    @NonNull
+    Set<File> getJniDirectories();
+
+    @NonNull
+    Set<File> getResDirectories();
+
+    @NonNull
     Set<File> getAssetsDirectories();
 }

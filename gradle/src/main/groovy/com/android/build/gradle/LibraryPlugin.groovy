@@ -38,6 +38,7 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 
 import javax.inject.Inject
 /**
@@ -52,8 +53,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
     BuildTypeData releaseBuildTypeData
 
     @Inject
-    public LibraryPlugin(Instantiator instantiator) {
-        super(instantiator)
+    public LibraryPlugin(Instantiator instantiator, ToolingModelBuilderRegistry registry) {
+        super(instantiator, registry)
     }
 
     @Override

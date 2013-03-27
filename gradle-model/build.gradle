@@ -1,0 +1,71 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'signing'
+
+repositories {
+    maven {
+        url 'http://repo.gradle.org/gradle/libs-snapshots-local'
+        //url 'http://repo.gradle.org/gradle/libs-releases-local'
+    }
+}
+
+def toolingApiVersion = gradle.gradleVersion
+
+dependencies {
+    // should be build-model but until builder is in a repo w/o it's local dependencies, we have to
+    // depend on builder itself to not have a dependency on 'common'
+    //compile project(':builder-model')
+    compile project(':builder')
+
+    testCompile 'junit:junit:3.8.1'
+    testCompile "org.gradle:gradle-tooling-api:${toolingApiVersion}"
+    // Need an SLF4J implementation at runtime
+    testRuntime 'org.slf4j:slf4j-simple:1.7.2'
+}
+
+def getVersion() {
+    if (project.has("release")) {
+        return project.ext.baseVersion
+    }
+
+    return project.ext.baseVersion + '-SNAPSHOT'
+}
+
+test.dependsOn ':gradle:publishLocal'
+
+version = getVersion()
+archivesBaseName = 'gradle-model'
+
+task publishLocal(type: Upload) {
+    configuration = configurations.archives
+    repositories {
+        mavenDeployer {
+            repository(url: uri("$rootDir/repo"))
+        }
+    }
+}
+
+// custom tasks for creating source/javadoc jars
+task sourcesJar(type: Jar, dependsOn:classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+javadoc {
+    exclude               "**/internal/**"
+    options.memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
+
+    title                 "Android Model"
+}
+
+task javadocJar(type: Jar, dependsOn:javadoc) {
+    classifier         'javadoc'
+    from               javadoc.destinationDir
+}
+ 
+// add javadoc/source jar tasks as artifacts
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+}

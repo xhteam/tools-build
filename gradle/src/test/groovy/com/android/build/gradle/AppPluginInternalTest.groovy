@@ -20,7 +20,7 @@ import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.test.BaseTest
 import com.android.build.gradle.internal.test.PluginHolder
-import com.android.builder.BuildType
+import com.android.builder.DefaultBuildType
 import com.android.builder.BuilderConstants
 import com.android.builder.signing.KeystoreHelper
 import com.android.builder.signing.SigningConfig
@@ -371,7 +371,7 @@ public class AppPluginInternalTest extends BaseTest {
         AppPlugin plugin = AppPlugin.pluginHolder.plugin
 
         // check that the debug buildType has the updated debug signing config.
-        BuildType buildType = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
+        DefaultBuildType buildType = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
         SigningConfig signingConfig = buildType.signingConfig
         assertEquals(plugin.signingConfigs.get(BuilderConstants.DEBUG), signingConfig)
         assertEquals("foo", signingConfig.storePassword)

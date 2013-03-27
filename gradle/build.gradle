@@ -27,6 +27,7 @@ dependencies {
     gradleApi gradleApi()
     groovy localGroovy()
     compile project(':builder')
+    compile project(':gradle-model')
 
     testCompile 'junit:junit:3.8.1'
 
@@ -68,6 +69,7 @@ task publishLocal(type: Upload) {
     }
 }
 publishLocal.dependsOn ':builder:publishLocal'
+publishLocal.dependsOn ':gradle-model:publishLocal'
 
 task buildTest(type: Test, dependsOn: publishLocal) {
     testClassesDir = sourceSets.buildTest.output.classesDir

@@ -29,7 +29,7 @@ import java.security.CodeSource
 public abstract class BaseTest extends TestCase {
 
     /**
-     * Returns the gradle plugin test folder.
+     * Returns the root dir for the gradle plugin project
      */
     protected File getRootDir() {
         CodeSource source = getClass().getProtectionDomain().getCodeSource()
@@ -46,7 +46,7 @@ public abstract class BaseTest extends TestCase {
             }
         }
 
-        fail("Fail to get tests folder")
+        fail("Fail to get the tools/build folder")
     }
 
     /**

@@ -25,8 +25,8 @@ import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ProcessManifest
 import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
-import com.android.builder.BuildType
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultBuildType
+import com.android.builder.DefaultProductFlavor
 import com.android.builder.signing.SigningConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
@@ -69,17 +69,17 @@ public class DefaultBuildVariant implements BuildVariant {
     }
 
     @Override
-    BuildType getBuildType() {
+    DefaultBuildType getBuildType() {
         return variant.config.buildType
     }
 
     @Override
-    List<ProductFlavor> getProductFlavors() {
+    List<DefaultProductFlavor> getProductFlavors() {
         return variant.config.flavorConfigs
     }
 
     @Override
-    ProductFlavor getMergedFlavor() {
+    DefaultProductFlavor getMergedFlavor() {
         return variant.config.mergedFlavor
     }
 

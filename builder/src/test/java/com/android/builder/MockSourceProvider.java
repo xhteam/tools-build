@@ -16,6 +16,9 @@
 
 package com.android.builder;
 
+import com.android.annotations.NonNull;
+import com.android.builder.model.SourceProvider;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.Set;
@@ -31,32 +34,50 @@ class MockSourceProvider implements SourceProvider {
 
     private final String mRoot;
 
+    @NonNull
+    @Override
+    public Set<File> getJavaDirectories() {
+        return Collections.singleton(new File(mRoot, "java"));
+    }
+
+    @NonNull
     @Override
     public Set<File> getResourcesDirectories() {
+        return Collections.singleton(new File(mRoot, "resources"));
+    }
+
+    @Override
+    @NonNull
+    public Set<File> getResDirectories() {
         return Collections.singleton(new File(mRoot, "res"));
     }
 
     @Override
+    @NonNull
     public Set<File> getAssetsDirectories() {
         return Collections.singleton(new File(mRoot, "assets"));
     }
 
     @Override
+    @NonNull
     public File getManifestFile() {
         return new File(mRoot, "AndroidManifest.xml");
     }
 
     @Override
+    @NonNull
     public Set<File> getAidlDirectories() {
         return Collections.singleton(new File(mRoot, "aidl"));
     }
 
     @Override
+    @NonNull
     public Set<File> getRenderscriptDirectories() {
         return Collections.singleton(new File(mRoot, "rs"));
     }
 
     @Override
+    @NonNull
     public Set<File> getJniDirectories() {
         return Collections.singleton(new File(mRoot, "jni"));
     }

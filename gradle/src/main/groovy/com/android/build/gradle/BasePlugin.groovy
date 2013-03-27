@@ -28,6 +28,7 @@ import com.android.build.gradle.internal.dependency.DependencyChecker
 import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
+import com.android.build.gradle.internal.model.ModelBuilder
 import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.tasks.DependencyReportTask
 import com.android.build.gradle.internal.tasks.InstallTask
@@ -52,9 +53,9 @@ import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
 import com.android.builder.DefaultSdkParser
 import com.android.builder.PlatformSdkParser
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultProductFlavor
 import com.android.builder.SdkParser
-import com.android.builder.SourceProvider
+import com.android.builder.model.SourceProvider
 import com.android.builder.VariantConfiguration
 import com.android.builder.dependency.AndroidDependency
 import com.android.builder.dependency.JarDependency
@@ -83,6 +84,7 @@ import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.gradle.util.GUtil
 
 import static com.android.builder.BuilderConstants.EXT_LIB_ARCHIVE
@@ -95,14 +97,15 @@ import static com.android.builder.BuilderConstants.REPORTS
  * Base class for all Android plugins
  */
 public abstract class BasePlugin {
-    public static final String[] GRADLE_SUPPORTED_VERSIONS = [ "1.5" ]
-    public static final String GRADLE_MIN_VERSION = "1.5"
+    public static final String[] GRADLE_SUPPORTED_VERSIONS = [ "1.6-20130328033949+0000" ]
+    public static final String GRADLE_MIN_VERSION = "1.6-20130328033949+0000"
 
     public static final String INSTALL_GROUP = "Install"
 
     protected static File TEST_SDK_DIR;
 
     protected Instantiator instantiator
+    private ToolingModelBuilderRegistry registry
 
     private final Map<Object, AndroidBuilder> builders = [:]
 
@@ -116,7 +119,7 @@ public abstract class BasePlugin {
 
     private boolean hasCreatedTasks = false
 
-    private ProductFlavorData<ProductFlavor> defaultConfigData
+    private ProductFlavorData<DefaultProductFlavor> defaultConfigData
     protected AndroidSourceSet mainSourceSet
     protected AndroidSourceSet testSourceSet
 
@@ -126,8 +129,9 @@ public abstract class BasePlugin {
 
     protected abstract BaseExtension getAndroidExtension()
 
-    protected BasePlugin(Instantiator instantiator) {
+    protected BasePlugin(Instantiator instantiator, ToolingModelBuilderRegistry registry) {
         this.instantiator = instantiator
+        this.registry = registry
     }
 
     protected abstract BaseExtension getExtension()
@@ -139,6 +143,9 @@ public abstract class BasePlugin {
         checkGradleVersion()
 
         project.apply plugin: JavaBasePlugin
+
+        // Register a builder for the custom tooling model
+        registry.register(new ModelBuilder());
 
         project.tasks.assemble.description =
             "Assembles all variants of all applications and secondary packages."
@@ -192,12 +199,12 @@ public abstract class BasePlugin {
         createReportTasks()
     }
 
-    protected setDefaultConfig(ProductFlavor defaultConfig,
+    protected setDefaultConfig(DefaultProductFlavor defaultConfig,
                                NamedDomainObjectContainer<AndroidSourceSet> sourceSets) {
         mainSourceSet = sourceSets.create(defaultConfig.name)
         testSourceSet = sourceSets.create(INSTRUMENTATION_TEST)
 
-        defaultConfigData = new ProductFlavorData<ProductFlavor>(defaultConfig, mainSourceSet,
+        defaultConfigData = new ProductFlavorData<DefaultProductFlavor>(defaultConfig, mainSourceSet,
                 testSourceSet, project, ConfigurationDependencies.ConfigType.DEFAULT)
     }
 
@@ -317,7 +324,7 @@ public abstract class BasePlugin {
         processManifestTask.variant = variant
 
         VariantConfiguration config = variant.config
-        ProductFlavor mergedFlavor = config.mergedFlavor
+        DefaultProductFlavor mergedFlavor = config.mergedFlavor
 
         processManifestTask.conventionMapping.mainManifest = {
             config.mainManifest

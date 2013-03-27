@@ -18,10 +18,12 @@ package com.android.builder;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.builder.internal.BuildConfigImpl;
+import com.android.builder.model.BuildType;
 import com.android.builder.signing.SigningConfig;
 import com.google.common.base.Objects;
 
-public class BuildType extends BuildConfig {
+public class DefaultBuildType extends BuildConfigImpl implements BuildType {
     private static final long serialVersionUID = 1L;
 
     private final String mName;
@@ -36,33 +38,39 @@ public class BuildType extends BuildConfig {
 
     private boolean mZipAlign = true;
 
-    public BuildType(@NonNull String name) {
+    public DefaultBuildType(@NonNull String name) {
         mName = name;
     }
 
+    @Override
     @NonNull
     public String getName() {
         return mName;
     }
 
+    @NonNull
     public BuildType setDebuggable(boolean debuggable) {
         mDebuggable = debuggable;
         return this;
     }
 
+    @Override
     public boolean isDebuggable() {
         return mDebuggable;
     }
 
+    @NonNull
     public BuildType setJniDebugBuild(boolean jniDebugBuild) {
         mJniDebugBuild = jniDebugBuild;
         return this;
     }
 
+    @Override
     public boolean isJniDebugBuild() {
         return mJniDebugBuild;
     }
 
+    @Override
     public boolean isRenderscriptDebugBuild() {
         return mRenderscriptDebugBuild;
     }
@@ -71,6 +79,7 @@ public class BuildType extends BuildConfig {
         mRenderscriptDebugBuild = renderscriptDebugBuild;
     }
 
+    @Override
     public int getRenderscriptOptimLevel() {
         return mRenderscriptOptimLevel;
     }
@@ -79,42 +88,51 @@ public class BuildType extends BuildConfig {
         mRenderscriptOptimLevel = renderscriptOptimLevel;
     }
 
+    @NonNull
     public BuildType setPackageNameSuffix(@Nullable String packageNameSuffix) {
         mPackageNameSuffix = packageNameSuffix;
         return this;
     }
 
+    @Override
     @Nullable public String getPackageNameSuffix() {
         return mPackageNameSuffix;
     }
 
+    @NonNull
     public BuildType setVersionNameSuffix(@Nullable String versionNameSuffix) {
         mVersionNameSuffix = versionNameSuffix;
         return this;
     }
 
+    @Override
     @Nullable public String getVersionNameSuffix() {
         return mVersionNameSuffix;
     }
 
+    @NonNull
     public BuildType setRunProguard(boolean runProguard) {
         mRunProguard = runProguard;
         return this;
     }
 
+    @Override
     public boolean isRunProguard() {
         return mRunProguard;
     }
 
+    @NonNull
     public BuildType setZipAlign(boolean zipAlign) {
         mZipAlign = zipAlign;
         return this;
     }
 
+    @Override
     public boolean isZipAlign() {
         return mZipAlign;
     }
 
+    @NonNull
     public BuildType setSigningConfig(@Nullable SigningConfig signingConfig) {
         mSigningConfig = signingConfig;
         return this;
@@ -131,7 +149,7 @@ public class BuildType extends BuildConfig {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        BuildType buildType = (BuildType) o;
+        DefaultBuildType buildType = (DefaultBuildType) o;
 
         if (!mName.equals(buildType.mName)) return false;
         if (mDebuggable != buildType.mDebuggable) return false;
@@ -173,6 +191,7 @@ public class BuildType extends BuildConfig {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return Objects.toStringHelper(this)
                 .add("name", mName)

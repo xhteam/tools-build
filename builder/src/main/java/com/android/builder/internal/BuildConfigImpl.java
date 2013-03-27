@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.builder;
+package com.android.builder.internal;
+
+import com.android.annotations.NonNull;
+import com.android.builder.model.BuildConfig;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,7 +27,7 @@ import java.util.List;
 /**
  * An object that contain a BuildConfig configuration
  */
-public class BuildConfig implements Serializable {
+public class BuildConfigImpl implements Serializable, BuildConfig {
     private static final long serialVersionUID = 1L;
 
     private final List<String> mBuildConfigLines = new ArrayList<String>();
@@ -39,6 +42,8 @@ public class BuildConfig implements Serializable {
         mBuildConfigLines.add(line);
     }
 
+    @Override
+    @NonNull
     public List<String> getBuildConfig() {
         return mBuildConfigLines;
     }
@@ -48,10 +53,9 @@ public class BuildConfig implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BuildConfig that = (BuildConfig) o;
+        BuildConfigImpl that = (BuildConfigImpl) o;
 
         return mBuildConfigLines.equals(that.mBuildConfigLines);
-
     }
 
     @Override

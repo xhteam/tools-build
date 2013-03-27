@@ -22,6 +22,11 @@ import com.android.annotations.VisibleForTesting;
 import com.android.builder.dependency.AndroidDependency;
 import com.android.builder.dependency.DependencyContainer;
 import com.android.builder.dependency.JarDependency;
+import com.android.builder.model.BuildType;
+import com.android.builder.model.ProductFlavor;
+import com.android.builder.model.SourceProvider;
+import com.android.builder.resources.AssetSet;
+import com.android.builder.resources.ResourceSet;
 import com.android.builder.signing.SigningConfig;
 import com.android.ide.common.res2.AssetSet;
 import com.android.ide.common.res2.ResourceSet;
@@ -43,14 +48,14 @@ public class VariantConfiguration {
 
     private static final ManifestParser sManifestParser = new DefaultManifestParser();
 
-    private final ProductFlavor mDefaultConfig;
+    private final DefaultProductFlavor mDefaultConfig;
     private final SourceProvider mDefaultSourceProvider;
 
-    private final BuildType mBuildType;
+    private final DefaultBuildType mBuildType;
     /** SourceProvider for the BuildType. Can be null */
     private final SourceProvider mBuildTypeSourceProvider;
 
-    private final List<ProductFlavor> mFlavorConfigs = Lists.newArrayList();
+    private final List<DefaultProductFlavor> mFlavorConfigs = Lists.newArrayList();
     private final List<SourceProvider> mFlavorSourceProviders = Lists.newArrayList();
 
     private final Type mType;
@@ -61,7 +66,7 @@ public class VariantConfiguration {
      * for the library can use the library as if it was a normal dependency. */
     private AndroidDependency mOutput;
 
-    private ProductFlavor mMergedFlavor;
+    private DefaultProductFlavor mMergedFlavor;
 
     private final Set<JarDependency> mJars = Sets.newHashSet();
 
@@ -99,8 +104,8 @@ public class VariantConfiguration {
      * @param debugName an optional debug name
      */
     public VariantConfiguration(
-            @NonNull ProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
-            @NonNull BuildType buildType, @NonNull SourceProvider buildTypeSourceProvider,
+            @NonNull DefaultProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
+            @NonNull DefaultBuildType buildType, @NonNull SourceProvider buildTypeSourceProvider,
             @Nullable String debugName) {
         this(defaultConfig, defaultSourceProvider,
                 buildType, buildTypeSourceProvider,
@@ -119,8 +124,8 @@ public class VariantConfiguration {
      * @param debugName an optional debug name
      */
     public VariantConfiguration(
-            @NonNull ProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
-            @NonNull BuildType buildType, @NonNull SourceProvider buildTypeSourceProvider,
+            @NonNull DefaultProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
+            @NonNull DefaultBuildType buildType, @NonNull SourceProvider buildTypeSourceProvider,
             @NonNull Type type, @Nullable String debugName) {
         this(defaultConfig, defaultSourceProvider,
                 buildType, buildTypeSourceProvider,
@@ -140,8 +145,8 @@ public class VariantConfiguration {
      * @param debugName an optional debug name
      */
     public VariantConfiguration(
-            @NonNull ProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
-            @NonNull BuildType buildType, SourceProvider buildTypeSourceProvider,
+            @NonNull DefaultProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
+            @NonNull DefaultBuildType buildType, SourceProvider buildTypeSourceProvider,
             @NonNull Type type, @Nullable VariantConfiguration testedConfig,
             @Nullable String debugName) {
         mDefaultConfig = checkNotNull(defaultConfig);
@@ -175,7 +180,7 @@ public class VariantConfiguration {
      * @return the config object
      */
     @NonNull
-    public VariantConfiguration addProductFlavor(@NonNull ProductFlavor productFlavor,
+    public VariantConfiguration addProductFlavor(@NonNull DefaultProductFlavor productFlavor,
                                                  @NonNull SourceProvider sourceProvider) {
         mFlavorConfigs.add(productFlavor);
         mFlavorSourceProviders.add(sourceProvider);
@@ -264,7 +269,7 @@ public class VariantConfiguration {
     }
 
     @NonNull
-    public List<ProductFlavor> getFlavorConfigs() {
+    public List<DefaultProductFlavor> getFlavorConfigs() {
         return mFlavorConfigs;
     }
 
@@ -550,7 +555,7 @@ public class VariantConfiguration {
             }
         }
 
-        Set<File> mainResDirs = mDefaultSourceProvider.getResourcesDirectories();
+        Set<File> mainResDirs = mDefaultSourceProvider.getResDirectories();
 
         ResourceSet resourceSet = new ResourceSet(BuilderConstants.MAIN);
         resourceSet.addSources(mainResDirs);
@@ -563,7 +568,7 @@ public class VariantConfiguration {
         for (int n = mFlavorSourceProviders.size() - 1; n >= 0 ; n--) {
             SourceProvider sourceProvider = mFlavorSourceProviders.get(n);
 
-            Set<File> flavorResDirs = sourceProvider.getResourcesDirectories();
+            Set<File> flavorResDirs = sourceProvider.getResDirectories();
             // we need the same of the flavor config, but it's in a different list.
             // This is fine as both list are parallel collections with the same number of items.
             resourceSet = new ResourceSet(mFlavorConfigs.get(n).getName());
@@ -572,7 +577,7 @@ public class VariantConfiguration {
         }
 
         if (mBuildTypeSourceProvider != null) {
-            Set<File> typeResDirs = mBuildTypeSourceProvider.getResourcesDirectories();
+            Set<File> typeResDirs = mBuildTypeSourceProvider.getResDirectories();
             resourceSet = new ResourceSet(mBuildType.getName());
             resourceSet.addSources(typeResDirs);
             resourceSets.add(resourceSet);
@@ -777,7 +782,7 @@ public class VariantConfiguration {
             fullList.addAll(list);
         }
 
-        for (ProductFlavor flavor : mFlavorConfigs) {
+        for (DefaultProductFlavor flavor : mFlavorConfigs) {
             list = flavor.getBuildConfig();
             if (!list.isEmpty()) {
                 fullList.add("// lines from product flavor: " + flavor.getName());

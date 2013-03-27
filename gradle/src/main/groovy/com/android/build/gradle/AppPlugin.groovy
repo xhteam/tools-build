@@ -31,7 +31,7 @@ import com.android.build.gradle.internal.tasks.AndroidReportTask
 import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.test.PluginHolder
 import com.android.build.gradle.internal.test.report.ReportType
-import com.android.builder.BuildType
+import com.android.builder.DefaultBuildType
 import com.android.builder.VariantConfiguration
 import com.android.builder.signing.SigningConfig
 import com.google.common.collect.ArrayListMultimap
@@ -42,6 +42,7 @@ import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 
 import javax.inject.Inject
 
@@ -68,8 +69,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     AndroidReportTask testTask
 
     @Inject
-    public AppPlugin(Instantiator instantiator) {
-        super(instantiator)
+    public AppPlugin(Instantiator instantiator, ToolingModelBuilderRegistry registry) {
+        super(instantiator, registry)
     }
 
     @Override
@@ -86,7 +87,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             pluginHolder.plugin = this;
         }
 
-        def buildTypeContainer = project.container(BuildType, new BuildTypeFactory(instantiator))
+        def buildTypeContainer = project.container(DefaultBuildType, new BuildTypeFactory(instantiator))
         def productFlavorContainer = project.container(GroupableProductFlavor,
                 new GroupableProductFlavorFactory(instantiator))
         def signingConfigContainer = project.container(SigningConfig,
@@ -103,7 +104,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             signingConfigs[signingConfigDsl.name] = signingConfig
         }
 
-        buildTypeContainer.whenObjectAdded { BuildType buildType ->
+        buildTypeContainer.whenObjectAdded { DefaultBuildType buildType ->
             ((BuildTypeDsl)buildType).init(signingConfigContainer.getByName(DEBUG))
             addBuildType(buildType)
         }
@@ -134,7 +135,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
      * and adding it to the map.
      * @param buildType the build type.
      */
-    private void addBuildType(BuildType buildType) {
+    private void addBuildType(DefaultBuildType buildType) {
         String name = buildType.name
         checkName(name, "BuildType")
 

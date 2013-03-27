@@ -17,7 +17,7 @@ package com.android.build.gradle
 
 import com.android.build.gradle.internal.dsl.BuildTypeDsl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
-import com.android.builder.BuildType
+import com.android.builder.DefaultBuildType
 import com.android.builder.BuilderConstants
 import com.android.builder.signing.SigningConfig
 import org.gradle.api.Action
@@ -29,8 +29,8 @@ import org.gradle.internal.reflect.Instantiator
  */
 public class LibraryExtension extends BaseExtension {
 
-    final BuildType debug
-    final BuildType release
+    final DefaultBuildType debug
+    final DefaultBuildType release
     final SigningConfig debugSigningConfig
 
     LibraryExtension(BasePlugin plugin, ProjectInternal project, Instantiator instantiator) {
@@ -46,11 +46,11 @@ public class LibraryExtension extends BaseExtension {
         release.init(null)
     }
 
-    void debug(Action<BuildType> action) {
+    void debug(Action<DefaultBuildType> action) {
         action.execute(debug);
     }
 
-    void release(Action<BuildType> action) {
+    void release(Action<DefaultBuildType> action) {
         action.execute(release);
     }
 

@@ -71,7 +71,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * This is the main builder class. It is given all the data to process the build (such as
- * {@link ProductFlavor}s, {@link BuildType} and dependencies) and use them when doing specific
+ * {@link DefaultProductFlavor}s, {@link DefaultBuildType} and dependencies) and use them when doing specific
  * build steps.
  *
  * To use:
@@ -235,10 +235,10 @@ public class AndroidBuilder {
      * @see com.android.builder.VariantConfiguration#getManifestOverlays()
      * @see com.android.builder.VariantConfiguration#getDirectLibraries()
      * @see com.android.builder.VariantConfiguration#getMergedFlavor()
-     * @see com.android.builder.ProductFlavor#getVersionCode()
-     * @see com.android.builder.ProductFlavor#getVersionName()
-     * @see com.android.builder.ProductFlavor#getMinSdkVersion()
-     * @see com.android.builder.ProductFlavor#getTargetSdkVersion()
+     * @see DefaultProductFlavor#getVersionCode()
+     * @see DefaultProductFlavor#getVersionName()
+     * @see DefaultProductFlavor#getMinSdkVersion()
+     * @see DefaultProductFlavor#getTargetSdkVersion()
      */
     public void processManifest(
             @NonNull File mainManifest,

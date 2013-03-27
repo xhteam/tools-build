@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal
-import com.android.build.gradle.BasePlugin
+
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.TestFlavorTask
 import com.android.build.gradle.tasks.AidlCompile
@@ -27,9 +27,8 @@ import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ProcessManifest
 import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
-import com.android.builder.AndroidBuilder
 import com.android.builder.BuilderConstants
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultProductFlavor
 import com.android.builder.VariantConfiguration
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Copy
@@ -116,7 +115,7 @@ public abstract class ApplicationVariant {
 
     protected String getFlavoredName(boolean capitalized) {
         StringBuilder builder = new StringBuilder()
-        for (ProductFlavor flavor : config.flavorConfigs) {
+        for (DefaultProductFlavor flavor : config.flavorConfigs) {
             builder.append(capitalized ? flavor.name.capitalize() : flavor.name)
         }
 

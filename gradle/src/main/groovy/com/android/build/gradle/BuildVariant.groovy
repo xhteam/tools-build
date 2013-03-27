@@ -27,8 +27,8 @@ import com.android.build.gradle.tasks.ProcessAndroidResources
 import com.android.build.gradle.tasks.ProcessManifest
 import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
-import com.android.builder.BuildType
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultBuildType
+import com.android.builder.DefaultProductFlavor
 import com.android.builder.signing.SigningConfig
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
@@ -71,25 +71,25 @@ public interface BuildVariant {
     String getBaseName()
 
     /**
-     * Returns the {@link BuildType} for this build variant.
+     * Returns the {@link DefaultBuildType} for this build variant.
      */
     @NonNull
-    BuildType getBuildType()
+    DefaultBuildType getBuildType()
 
     /**
-     * Returns the list of {@link ProductFlavor} for this build variant.
+     * Returns the list of {@link DefaultProductFlavor} for this build variant.
      *
      * This is always non-null but could be empty.
      */
     @NonNull
-    List<ProductFlavor> getProductFlavors()
+    List<DefaultProductFlavor> getProductFlavors()
 
     /**
-     * Returns a {@link ProductFlavor} that represents the merging of the default config
+     * Returns a {@link DefaultProductFlavor} that represents the merging of the default config
      * and the flavors of this build variant.
      */
     @NonNull
-    ProductFlavor getMergedFlavor()
+    DefaultProductFlavor getMergedFlavor()
 
     /**
      * Returns the output file for this build variants. Depending on the configuration, this could

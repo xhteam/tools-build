@@ -36,6 +36,12 @@ android {
             resources {
                 srcDirs = ['src']
             }
+            aidl {
+                srcDirs = ['src']
+            }
+            renderscript {
+                srcDirs = ['src']
+            }
         }
 
         // this moves src/instrumentTest to tests so all folders follow:

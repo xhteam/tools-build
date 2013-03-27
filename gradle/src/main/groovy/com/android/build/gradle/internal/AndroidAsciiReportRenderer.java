@@ -21,8 +21,8 @@ import com.android.builder.dependency.BundleDependency;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.tasks.diagnostics.internal.GraphRenderer;
 import org.gradle.api.tasks.diagnostics.internal.TextReportRenderer;
+import org.gradle.internal.graph.GraphRenderer;
 import org.gradle.logging.StyledTextOutput;
 import org.gradle.util.GUtil;
 

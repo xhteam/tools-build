@@ -17,7 +17,7 @@ package com.android.build.gradle.internal
 
 import com.android.build.gradle.AndroidSourceSet
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
-import com.android.builder.BuildType
+import com.android.builder.DefaultBuildType
 import org.gradle.api.Project
 import org.gradle.api.Task
 
@@ -26,11 +26,11 @@ import org.gradle.api.Task
  */
 class BuildTypeData extends ConfigurationDependencies {
 
-    final BuildType buildType
+    final DefaultBuildType buildType
 
     final Task assembleTask
 
-    BuildTypeData(BuildType buildType, AndroidSourceSet sourceSet, Project project) {
+    BuildTypeData(DefaultBuildType buildType, AndroidSourceSet sourceSet, Project project) {
         super(project, sourceSet, ConfigType.BUILDTYPE)
 
         this.buildType = buildType

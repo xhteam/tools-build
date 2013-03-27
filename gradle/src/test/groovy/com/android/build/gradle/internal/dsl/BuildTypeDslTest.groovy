@@ -18,7 +18,7 @@ package com.android.build.gradle.internal.dsl
 
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.internal.test.BaseTest
-import com.android.builder.BuildType
+import com.android.builder.DefaultBuildType
 import com.android.builder.BuilderConstants
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
@@ -40,7 +40,7 @@ public class BuildTypeDslTest extends BaseTest {
 
         AppPlugin plugin = AppPlugin.pluginHolder.plugin
 
-        BuildType type = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
+        DefaultBuildType type = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
 
         assertTrue(type.isDebuggable());
         assertFalse(type.isJniDebugBuild());
@@ -62,7 +62,7 @@ public class BuildTypeDslTest extends BaseTest {
 
         AppPlugin plugin = AppPlugin.pluginHolder.plugin
 
-        BuildType type = plugin.buildTypes.get(BuilderConstants.RELEASE).buildType
+        DefaultBuildType type = plugin.buildTypes.get(BuilderConstants.RELEASE).buildType
 
         assertFalse(type.isDebuggable());
         assertFalse(type.isJniDebugBuild());

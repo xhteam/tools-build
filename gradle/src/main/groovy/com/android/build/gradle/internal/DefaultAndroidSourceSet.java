@@ -21,7 +21,7 @@ import com.android.annotations.NonNull;
 import com.android.build.gradle.AndroidSourceDirectorySet;
 import com.android.build.gradle.AndroidSourceFile;
 import com.android.build.gradle.AndroidSourceSet;
-import com.android.builder.SourceProvider;
+import com.android.builder.model.SourceProvider;
 import groovy.lang.Closure;
 import org.gradle.api.file.FileTreeElement;
 import org.gradle.api.file.SourceDirectorySet;
@@ -260,11 +260,24 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
         manifest.srcFile(path + "/" + SdkConstants.FN_ANDROID_MANIFEST_XML);
         aidl.setSrcDirs(Collections.singletonList(path + "/aidl"));
         renderscript.setSrcDirs(Collections.singletonList(path + "/rs"));
-        jni.setSrcDirs(Collections.singletonList(path + "jni"));
+        jni.setSrcDirs(Collections.singletonList(path + "/jni"));
         return this;
     }
 
     // --- SourceProvider
+
+
+    @NonNull
+    @Override
+    public Set<File> getJavaDirectories() {
+        return getJava().getSrcDirs();
+    }
+
+    @NonNull
+    @Override
+    public Set<File> getResourcesDirectories() {
+        return getResources().getSrcDirs();
+    }
 
     @Override
     @NonNull
@@ -292,7 +305,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
 
     @Override
     @NonNull
-    public Set<File> getResourcesDirectories() {
+    public Set<File> getResDirectories() {
         return getRes().getSrcDirs();
     }
 

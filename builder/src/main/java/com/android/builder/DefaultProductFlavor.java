@@ -17,6 +17,9 @@
 package com.android.builder;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
+import com.android.builder.internal.BuildConfigImpl;
+import com.android.builder.model.ProductFlavor;
 import com.android.builder.signing.SigningConfig;
 import com.google.common.base.Objects;
 
@@ -26,7 +29,7 @@ import com.google.common.base.Objects;
  * This is also used to describe the default configuration of all builds, even those that
  * do not contain any flavors.
  */
-public class ProductFlavor extends BuildConfig {
+public class DefaultProductFlavor extends BuildConfigImpl implements ProductFlavor {
     private static final long serialVersionUID = 1L;
 
     private final String mName;
@@ -48,10 +51,12 @@ public class ProductFlavor extends BuildConfig {
      *
      * @see BuilderConstants#MAIN
      */
-    public ProductFlavor(@NonNull String name) {
+    public DefaultProductFlavor(@NonNull String name) {
         mName = name;
     }
 
+    @Override
+    @NonNull
     public String getName() {
         return mName;
     }
@@ -62,11 +67,14 @@ public class ProductFlavor extends BuildConfig {
      * @param packageName the package name
      * @return the flavor object
      */
+    @NonNull
     public ProductFlavor setPackageName(String packageName) {
         mPackageName = packageName;
         return this;
     }
 
+    @Override
+    @Nullable
     public String getPackageName() {
         return mPackageName;
     }
@@ -77,11 +85,13 @@ public class ProductFlavor extends BuildConfig {
      * @param versionCode the version code
      * @return the flavor object
      */
+    @NonNull
     public ProductFlavor setVersionCode(int versionCode) {
         mVersionCode = versionCode;
         return this;
     }
 
+    @Override
     public int getVersionCode() {
         return mVersionCode;
     }
@@ -92,33 +102,41 @@ public class ProductFlavor extends BuildConfig {
      * @param versionName the version name
      * @return the flavor object
      */
+    @NonNull
     public ProductFlavor setVersionName(String versionName) {
         mVersionName = versionName;
         return this;
     }
 
+    @Override
+    @Nullable
     public String getVersionName() {
         return mVersionName;
     }
 
+    @NonNull
     public ProductFlavor setMinSdkVersion(int minSdkVersion) {
         mMinSdkVersion = minSdkVersion;
         return this;
     }
 
+    @Override
     public int getMinSdkVersion() {
         return mMinSdkVersion;
     }
 
+    @NonNull
     public ProductFlavor setTargetSdkVersion(int targetSdkVersion) {
         mTargetSdkVersion = targetSdkVersion;
         return this;
     }
 
+    @Override
     public int getTargetSdkVersion() {
         return mTargetSdkVersion;
     }
 
+    @Override
     public int getRenderscriptTargetApi() {
         return mRenderscriptTargetApi;
     }
@@ -127,28 +145,36 @@ public class ProductFlavor extends BuildConfig {
         mRenderscriptTargetApi = renderscriptTargetApi;
     }
 
+    @NonNull
     public ProductFlavor setTestPackageName(String testPackageName) {
         mTestPackageName = testPackageName;
         return this;
     }
 
+    @Override
+    @Nullable
     public String getTestPackageName() {
         return mTestPackageName;
     }
 
+    @NonNull
     public ProductFlavor setTestInstrumentationRunner(String testInstrumentationRunner) {
         mTestInstrumentationRunner = testInstrumentationRunner;
         return this;
     }
 
+    @Override
+    @Nullable
     public String getTestInstrumentationRunner() {
         return mTestInstrumentationRunner;
     }
 
+    @Nullable
     public SigningConfig getSigningConfig() {
         return mSigningConfig;
     }
 
+    @NonNull
     public ProductFlavor setSigningConfig(SigningConfig signingConfig) {
         mSigningConfig = signingConfig;
         return this;
@@ -159,8 +185,9 @@ public class ProductFlavor extends BuildConfig {
      * @param base the flavor to merge on top of
      * @return a new merged product flavor
      */
-    ProductFlavor mergeOver(@NonNull ProductFlavor base) {
-        ProductFlavor flavor = new ProductFlavor("");
+    @NonNull
+    DefaultProductFlavor mergeOver(@NonNull DefaultProductFlavor base) {
+        DefaultProductFlavor flavor = new DefaultProductFlavor("");
 
         flavor.mMinSdkVersion = chooseInt(mMinSdkVersion, base.mMinSdkVersion);
         flavor.mTargetSdkVersion = chooseInt(mTargetSdkVersion, base.mTargetSdkVersion);
@@ -186,6 +213,7 @@ public class ProductFlavor extends BuildConfig {
         return overlay != -1 ? overlay : base;
     }
 
+    @Nullable
     private String chooseString(String overlay, String base) {
         return overlay != null ? overlay : base;
     }
@@ -196,7 +224,7 @@ public class ProductFlavor extends BuildConfig {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        ProductFlavor that = (ProductFlavor) o;
+        DefaultProductFlavor that = (DefaultProductFlavor) o;
 
         if (!mName.equals(that.mName)) return false;
         if (mMinSdkVersion != that.mMinSdkVersion) return false;
@@ -242,6 +270,7 @@ public class ProductFlavor extends BuildConfig {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return Objects.toStringHelper(this)
                 .add("name", mName)

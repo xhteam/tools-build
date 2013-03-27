@@ -15,17 +15,15 @@
  */
 
 package com.android.build.gradle.internal
-
 import com.android.build.gradle.AndroidSourceSet
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultProductFlavor
 import org.gradle.api.Project
 import org.gradle.api.Task
-
 /**
  * Class containing a ProductFlavor and associated data (sourcesets)
  */
-public class ProductFlavorData<T extends ProductFlavor> extends ConfigurationDependencies {
+public class ProductFlavorData<T extends DefaultProductFlavor> extends ConfigurationDependencies {
 
     final T productFlavor
 

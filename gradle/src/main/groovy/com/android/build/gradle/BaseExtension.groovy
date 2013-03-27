@@ -22,7 +22,7 @@ import com.android.build.gradle.internal.dsl.DexOptionsImpl
 import com.android.build.gradle.internal.dsl.ProductFlavorDsl
 import com.android.build.gradle.internal.test.TestOptions
 import com.android.builder.BuilderConstants
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultProductFlavor
 import com.android.sdklib.repository.FullRevision
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
@@ -39,7 +39,7 @@ public abstract class BaseExtension {
     private String target
     private FullRevision buildToolsRevision
 
-    final ProductFlavor defaultConfig
+    final DefaultProductFlavor defaultConfig
     final AaptOptionsImpl aaptOptions
     final DexOptionsImpl dexOptions
     final TestOptions testOptions
@@ -129,7 +129,7 @@ public abstract class BaseExtension {
         sourceSetsContainer
     }
 
-    void defaultConfig(Action<ProductFlavor> action) {
+    void defaultConfig(Action<DefaultProductFlavor> action) {
         action.execute(defaultConfig)
     }
 

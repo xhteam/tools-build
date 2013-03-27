@@ -1,2 +1,4 @@
+include 'builder-model'
 include 'builder'
+include 'gradle-model'
 include 'gradle'
