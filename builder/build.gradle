@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-project.ext.baseAndroidVersion = "21.2-SNAPSHOT"
+project.ext.baseAndroidVersion = "22.0-SNAPSHOT"
 
 configurations {
     fakeMaven
