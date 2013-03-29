@@ -14,27 +14,27 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.model;
+package com.android.build.gradle.api;
 
 import com.android.annotations.NonNull;
-import com.android.builder.model.ProductFlavor;
-
-import java.io.File;
+import com.android.annotations.Nullable;
+import org.gradle.api.DefaultTask;
 
 /**
- * A build Variant
+ * A Build variant and all its public data.
  */
-public interface Variant {
+public interface TestVariant extends ApkVariant {
 
+    /**
+     * Returns the build variant that is tested by this variant.
+     */
     @NonNull
-    String getName();
+    BaseVariant getTestedVariant();
 
-    @NonNull
-    File getOutput();
-
-    @NonNull
-    String getBuildType();
-
-    @NonNull
-    ProductFlavor getMergedFlavor();
+    /**
+     * Returns the task to run the tests.
+     * Only valid for test project.
+     */
+    @Nullable
+    DefaultTask getInstrumentTest();
 }

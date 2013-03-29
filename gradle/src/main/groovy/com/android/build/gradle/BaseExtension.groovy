@@ -15,6 +15,8 @@
  */
 package com.android.build.gradle
 
+import com.android.build.gradle.api.AndroidSourceSet
+import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.dsl.AaptOptionsImpl
 import com.android.build.gradle.internal.dsl.AndroidSourceSetFactory
@@ -31,6 +33,7 @@ import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.internal.reflect.Instantiator
+
 /**
  * Base android extension for all android plugins.
  */
@@ -46,11 +49,9 @@ public abstract class BaseExtension {
     final CompileOptions compileOptions
 
 
-    private final BasePlugin plugin
-    private final DefaultDomainObjectSet<BuildVariant> buildVariants =
-        new DefaultDomainObjectSet<BuildVariant>(BuildVariant.class)
-    private final DefaultDomainObjectSet<BuildVariant> testBuildVariants =
-        new DefaultDomainObjectSet<BuildVariant>(BuildVariant.class)
+    protected final BasePlugin plugin
+    private final DefaultDomainObjectSet<TestVariant> testVariantList =
+        new DefaultDomainObjectSet<TestVariant>(TestVariant.class)
 
     /**
      * The source sets container.
@@ -149,14 +150,13 @@ public abstract class BaseExtension {
         action.execute(testOptions)
     }
 
-    public DefaultDomainObjectSet<BuildVariant> getBuildVariants() {
+    public DefaultDomainObjectSet<TestVariant> getTestVariants() {
         plugin.createAndroidTasks()
-        return buildVariants
+        return testVariantList
     }
 
-    public DefaultDomainObjectSet<BuildVariant> getTestBuildVariants() {
-        plugin.createAndroidTasks()
-        return testBuildVariants
+    void addTestVariant(TestVariant testVariant) {
+        testVariantList.add(testVariant)
     }
 
     public String getCompileSdkVersion() {

@@ -16,17 +16,16 @@
 
 package com.android.build.gradle
 
-import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.test.BaseTest
 import com.android.build.gradle.internal.test.PluginHolder
-import com.android.builder.DefaultBuildType
+import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.builder.BuilderConstants
+import com.android.builder.DefaultBuildType
 import com.android.builder.signing.KeystoreHelper
 import com.android.builder.signing.SigningConfig
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-
 /**
  * Tests for the internal workings of the app plugin ("android")
  */
@@ -57,16 +56,16 @@ public class AppPluginInternalTest extends BaseTest {
         assertEquals(0, plugin.productFlavors.size())
 
 
-        List<ApplicationVariant> variants = plugin.variants
+        List<BaseVariantData> variants = plugin.variantDataList
         assertEquals(3, variants.size()) // includes the test variant(s)
 
-        ApplicationVariant debugVariant = findVariant(variants, "Debug")
+        BaseVariantData debugVariant = findNamedItem(variants, "Debug")
         assertNotNull(debugVariant)
 
-        ApplicationVariant release = findVariant(variants, "Release")
+        BaseVariantData release = findNamedItem(variants, "Release")
         assertNotNull(release)
 
-        ApplicationVariant test = findVariant(variants, "Test")
+        BaseVariantData test = findNamedItem(variants, "Test")
         assertNotNull(test)
     }
 
@@ -135,21 +134,21 @@ public class AppPluginInternalTest extends BaseTest {
 
         assertEquals(3, plugin.buildTypes.size())
 
-        List<ApplicationVariant> variants = plugin.variants
+        List<BaseVariantData> variants = plugin.variantDataList
         assertEquals(4, variants.size()) // includes the test variant(s)
 
-        ApplicationVariant debugVariant = findVariant(variants, "Debug")
+        BaseVariantData debugVariant = findNamedItem(variants, "Debug")
         assertNotNull(debugVariant)
 
-        ApplicationVariant releaseVariant = findVariant(variants, "Release")
+        BaseVariantData releaseVariant = findNamedItem(variants, "Release")
         assertNotNull(releaseVariant)
 
-        ApplicationVariant stagingVariant = findVariant(variants, "Staging")
+        BaseVariantData stagingVariant = findNamedItem(variants, "Staging")
         assertNotNull(stagingVariant)
 
-        ApplicationVariant testVariant = findVariant(variants, "Test")
+        BaseVariantData testVariant = findNamedItem(variants, "Test")
         assertNotNull(testVariant)
-        assertEquals("staging", testVariant.config.buildType.name)
+        assertEquals("staging", testVariant.variantConfiguration.buildType.name)
     }
 
     public void testFlavors() {
@@ -176,15 +175,15 @@ public class AppPluginInternalTest extends BaseTest {
 
         assertEquals(2, plugin.productFlavors.size())
 
-        List<ApplicationVariant> variants = plugin.variants
+        List<BaseVariantData> variants = plugin.variantDataList
         assertEquals(6, variants.size()) // includes the test variant(s)
 
-        assertNotNull(findVariant(variants, "Flavor1Debug"))
-        assertNotNull(findVariant(variants, "Flavor1Release"))
-        assertNotNull(findVariant(variants, "Flavor1Test"))
-        assertNotNull(findVariant(variants, "Flavor2Debug"))
-        assertNotNull(findVariant(variants, "Flavor2Release"))
-        assertNotNull(findVariant(variants, "Flavor2Test"))
+        assertNotNull(findNamedItem(variants, "Flavor1Debug"))
+        assertNotNull(findNamedItem(variants, "Flavor1Release"))
+        assertNotNull(findNamedItem(variants, "Flavor1Test"))
+        assertNotNull(findNamedItem(variants, "Flavor2Debug"))
+        assertNotNull(findNamedItem(variants, "Flavor2Release"))
+        assertNotNull(findNamedItem(variants, "Flavor2Test"))
     }
 
     public void testMultiFlavors() {
@@ -223,27 +222,27 @@ public class AppPluginInternalTest extends BaseTest {
 
         assertEquals(5, plugin.productFlavors.size())
 
-        List<ApplicationVariant> variants = plugin.variants
+        List<BaseVariantData> variants = plugin.variantDataList
         assertEquals(18, variants.size())   // includes the test variant(s)
 
-        assertNotNull(findVariant(variants, "F1FaDebug"))
-        assertNotNull(findVariant(variants, "F1FbDebug"))
-        assertNotNull(findVariant(variants, "F1FcDebug"))
-        assertNotNull(findVariant(variants, "F2FaDebug"))
-        assertNotNull(findVariant(variants, "F2FbDebug"))
-        assertNotNull(findVariant(variants, "F2FcDebug"))
-        assertNotNull(findVariant(variants, "F1FaRelease"))
-        assertNotNull(findVariant(variants, "F1FbRelease"))
-        assertNotNull(findVariant(variants, "F1FcRelease"))
-        assertNotNull(findVariant(variants, "F2FaRelease"))
-        assertNotNull(findVariant(variants, "F2FbRelease"))
-        assertNotNull(findVariant(variants, "F2FcRelease"))
-        assertNotNull(findVariant(variants, "F1FaTest"))
-        assertNotNull(findVariant(variants, "F1FbTest"))
-        assertNotNull(findVariant(variants, "F1FcTest"))
-        assertNotNull(findVariant(variants, "F2FaTest"))
-        assertNotNull(findVariant(variants, "F2FbTest"))
-        assertNotNull(findVariant(variants, "F2FcTest"))
+        assertNotNull(findNamedItem(variants, "F1FaDebug"))
+        assertNotNull(findNamedItem(variants, "F1FbDebug"))
+        assertNotNull(findNamedItem(variants, "F1FcDebug"))
+        assertNotNull(findNamedItem(variants, "F2FaDebug"))
+        assertNotNull(findNamedItem(variants, "F2FbDebug"))
+        assertNotNull(findNamedItem(variants, "F2FcDebug"))
+        assertNotNull(findNamedItem(variants, "F1FaRelease"))
+        assertNotNull(findNamedItem(variants, "F1FbRelease"))
+        assertNotNull(findNamedItem(variants, "F1FcRelease"))
+        assertNotNull(findNamedItem(variants, "F2FaRelease"))
+        assertNotNull(findNamedItem(variants, "F2FbRelease"))
+        assertNotNull(findNamedItem(variants, "F2FcRelease"))
+        assertNotNull(findNamedItem(variants, "F1FaTest"))
+        assertNotNull(findNamedItem(variants, "F1FbTest"))
+        assertNotNull(findNamedItem(variants, "F1FcTest"))
+        assertNotNull(findNamedItem(variants, "F2FaTest"))
+        assertNotNull(findNamedItem(variants, "F2FbTest"))
+        assertNotNull(findNamedItem(variants, "F2FcTest"))
     }
 
     public void testSigningConfigs() {
@@ -306,44 +305,44 @@ public class AppPluginInternalTest extends BaseTest {
         AppPlugin plugin = AppPlugin.pluginHolder.plugin
         plugin.createAndroidTasks()
 
-        List<ApplicationVariant> variants = plugin.variants
+        List<BaseVariantData> variants = plugin.variantDataList
         assertEquals(8, variants.size())   // includes the test variant(s)
 
-        ApplicationVariant variant
+        BaseVariantData variant
         SigningConfig signingConfig
 
-        variant = findVariant(variants, "Flavor1Debug")
+        variant = findNamedItem(variants, "Flavor1Debug")
         assertNotNull(variant)
-        signingConfig = variant.config.signingConfig
+        signingConfig = variant.variantConfiguration.signingConfig
         assertNotNull(signingConfig)
         assertEquals(KeystoreHelper.defaultDebugKeystoreLocation(), signingConfig.storeFile?.absolutePath)
 
-        variant = findVariant(variants, "Flavor1Staging")
+        variant = findNamedItem(variants, "Flavor1Staging")
         assertNotNull(variant)
-        signingConfig = variant.config.signingConfig
+        signingConfig = variant.variantConfiguration.signingConfig
         assertNull(signingConfig)
 
-        variant = findVariant(variants, "Flavor1Release")
+        variant = findNamedItem(variants, "Flavor1Release")
         assertNotNull(variant)
-        signingConfig = variant.config.signingConfig
+        signingConfig = variant.variantConfiguration.signingConfig
         assertNotNull(signingConfig)
         assertEquals(new File(project.projectDir, "a3"), signingConfig.storeFile)
 
-        variant = findVariant(variants, "Flavor2Debug")
+        variant = findNamedItem(variants, "Flavor2Debug")
         assertNotNull(variant)
-        signingConfig = variant.config.signingConfig
+        signingConfig = variant.variantConfiguration.signingConfig
         assertNotNull(signingConfig)
         assertEquals(KeystoreHelper.defaultDebugKeystoreLocation(), signingConfig.storeFile?.absolutePath)
 
-        variant = findVariant(variants, "Flavor2Staging")
+        variant = findNamedItem(variants, "Flavor2Staging")
         assertNotNull(variant)
-        signingConfig = variant.config.signingConfig
+        signingConfig = variant.variantConfiguration.signingConfig
         assertNotNull(signingConfig)
         assertEquals(new File(project.projectDir, "a1"), signingConfig.storeFile)
 
-        variant = findVariant(variants, "Flavor2Release")
+        variant = findNamedItem(variants, "Flavor2Release")
         assertNotNull(variant)
-        signingConfig = variant.config.signingConfig
+        signingConfig = variant.variantConfiguration.signingConfig
         assertNotNull(signingConfig)
         assertEquals(new File(project.projectDir, "a3"), signingConfig.storeFile)
     }
@@ -425,16 +424,5 @@ public class AppPluginInternalTest extends BaseTest {
 
         assertNotNull(recordedException)
         assertEquals(BadPluginException.class, recordedException.getClass())
-    }
-
-    private static ApplicationVariant findVariant(Collection<ApplicationVariant> variants,
-                                                  String name) {
-        for (ApplicationVariant variant : variants) {
-            if (name.equals(variant.name)) {
-                return variant
-            }
-        }
-
-        return null
     }
 }

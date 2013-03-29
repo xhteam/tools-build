@@ -14,27 +14,17 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.model;
+package com.android.build.gradle.internal
 
-import com.android.annotations.NonNull;
-import com.android.builder.model.ProductFlavor;
-
-import java.io.File;
+import com.android.annotations.NonNull
 
 /**
- * A build Variant
+ * Helper to give access to Groovy string methods from Java classes.
  */
-public interface Variant {
+class StringHelper {
 
     @NonNull
-    String getName();
-
-    @NonNull
-    File getOutput();
-
-    @NonNull
-    String getBuildType();
-
-    @NonNull
-    ProductFlavor getMergedFlavor();
+    public static String capitalize(@NonNull String string) {
+        return string.capitalize()
+    }
 }

@@ -16,7 +16,8 @@
 
 package com.android.build.gradle.internal.dependency
 import com.android.annotations.NonNull
-import com.android.build.gradle.AndroidSourceSet
+import com.android.build.gradle.api.AndroidSourceSet
+import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.builder.dependency.AndroidDependency
 import com.android.builder.dependency.DependencyContainer
 import com.android.builder.dependency.JarDependency
@@ -31,7 +32,7 @@ public class ConfigurationDependencies implements DependencyContainer {
     public static enum ConfigType { DEFAULT, FLAVOR, BUILDTYPE }
 
     final Project project
-    final AndroidSourceSet sourceSet
+    final DefaultAndroidSourceSet sourceSet
     final ConfigType type
     ConfigurationDependencies testConfigDependencies;
 

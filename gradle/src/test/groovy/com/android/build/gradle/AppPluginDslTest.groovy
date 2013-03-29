@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 package com.android.build.gradle
-
+import com.android.annotations.NonNull
+import com.android.build.gradle.api.ApkVariant
+import com.android.build.gradle.api.ApplicationVariant
+import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.test.BaseTest
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
-
 /**
  * Tests for the public DSL of the App plugin ("android")
  */
@@ -39,10 +41,10 @@ public class AppPluginDslTest extends BaseTest {
             compileSdkVersion 15
         }
 
-        Set<BuildVariant> variants = project.android.buildVariants
+        Set<ApplicationVariant> variants = project.android.applicationVariants
         assertEquals(2, variants.size())
 
-        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        Set<TestVariant> testVariants = project.android.testVariants
         assertEquals(1, testVariants.size())
 
         checkTestedVariant("Debug", "Test", variants, testVariants)
@@ -62,10 +64,10 @@ public class AppPluginDslTest extends BaseTest {
             compileSdkVersion = 15
         }
 
-        Set<BuildVariant> variants = project.android.buildVariants
+        Set<ApplicationVariant> variants = project.android.applicationVariants
         assertEquals(2, variants.size())
 
-        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        Set<TestVariant> testVariants = project.android.testVariants
         assertEquals(1, testVariants.size())
 
         checkTestedVariant("Debug", "Test", variants, testVariants)
@@ -82,10 +84,10 @@ public class AppPluginDslTest extends BaseTest {
             compileSdkVersion "android-15"
         }
 
-        Set<BuildVariant> variants = project.android.buildVariants
+        Set<ApplicationVariant> variants = project.android.applicationVariants
         assertEquals(2, variants.size())
 
-        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        Set<TestVariant> testVariants = project.android.testVariants
         assertEquals(1, testVariants.size())
 
         checkTestedVariant("Debug", "Test", variants, testVariants)
@@ -131,10 +133,10 @@ public class AppPluginDslTest extends BaseTest {
         }
 
         // does not include tests
-        Set<BuildVariant> variants = project.android.buildVariants
+        Set<ApplicationVariant> variants = project.android.applicationVariants
         assertEquals(3, variants.size())
 
-        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        Set<TestVariant> testVariants = project.android.testVariants
         assertEquals(1, testVariants.size())
 
         checkTestedVariant("Staging", "Test", variants, testVariants)
@@ -163,10 +165,10 @@ public class AppPluginDslTest extends BaseTest {
         }
 
         // does not include tests
-        Set<BuildVariant> variants = project.android.buildVariants
+        Set<ApplicationVariant> variants = project.android.applicationVariants
         assertEquals(4, variants.size())
 
-        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        Set<TestVariant> testVariants = project.android.testVariants
         assertEquals(2, testVariants.size())
 
         checkTestedVariant("Flavor1Debug", "Flavor1Test", variants, testVariants)
@@ -208,10 +210,10 @@ public class AppPluginDslTest extends BaseTest {
         }
 
         // does not include tests
-        Set<BuildVariant> variants = project.android.buildVariants
+        Set<ApplicationVariant> variants = project.android.applicationVariants
         assertEquals(12, variants.size())
 
-        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        Set<TestVariant> testVariants = project.android.testVariants
         assertEquals(6, testVariants.size())
 
         checkTestedVariant("F1FaDebug", "F1FaTest", variants, testVariants)
@@ -248,25 +250,30 @@ public class AppPluginDslTest extends BaseTest {
     }
 
 
-    private void checkTestedVariant(String variantName, String testedVariantName,
-                                    Set<BuildVariant> variants, Set<BuildVariant> testVariants) {
-        BuildVariant variant = findVariant(variants, variantName)
+    private static void checkTestedVariant(@NonNull String variantName,
+                                           @NonNull String testedVariantName,
+                                           @NonNull Set<ApplicationVariant> variants,
+                                           @NonNull Set<TestVariant> testVariants) {
+        ApplicationVariant variant = findNamedItem(variants, variantName)
         assertNotNull(variant)
         assertNotNull(variant.testVariant)
         assertEquals(testedVariantName, variant.testVariant.name)
-        assertEquals(variant.testVariant, findVariant(testVariants, testedVariantName))
-        checkTasks(variant, false)
-        checkTasks(variant.testVariant, true)
+        assertEquals(variant.testVariant, findNamedItem(testVariants, testedVariantName))
+        checkTasks(variant)
+        checkTasks(variant.testVariant)
     }
 
-    private void checkNonTestedVariant(String variantName, Set<BuildVariant> variants) {
-        BuildVariant variant = findVariant(variants, variantName)
+    private static void checkNonTestedVariant(@NonNull String variantName,
+                                              @NonNull Set<ApplicationVariant> variants) {
+        ApplicationVariant variant = findNamedItem(variants, variantName)
         assertNotNull(variant)
         assertNull(variant.testVariant)
-        checkTasks(variant, false)
+        checkTasks(variant)
     }
 
-    private static void checkTasks(BuildVariant variant, boolean testVariant) {
+    private static void checkTasks(@NonNull ApkVariant variant) {
+        boolean isTestVariant = variant instanceof TestVariant;
+
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
         assertNotNull(variant.mergeResources)
@@ -285,7 +292,7 @@ public class AppPluginDslTest extends BaseTest {
             assertNotNull(variant.install)
 
             // tested variant are never zipAligned.
-            if (!testVariant && variant.buildType.zipAlign) {
+            if (!isTestVariant && variant.buildType.zipAlign) {
                 assertNotNull(variant.zipAlign)
             } else {
                 assertNull(variant.zipAlign)
@@ -294,20 +301,10 @@ public class AppPluginDslTest extends BaseTest {
             assertNull(variant.install)
         }
 
-        if (testVariant) {
-            assertNotNull(variant.instrumentTest)
-        } else {
-            assertNull(variant.instrumentTest)
+        if (isTestVariant) {
+            TestVariant testVariant = variant as TestVariant
+            assertNotNull(testVariant.instrumentTest)
+            assertNotNull(testVariant.testedVariant)
         }
-    }
-
-    private static BuildVariant findVariant(Collection<BuildVariant> variants, String name) {
-        for (BuildVariant variant : variants) {
-            if (name.equals(variant.name)) {
-                return variant
-            }
-        }
-
-        return null
     }
 }

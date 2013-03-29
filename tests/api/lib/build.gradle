@@ -6,7 +6,7 @@ android {
 }
 
 // query for all (non-test) variants and inject a new step in the builds
-android.buildVariants.each { variant ->
+android.libraryVariants.each { variant ->
     // create a task that copies some additional data in the library bundle
     def copyBlahTask = tasks.add(name: "copy${variant.name.capitalize()}Blah", type: Copy) {
         from           file("$project.projectDir/blah")

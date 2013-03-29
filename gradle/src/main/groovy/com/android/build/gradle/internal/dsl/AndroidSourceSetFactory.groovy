@@ -16,8 +16,8 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.build.gradle.AndroidSourceSet
-import com.android.build.gradle.internal.DefaultAndroidSourceSet
+import com.android.build.gradle.api.AndroidSourceSet
+import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.api.internal.file.FileResolver
 import org.gradle.internal.reflect.Instantiator

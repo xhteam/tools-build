@@ -15,7 +15,7 @@
  */
 package com.android.build.gradle.internal
 
-import com.android.build.gradle.AndroidSourceSet
+import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.builder.DefaultBuildType
 import org.gradle.api.Project

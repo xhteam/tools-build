@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal;
+package com.android.build.gradle.internal.api;
 
 import com.android.annotations.NonNull;
-import com.android.build.gradle.AndroidSourceDirectorySet;
+import com.android.build.gradle.api.AndroidSourceDirectorySet;
 import com.google.common.collect.Lists;
 import org.gradle.api.internal.file.FileResolver;
 

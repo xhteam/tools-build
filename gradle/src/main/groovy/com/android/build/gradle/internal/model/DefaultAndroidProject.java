@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * Implementation of the AndroidProject model object.
  */
-public class DefaultAndroidProject implements AndroidProject, Serializable {
+class DefaultAndroidProject implements AndroidProject, Serializable {
     private static final long serialVersionUID = 1L;
 
     private final String name;
@@ -52,6 +52,11 @@ public class DefaultAndroidProject implements AndroidProject, Serializable {
 
     DefaultAndroidProject addBuildType(BuildTypeContainer buildTypeContainer) {
         buildTypes.put(buildTypeContainer.getBuildType().getName(), buildTypeContainer);
+        return this;
+    }
+
+    DefaultAndroidProject addVariant(Variant variant) {
+        variants.put(variant.getName(), variant);
         return this;
     }
 

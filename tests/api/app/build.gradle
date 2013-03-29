@@ -6,7 +6,7 @@ android {
 }
 
 // query for all (non-test) variants and inject a new step in the builds
-android.buildVariants.each { variant ->
+android.applicationVariants.each { variant ->
     // create a task that "handles" the compile classes
     // does some processing (or not)
     // and outputs a jar

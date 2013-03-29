@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle;
+package com.android.build.gradle.api;
 
 import com.android.annotations.NonNull;
 

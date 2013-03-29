@@ -16,34 +16,48 @@
 
 package com.android.build.gradle.internal.model;
 
+import com.android.annotations.NonNull;
 import com.android.build.gradle.model.Variant;
 import com.android.builder.model.ProductFlavor;
 
 import java.io.File;
+import java.io.Serializable;
 
 /**
  * Implementation of Variant that is serializable.
  */
-public class VariantImpl implements Variant {
+class VariantImpl implements Variant, Serializable {
+    private static final long serialVersionUID = 1L;
 
+    private final String name;
+    private final ProductFlavor mergedFlavor;
+
+    VariantImpl(String name, ProductFlavor mergedFlavor) {
+        this.name = name;
+        this.mergedFlavor = ProductFlavorImpl.cloneFlavor(mergedFlavor);
+    }
 
     @Override
+    @NonNull
     public String getName() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return name;
     }
 
     @Override
+    @NonNull
     public File getOutput() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new File("");
     }
 
     @Override
+    @NonNull
     public String getBuildType() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return "";
     }
 
     @Override
+    @NonNull
     public ProductFlavor getMergedFlavor() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return mergedFlavor;
     }
 }

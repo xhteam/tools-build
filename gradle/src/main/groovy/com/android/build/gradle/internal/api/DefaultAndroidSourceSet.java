@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal;
+package com.android.build.gradle.internal.api;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
-import com.android.build.gradle.AndroidSourceDirectorySet;
-import com.android.build.gradle.AndroidSourceFile;
-import com.android.build.gradle.AndroidSourceSet;
+import com.android.build.gradle.api.AndroidSourceDirectorySet;
+import com.android.build.gradle.api.AndroidSourceFile;
+import com.android.build.gradle.api.AndroidSourceSet;
 import com.android.builder.model.SourceProvider;
 import groovy.lang.Closure;
 import org.gradle.api.file.FileTreeElement;

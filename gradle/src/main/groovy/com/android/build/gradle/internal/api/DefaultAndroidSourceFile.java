@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.internal;
+package com.android.build.gradle.internal.api;
 
-import com.android.build.gradle.AndroidSourceFile;
+import com.android.build.gradle.api.AndroidSourceFile;
 import org.gradle.api.internal.file.FileResolver;
 
 import java.io.File;

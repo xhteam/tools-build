@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 package com.android.build.gradle
+
+import com.android.annotations.NonNull
+import com.android.build.gradle.api.LibraryVariant
+import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.test.BaseTest
 import com.android.builder.signing.SigningConfig
 import org.gradle.api.Project
@@ -38,10 +42,10 @@ public class LibraryPluginDslTest extends BaseTest {
             compileSdkVersion 15
         }
 
-        Set<BuildVariant> variants = project.android.buildVariants
+        Set<LibraryVariant> variants = project.android.libraryVariants
         assertEquals(2, variants.size())
 
-        Set<BuildVariant> testVariants = project.android.testBuildVariants
+        Set<TestVariant> testVariants = project.android.testVariants
         assertEquals(1, testVariants.size())
 
         checkTestedVariant("Debug", "Test", variants, testVariants)
@@ -72,26 +76,28 @@ public class LibraryPluginDslTest extends BaseTest {
         assertEquals("foo", signingConfig.storePassword)
     }
 
-
-    private void checkTestedVariant(String variantName, String testedVariantName,
-                                    Set<BuildVariant> variants, Set<BuildVariant> testVariants) {
-        BuildVariant variant = findVariant(variants, variantName)
+    private static void checkTestedVariant(@NonNull String variantName,
+                                           @NonNull String testedVariantName,
+                                           @NonNull Set<LibraryVariant> variants,
+                                           @NonNull Set<TestVariant> testVariants) {
+        LibraryVariant variant = findNamedItem(variants, variantName)
         assertNotNull(variant)
         assertNotNull(variant.testVariant)
         assertEquals(testedVariantName, variant.testVariant.name)
-        assertEquals(variant.testVariant, findVariant(testVariants, testedVariantName))
+        assertEquals(variant.testVariant, findNamedItem(testVariants, testedVariantName))
         checkLibraryTasks(variant)
         checkTestTasks(variant.testVariant)
     }
 
-    private void checkNonTestedVariant(String variantName, Set<BuildVariant> variants) {
-        BuildVariant variant = findVariant(variants, variantName)
+    private static void checkNonTestedVariant(@NonNull String variantName,
+                                              @NonNull Set<LibraryVariant> variants) {
+        LibraryVariant variant = findNamedItem(variants, variantName)
         assertNotNull(variant)
         assertNull(variant.testVariant)
         checkLibraryTasks(variant)
     }
 
-    private static void checkTestTasks(BuildVariant variant) {
+    private static void checkTestTasks(@NonNull TestVariant variant) {
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
         assertNotNull(variant.mergeResources)
@@ -117,7 +123,7 @@ public class LibraryPluginDslTest extends BaseTest {
         assertNotNull(variant.instrumentTest)
     }
 
-    private static void checkLibraryTasks(BuildVariant variant) {
+    private static void checkLibraryTasks(@NonNull LibraryVariant variant) {
         assertNotNull(variant.processManifest)
         assertNotNull(variant.aidlCompile)
         assertNotNull(variant.processResources)
@@ -126,22 +132,5 @@ public class LibraryPluginDslTest extends BaseTest {
         assertNotNull(variant.processJavaResources)
 
         assertNotNull(variant.assemble)
-
-        assertNull(variant.dex)
-        assertNull(variant.packageApplication)
-        assertNull(variant.zipAlign)
-        assertNull(variant.install)
-        assertNull(variant.uninstall)
-        assertNull(variant.instrumentTest)
-    }
-
-    private static BuildVariant findVariant(Collection<BuildVariant> variants, String name) {
-        for (BuildVariant variant : variants) {
-            if (name.equals(variant.name)) {
-                return variant
-            }
-        }
-
-        return null
     }
 }

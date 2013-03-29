@@ -15,7 +15,8 @@
  */
 
 package com.android.build.gradle.internal
-import com.android.build.gradle.AndroidSourceSet
+import com.android.build.gradle.api.AndroidSourceSet
+import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.builder.DefaultProductFlavor
 import org.gradle.api.Project
@@ -27,7 +28,7 @@ public class ProductFlavorData<T extends DefaultProductFlavor> extends Configura
 
     final T productFlavor
 
-    final AndroidSourceSet testSourceSet
+    final DefaultAndroidSourceSet testSourceSet
 
     Task assembleTask
 

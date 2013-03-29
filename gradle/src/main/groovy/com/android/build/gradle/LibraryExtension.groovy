@@ -15,15 +15,16 @@
  */
 package com.android.build.gradle
 
+import com.android.build.gradle.api.LibraryVariant
 import com.android.build.gradle.internal.dsl.BuildTypeDsl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
-import com.android.builder.DefaultBuildType
 import com.android.builder.BuilderConstants
+import com.android.builder.DefaultBuildType
 import com.android.builder.signing.SigningConfig
 import org.gradle.api.Action
+import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.internal.reflect.Instantiator
-
 /**
  * Extension for 'library' project.
  */
@@ -32,6 +33,9 @@ public class LibraryExtension extends BaseExtension {
     final DefaultBuildType debug
     final DefaultBuildType release
     final SigningConfig debugSigningConfig
+
+    private final DefaultDomainObjectSet<LibraryVariant> libraryVariantList =
+        new DefaultDomainObjectSet<LibraryVariant>(LibraryVariant.class)
 
     LibraryExtension(BasePlugin plugin, ProjectInternal project, Instantiator instantiator) {
         super(plugin, project, instantiator)
@@ -56,5 +60,14 @@ public class LibraryExtension extends BaseExtension {
 
     void debugSigningConfig(Action<SigningConfig> action) {
         action.execute(debugSigningConfig)
+    }
+
+    public DefaultDomainObjectSet<LibraryVariant> getLibraryVariants() {
+        plugin.createAndroidTasks()
+        return libraryVariantList
+    }
+
+    void addLibraryVariant(LibraryVariant libraryVariant) {
+        libraryVariantList.add(libraryVariant)
     }
 }

@@ -22,8 +22,6 @@ import com.android.annotations.VisibleForTesting;
 import com.android.builder.dependency.AndroidDependency;
 import com.android.builder.dependency.DependencyContainer;
 import com.android.builder.dependency.JarDependency;
-import com.android.builder.model.BuildType;
-import com.android.builder.model.ProductFlavor;
 import com.android.builder.model.SourceProvider;
 import com.android.builder.resources.AssetSet;
 import com.android.builder.resources.ResourceSet;
@@ -104,8 +102,10 @@ public class VariantConfiguration {
      * @param debugName an optional debug name
      */
     public VariantConfiguration(
-            @NonNull DefaultProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
-            @NonNull DefaultBuildType buildType, @NonNull SourceProvider buildTypeSourceProvider,
+            @NonNull DefaultProductFlavor defaultConfig,
+            @NonNull SourceProvider defaultSourceProvider,
+            @NonNull DefaultBuildType buildType,
+            @NonNull SourceProvider buildTypeSourceProvider,
             @Nullable String debugName) {
         this(defaultConfig, defaultSourceProvider,
                 buildType, buildTypeSourceProvider,
@@ -237,7 +237,7 @@ public class VariantConfiguration {
     }
 
     @NonNull
-    public ProductFlavor getDefaultConfig() {
+    public DefaultProductFlavor getDefaultConfig() {
         return mDefaultConfig;
     }
 
@@ -247,12 +247,12 @@ public class VariantConfiguration {
     }
 
     @NonNull
-    public ProductFlavor getMergedFlavor() {
+    public DefaultProductFlavor getMergedFlavor() {
         return mMergedFlavor;
     }
 
     @NonNull
-    public BuildType getBuildType() {
+    public DefaultBuildType getBuildType() {
         return mBuildType;
     }
 

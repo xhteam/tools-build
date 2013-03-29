@@ -22,9 +22,11 @@ import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.ProductFlavorData
+import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.model.AndroidProject
 import com.android.build.gradle.model.BuildTypeContainer
 import com.android.build.gradle.model.ProductFlavorContainer
+import com.android.build.gradle.model.Variant
 import com.android.builder.model.SourceProvider
 import org.gradle.api.Project
 import org.gradle.api.plugins.UnknownPluginException
@@ -67,7 +69,18 @@ public class ModelBuilder implements ToolingModelBuilder {
                           .addBuildType(createBTC(libPlugin.releaseBuildTypeData))
         }
 
+        for (BaseVariantData variantData : basePlugin.variantDataList) {
+            androidProject.addVariant(createVariant(variantData))
+        }
+
         return androidProject
+    }
+
+    @NonNull
+    private static Variant createVariant(BaseVariantData variantData) {
+        return new VariantImpl(
+                variantData.baseName,
+                variantData.variantConfiguration.mergedFlavor);
     }
 
     /**

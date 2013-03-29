@@ -23,7 +23,7 @@ import com.android.builder.model.SourceProvider;
 
 import java.io.Serializable;
 
-public class BuildTypeContainerImpl implements BuildTypeContainer, Serializable {
+class BuildTypeContainerImpl implements BuildTypeContainer, Serializable {
     private static final long serialVersionUID = 1L;
 
     @NonNull
