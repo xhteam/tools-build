@@ -87,7 +87,7 @@ public class DependencyData {
     }
 
     private static enum ParseMode {
-        OUTPUT, MAIN, SECONDARY;
+        OUTPUT, MAIN, SECONDARY
     }
 
     @VisibleForTesting

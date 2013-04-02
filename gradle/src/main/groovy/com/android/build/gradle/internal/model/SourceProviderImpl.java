@@ -39,8 +39,8 @@ class SourceProviderImpl implements SourceProvider, Serializable {
     private Set<File> resDirs;
     private Set<File> assetsDirs;
 
-
-    static SourceProvider cloneProvider(SourceProvider sourceProvider) {
+    @NonNull
+    static SourceProviderImpl cloneProvider(SourceProvider sourceProvider) {
         SourceProviderImpl sourceProviderClone = new SourceProviderImpl();
 
         sourceProviderClone.manifestFile = sourceProvider.getManifestFile();

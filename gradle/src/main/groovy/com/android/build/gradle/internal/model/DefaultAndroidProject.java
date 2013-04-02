@@ -36,6 +36,7 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     private final boolean isLibrary;
 
     private final Map<String, BuildTypeContainer> buildTypes = Maps.newHashMap();
+    private final Map<String, ProductFlavorContainer> productFlavors = Maps.newHashMap();
     private final Map<String, Variant> variants = Maps.newHashMap();
 
     private ProductFlavorContainer defaultConfig;
@@ -45,17 +46,28 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
         this.isLibrary = isLibrary;
     }
 
-    DefaultAndroidProject setDefaultConfig(ProductFlavorContainer defaultConfigContainer) {
+    @NonNull
+    DefaultAndroidProject setDefaultConfig(@NonNull ProductFlavorContainer defaultConfigContainer) {
         defaultConfig = defaultConfigContainer;
         return this;
     }
 
-    DefaultAndroidProject addBuildType(BuildTypeContainer buildTypeContainer) {
+    @NonNull
+    DefaultAndroidProject addBuildType(@NonNull BuildTypeContainer buildTypeContainer) {
         buildTypes.put(buildTypeContainer.getBuildType().getName(), buildTypeContainer);
         return this;
     }
 
-    DefaultAndroidProject addVariant(Variant variant) {
+    @NonNull
+    DefaultAndroidProject addProductFlavors(
+            @NonNull ProductFlavorContainer productFlavorContainer) {
+        productFlavors.put(productFlavorContainer.getProductFlavor().getName(),
+                productFlavorContainer);
+        return this;
+    }
+
+    @NonNull
+    DefaultAndroidProject addVariant(@NonNull VariantImpl variant) {
         variants.put(variant.getName(), variant);
         return this;
     }

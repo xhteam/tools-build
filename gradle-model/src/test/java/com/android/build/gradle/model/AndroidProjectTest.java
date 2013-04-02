@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.model;
 
+import com.android.annotations.NonNull;
+import com.android.builder.model.ProductFlavor;
 import com.android.builder.model.SourceProvider;
 import junit.framework.TestCase;
 import org.gradle.tooling.GradleConnector;
@@ -26,6 +28,8 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class AndroidProjectTest extends TestCase {
@@ -41,9 +45,9 @@ public class AndroidProjectTest extends TestCase {
         try {
             // Load the custom model for the project
             AndroidProject model = connection.getModel(AndroidProject.class);
-            assertNotNull("empty model!", model);
-            assertEquals("basic", model.getName());
-            assertFalse(model.isLibrary());
+            assertNotNull("Model Object null-check", model);
+            assertEquals("Model Name", "basic", model.getName());
+            assertFalse("Library Project", model.isLibrary());
 
             ProductFlavorContainer defaultConfig = model.getDefaultConfig();
 
@@ -53,6 +57,23 @@ public class AndroidProjectTest extends TestCase {
             new SourceProviderTester(model.getName(), projectDir,
                     "instrumentTest", defaultConfig.getTestSourceProvider())
                     .test();
+
+            Map<String, BuildTypeContainer> buildTypes = model.getBuildTypes();
+            assertEquals("Build Type Count", 2, buildTypes.size());
+
+            Map<String, Variant> variants = model.getVariants();
+            assertEquals("Variant Count", 3 , variants.size());
+
+            Variant debugVariant = variants.get("debug");
+            assertNotNull("Debug Variant null-check", debugVariant);
+            new ProductFlavorTester(debugVariant.getMergedFlavor(), "Debug Merged Flavor")
+                    .setVersionCode(12)
+                    .setVersionName("2.0")
+                    .setMinSdkVersion(16)
+                    .setTargetSdkVersion(16)
+                    .test();
+
+
         } finally {
             // Clean up
             connection.close();
@@ -70,9 +91,9 @@ public class AndroidProjectTest extends TestCase {
         try {
             // Load the custom model for the project
             AndroidProject model = connection.getModel(AndroidProject.class);
-            assertNotNull("empty model!", model);
-            assertEquals("migrated", model.getName());
-            assertFalse(model.isLibrary());
+            assertNotNull("Model Object null-check", model);
+            assertEquals("Model Name", "migrated", model.getName());
+            assertFalse("Library Project", model.isLibrary());
 
             ProductFlavorContainer defaultConfig = model.getDefaultConfig();
 
@@ -105,6 +126,49 @@ public class AndroidProjectTest extends TestCase {
         }
     }
 
+    public void testFlavors() {
+        // Configure the connector and create the connection
+        GradleConnector connector = GradleConnector.newConnector();
+
+        File projectDir = new File(getTestDir(), "flavors");
+        connector.forProjectDirectory(projectDir);
+
+        ProjectConnection connection = connector.connect();
+        try {
+            // Load the custom model for the project
+            AndroidProject model = connection.getModel(AndroidProject.class);
+            assertNotNull("Model Object null-check", model);
+            assertEquals("Model Name", "flavors", model.getName());
+            assertFalse("Library Project", model.isLibrary());
+
+            ProductFlavorContainer defaultConfig = model.getDefaultConfig();
+
+            new SourceProviderTester(model.getName(), projectDir,
+                    "main", defaultConfig.getSourceProvider())
+                    .test();
+            new SourceProviderTester(model.getName(), projectDir,
+                    "instrumentTest", defaultConfig.getTestSourceProvider())
+                    .test();
+
+            Map<String, BuildTypeContainer> buildTypes = model.getBuildTypes();
+            assertEquals("Build Type Count", 2, buildTypes.size());
+
+            Map<String, Variant> variants = model.getVariants();
+            assertEquals("Variant Count", 12 , variants.size());
+
+            Variant f1faDebugVariant = variants.get("f1fa-debug");
+            assertNotNull("f1fa-debug Variant null-check", f1faDebugVariant);
+            new ProductFlavorTester(f1faDebugVariant.getMergedFlavor(), "f1fa-debug Merged Flavor")
+                    .test();
+            new VariantTester(f1faDebugVariant, projectDir, "f1fa/debug").test();
+
+
+        } finally {
+            // Clean up
+            connection.close();
+        }
+    }
+
     public void testTicTacToe() {
         // Configure the connector and create the connection
         GradleConnector connector = GradleConnector.newConnector();
@@ -115,7 +179,7 @@ public class AndroidProjectTest extends TestCase {
         ProjectConnection connection = connector.connect();
         try {
             GradleProject model = connection.getModel(GradleProject.class);
-            assertNotNull("empty model!", model);
+            assertNotNull("Model Object null-check", model);
 
             for (GradleProject child : model.getChildren()) {
                 String path = child.getPath();
@@ -130,9 +194,9 @@ public class AndroidProjectTest extends TestCase {
                 ProjectConnection childConnection = childConnector.connect();
 
                 AndroidProject androidProject = childConnection.getModel(AndroidProject.class);
-                assertNotNull("empty model!", androidProject);
-                assertEquals(name, androidProject.getName());
-                assertEquals("lib".equals(name), androidProject.isLibrary());
+                assertNotNull("Model Object null-check", androidProject);
+                assertEquals("Model Name", name, androidProject.getName());
+                assertEquals("Library Project", "lib".equals(name), androidProject.isLibrary());
             }
         } finally {
             // Clean up
@@ -186,12 +250,86 @@ public class AndroidProjectTest extends TestCase {
         return new File(rootDir, "tests");
     }
 
+    private static final class ProductFlavorTester {
+        @NonNull private final ProductFlavor productFlavor;
+        @NonNull private final String name;
+
+        private String packageName = null;
+        private int versionCode = -1;
+        private String versionName = null;
+        private int minSdkVersion = -1;
+        private int targetSdkVersion = -1;
+        private int renderscriptTargetApi = -1;
+        private String testPackageName = null;
+        private String testInstrumentationRunner = null;
+
+        ProductFlavorTester(@NonNull ProductFlavor productFlavor, @NonNull String name) {
+            this.productFlavor = productFlavor;
+            this.name = name;
+        }
+
+        ProductFlavorTester setPackageName(String packageName) {
+            this.packageName = packageName;
+            return this;
+        }
+
+        ProductFlavorTester setVersionCode(int versionCode) {
+            this.versionCode = versionCode;
+            return this;
+        }
+
+         ProductFlavorTester setVersionName(String versionName) {
+            this.versionName = versionName;
+            return this;
+        }
+
+         ProductFlavorTester setMinSdkVersion(int minSdkVersion) {
+            this.minSdkVersion = minSdkVersion;
+            return this;
+        }
+
+         ProductFlavorTester setTargetSdkVersion(int targetSdkVersion) {
+            this.targetSdkVersion = targetSdkVersion;
+            return this;
+        }
+
+         ProductFlavorTester setRenderscriptTargetApi(int renderscriptTargetApi) {
+            this.renderscriptTargetApi = renderscriptTargetApi;
+            return this;
+        }
+
+         ProductFlavorTester setTestPackageName(String testPackageName) {
+            this.testPackageName = testPackageName;
+            return this;
+        }
+
+         ProductFlavorTester setTestInstrumentationRunner(String testInstrumentationRunner) {
+            this.testInstrumentationRunner = testInstrumentationRunner;
+            return this;
+        }
+
+        void test() {
+            assertEquals(name + ":packageName", packageName, productFlavor.getPackageName());
+            assertEquals(name + ":VersionCode", versionCode, productFlavor.getVersionCode());
+            assertEquals(name + ":VersionName", versionName, productFlavor.getVersionName());
+            assertEquals(name + ":minSdkVersion", minSdkVersion, productFlavor.getMinSdkVersion());
+            assertEquals(name + ":targetSdkVersion",
+                    targetSdkVersion, productFlavor.getTargetSdkVersion());
+            assertEquals(name + ":renderscriptTargetApi",
+                    renderscriptTargetApi, productFlavor.getRenderscriptTargetApi());
+            assertEquals(name + ":testPackageName",
+                    testPackageName, productFlavor.getTestPackageName());
+            assertEquals(name + ":testInstrumentationRunner",
+                    testInstrumentationRunner, productFlavor.getTestInstrumentationRunner());
+        }
+    }
+
     private static final class SourceProviderTester {
 
-        private final String projectName;
-        private final String configName;
-        private final SourceProvider sourceProvider;
-        private final File projectDir;
+        @NonNull private final String projectName;
+        @NonNull private final String configName;
+        @NonNull private final SourceProvider sourceProvider;
+        @NonNull private final File projectDir;
         private String javaDir;
         private String resourcesDir;
         private String manifestFile;
@@ -201,7 +339,8 @@ public class AndroidProjectTest extends TestCase {
         private String renderscriptDir;
         private String jniDir;
 
-        SourceProviderTester(String projectName, File projectDir, String configName, SourceProvider sourceProvider) {
+        SourceProviderTester(@NonNull String projectName, @NonNull File projectDir,
+                             @NonNull String configName, @NonNull SourceProvider sourceProvider) {
             this.projectName = projectName;
             this.projectDir = projectDir;
             this.configName = configName;
@@ -278,5 +417,36 @@ public class AndroidProjectTest extends TestCase {
                     pathSet.iterator().next().getAbsolutePath());
         }
 
+    }
+
+    private static final class VariantTester {
+
+        private final Variant variant;
+        private final File projectDir;
+        private final String variantPath;
+
+        VariantTester(Variant variant, File projectDir, String variantPath) {
+            this.variant = variant;
+            this.projectDir = projectDir;
+            this.variantPath = variantPath;
+        }
+
+        void test() {
+            String variantName = variant.getName();
+            File build = new File(projectDir,  "build");
+
+            File apk = new File(build, "apk/" + projectDir.getName() + "-" + variantName +  "-unaligned.apk");
+            assertEquals(variantName + " output", apk, variant.getOutputFile());
+
+            String buildType = variantName;
+            int pos = buildType.indexOf("-");
+            if (pos != -1) {
+                buildType = buildType.substring(pos + 1);
+            }
+            assertEquals(variantName + " build type", buildType, variant.getBuildType());
+
+            List<File> sourceFolders = variant.getGeneratedSourceFolders();
+            assertEquals("Gen src Folder count", 4, sourceFolders.size());
+        }
     }
 }

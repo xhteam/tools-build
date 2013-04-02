@@ -42,7 +42,8 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
     private String mTestInstrumentationRunner = null;
 
 
-    static ProductFlavor cloneFlavor(ProductFlavor productFlavor) {
+    @NonNull
+    static ProductFlavorImpl cloneFlavor(ProductFlavor productFlavor) {
         ProductFlavorImpl clonedFlavor = new ProductFlavorImpl();
         clonedFlavor.name = productFlavor.getName();
 
@@ -60,7 +61,6 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
 
         return clonedFlavor;
     }
-
 
     @NonNull
     @Override

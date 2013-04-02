@@ -23,8 +23,6 @@ import com.android.builder.dependency.AndroidDependency;
 import com.android.builder.dependency.DependencyContainer;
 import com.android.builder.dependency.JarDependency;
 import com.android.builder.model.SourceProvider;
-import com.android.builder.resources.AssetSet;
-import com.android.builder.resources.ResourceSet;
 import com.android.builder.signing.SigningConfig;
 import com.android.ide.common.res2.AssetSet;
 import com.android.ide.common.res2.ResourceSet;

@@ -15,7 +15,6 @@
  */
 
 package com.android.build.gradle.internal.model
-
 import com.android.annotations.NonNull
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.BasePlugin
@@ -26,12 +25,12 @@ import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.model.AndroidProject
 import com.android.build.gradle.model.BuildTypeContainer
 import com.android.build.gradle.model.ProductFlavorContainer
-import com.android.build.gradle.model.Variant
+import com.android.builder.DefaultProductFlavor
 import com.android.builder.model.SourceProvider
+import com.google.common.collect.Lists
 import org.gradle.api.Project
 import org.gradle.api.plugins.UnknownPluginException
 import org.gradle.tooling.provider.model.ToolingModelBuilder
-
 /**
  * Builder for the custom Android model.
  */
@@ -70,17 +69,54 @@ public class ModelBuilder implements ToolingModelBuilder {
         }
 
         for (BaseVariantData variantData : basePlugin.variantDataList) {
-            androidProject.addVariant(createVariant(variantData))
+            androidProject.addVariant(createVariant(variantData, basePlugin))
         }
 
         return androidProject
     }
 
     @NonNull
-    private static Variant createVariant(BaseVariantData variantData) {
-        return new VariantImpl(
+    private static VariantImpl createVariant(BaseVariantData variantData, BasePlugin basePlugin) {
+        VariantImpl variant = new VariantImpl(
                 variantData.baseName,
-                variantData.variantConfiguration.mergedFlavor);
+                basePlugin.getRuntimeJarList(variantData),
+                variantData.assembleTask.name,
+                variantData.variantConfiguration.buildType.name,
+                getProductFlavorNames(variantData),
+                ProductFlavorImpl.cloneFlavor(variantData.variantConfiguration.mergedFlavor),
+                variantData.outputFile,
+                getGeneratedSourceFolders(variantData),
+                getGeneratedResourceFolders(variantData))
+
+        return variant;
+    }
+
+    @NonNull
+    private static List<String> getProductFlavorNames(BaseVariantData variantData) {
+        List<String> flavorNames = Lists.newArrayList()
+
+        for (DefaultProductFlavor flavor : variantData.variantConfiguration.flavorConfigs) {
+            flavorNames.add(flavor.name)
+        }
+
+        return flavorNames;
+    }
+
+    @NonNull
+    private static List<File> getGeneratedSourceFolders(BaseVariantData variantData) {
+        List<File> folders = Lists.newArrayList()
+
+        folders.add(variantData.processResourcesTask.sourceOutputDir)
+        folders.add(variantData.aidlCompileTask.sourceOutputDir)
+        folders.add(variantData.renderscriptCompileTask.sourceOutputDir)
+        folders.add(variantData.generateBuildConfigTask.sourceOutputDir)
+
+        return folders
+    }
+
+    @NonNull
+    private static List<File> getGeneratedResourceFolders(BaseVariantData variantData) {
+        return Collections.singletonList(variantData.renderscriptCompileTask.resOutputDir)
     }
 
     /**
@@ -91,9 +127,9 @@ public class ModelBuilder implements ToolingModelBuilder {
     @NonNull
     private static ProductFlavorContainer createPFC(ProductFlavorData productFlavorData) {
         return new ProductFlavorContainerImpl(
-                productFlavorData.productFlavor,
-                (SourceProvider) productFlavorData.sourceSet,
-                (SourceProvider) productFlavorData.testSourceSet)
+                ProductFlavorImpl.cloneFlavor(productFlavorData.productFlavor),
+                SourceProviderImpl.cloneProvider((SourceProvider) productFlavorData.sourceSet),
+                SourceProviderImpl.cloneProvider((SourceProvider) productFlavorData.testSourceSet))
     }
 
     /**
@@ -104,8 +140,8 @@ public class ModelBuilder implements ToolingModelBuilder {
     @NonNull
     private static BuildTypeContainer createBTC(BuildTypeData buildTypeData) {
         return new BuildTypeContainerImpl(
-                buildTypeData.buildType,
-                (SourceProvider) buildTypeData.sourceSet)
+                BuildTypeImpl.cloneBuildType(buildTypeData.buildType),
+                SourceProviderImpl.cloneProvider((SourceProvider) buildTypeData.sourceSet))
     }
 
     /**
@@ -121,6 +157,6 @@ public class ModelBuilder implements ToolingModelBuilder {
             // ignore, return null below.
         }
 
-        return null;
+        return null
     }
 }

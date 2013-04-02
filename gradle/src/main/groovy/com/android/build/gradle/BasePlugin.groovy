@@ -102,8 +102,8 @@ import static com.android.builder.BuilderConstants.REPORTS
  * Base class for all Android plugins
  */
 public abstract class BasePlugin {
-    public static final String[] GRADLE_SUPPORTED_VERSIONS = [ "1.6-20130328033949+0000" ]
-    public static final String GRADLE_MIN_VERSION = "1.6-20130328033949+0000"
+    public static final String GRADLE_MIN_VERSION = "1.6-20130404052254+0000"
+    public static final String[] GRADLE_SUPPORTED_VERSIONS = [ GRADLE_MIN_VERSION ]
 
     public static final String INSTALL_GROUP = "Install"
 
@@ -313,9 +313,13 @@ public abstract class BasePlugin {
     }
 
     protected String getRuntimeJars(BaseVariantData variantData) {
+        return getRuntimeJarList(variantData).join(File.pathSeparator)
+    }
+
+    public List<String> getRuntimeJarList(BaseVariantData variantData) {
         AndroidBuilder androidBuilder = getAndroidBuilder(variantData)
 
-        return androidBuilder.runtimeClasspath.join(File.pathSeparator)
+        return androidBuilder.runtimeClasspath
     }
 
     protected void createProcessManifestTask(BaseVariantData variantData,

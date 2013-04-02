@@ -35,13 +35,13 @@ class ProductFlavorContainerImpl implements ProductFlavorContainer, Serializable
     @NonNull
     private final SourceProvider testSourceProvider;
 
-    ProductFlavorContainerImpl(@NonNull ProductFlavor productFlavor,
-                               @NonNull SourceProvider sourceProvider,
-                               @NonNull SourceProvider testSourceProvider) {
+    ProductFlavorContainerImpl(@NonNull ProductFlavorImpl productFlavor,
+                               @NonNull SourceProviderImpl sourceProvider,
+                               @NonNull SourceProviderImpl testSourceProvider) {
 
-        this.productFlavor = ProductFlavorImpl.cloneFlavor(productFlavor);
-        this.sourceProvider = SourceProviderImpl.cloneProvider(sourceProvider);
-        this.testSourceProvider = SourceProviderImpl.cloneProvider(testSourceProvider);
+        this.productFlavor = productFlavor;
+        this.sourceProvider = sourceProvider;
+        this.testSourceProvider = testSourceProvider;
     }
 
     @NonNull

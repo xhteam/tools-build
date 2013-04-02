@@ -31,11 +31,10 @@ class BuildTypeContainerImpl implements BuildTypeContainer, Serializable {
     @NonNull
     private final SourceProvider sourceProvider;
 
-    BuildTypeContainerImpl(@NonNull BuildType buildType,
-                               @NonNull SourceProvider sourceProvider) {
-
-        this.buildType = BuildTypeImpl.cloneBuildType(buildType);
-        this.sourceProvider = SourceProviderImpl.cloneProvider(sourceProvider);
+    BuildTypeContainerImpl(@NonNull BuildTypeImpl buildType,
+                           @NonNull SourceProviderImpl sourceProvider) {
+        this.buildType = buildType;
+        this.sourceProvider = sourceProvider;
     }
 
     @Override

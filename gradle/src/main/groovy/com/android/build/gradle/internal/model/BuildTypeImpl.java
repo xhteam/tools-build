@@ -41,7 +41,8 @@ class BuildTypeImpl implements BuildType, Serializable {
     private boolean runProguard;
     private boolean zipAlign;
 
-    static BuildType cloneBuildType(BuildType buildType) {
+    @NonNull
+    static BuildTypeImpl cloneBuildType(BuildType buildType) {
         BuildTypeImpl clonedBuildType = new BuildTypeImpl();
         clonedBuildType.name = buildType.getName();
         clonedBuildType.debuggable = buildType.isDebuggable();

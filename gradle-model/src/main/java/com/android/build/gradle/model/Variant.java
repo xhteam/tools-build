@@ -20,6 +20,7 @@ import com.android.annotations.NonNull;
 import com.android.builder.model.ProductFlavor;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * A build Variant
@@ -30,11 +31,26 @@ public interface Variant {
     String getName();
 
     @NonNull
-    File getOutput();
+    List<String> getBootClasspath();
+
+    @NonNull
+    File getOutputFile();
+
+    @NonNull
+    String getAssembleTaskName();
 
     @NonNull
     String getBuildType();
 
     @NonNull
+    List<String> getProductFlavors();
+
+    @NonNull
     ProductFlavor getMergedFlavor();
+
+    @NonNull
+    List<File> getGeneratedSourceFolders();
+
+    @NonNull
+    List<File> getGeneratedResourceFolders();
 }
