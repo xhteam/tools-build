@@ -1,3 +1,5 @@
+apply plugin: 'idea'
+
 // ext.androidHostOut is shared by all tools/{base,build,swt} gradle projects/
 ext.androidHostOut = file("$rootDir/../../out/host/gradle")
 ext.androidRootDir = file(new File(ext.androidHostOut, "../../../"))
