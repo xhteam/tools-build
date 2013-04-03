@@ -20,7 +20,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
- * Device tests.
+ * DeviceConnector tests.
  *
  * This build relies on the {@link BuildTest} to have been run, so that all that there
  * is left to do is deploy the tested and test apps to the device and run the tests (and gather

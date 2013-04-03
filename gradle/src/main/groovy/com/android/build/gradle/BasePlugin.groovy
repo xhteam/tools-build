@@ -34,8 +34,8 @@ import com.android.build.gradle.internal.tasks.InstallTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.PrepareLibraryTask
 import com.android.build.gradle.internal.tasks.SigningReportTask
-import com.android.build.gradle.internal.tasks.TestFlavorTask
-import com.android.build.gradle.internal.tasks.TestLibraryTask
+import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
+import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestLibraryTask
 import com.android.build.gradle.internal.tasks.UninstallTask
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
 import com.android.build.gradle.internal.variant.ApkVariantData
@@ -254,7 +254,6 @@ public abstract class BasePlugin {
             FullRevision buildToolsRevision = androidExtension.buildToolsRevision
             if (buildToolsRevision == null) {
                 throw new IllegalArgumentException("android.buildToolsVersion is missing!")
-
             }
 
             sdkParser.initParser(target, buildToolsRevision, logger)
@@ -698,12 +697,13 @@ public abstract class BasePlugin {
      * @param testedVariant the tested variant
      * @param configDependencies the list of config dependencies
      * @param mainTestTask whether the main task is a main test task.
+     * @param isLibraryTest whether the test is for a library project.
      * @return the test task.
      */
     protected AndroidTestTask createTestTasks(@NonNull TestVariantData variantData,
                                               @NonNull BaseVariantData testedVariantData,
                                               List<ConfigurationDependencies> configDependencies,
-                                              boolean mainTestTask) {
+                                              boolean mainTestTask, boolean isLibraryTest) {
         // The test app is signed with the same info as the tested app so there's no need
         // to test both.
         if (!variantData.isSigned()) {
@@ -755,7 +755,7 @@ public abstract class BasePlugin {
         // create the check task for this test
         def testFlavorTask = project.tasks.create(
                 mainTestTask ? INSTRUMENTATION_TEST : "$INSTRUMENTATION_TEST${testedVariantData.name}",
-                mainTestTask ? TestLibraryTask : TestFlavorTask)
+                isLibraryTest ? DeviceProviderInstrumentTestLibraryTask : DeviceProviderInstrumentTestTask)
         testFlavorTask.description = "Installs and runs the tests for Build ${testedVariantData.name}."
         testFlavorTask.group = JavaBasePlugin.VERIFICATION_GROUP
         testFlavorTask.dependsOn testedVariantData.assembleTask, variantData.assembleTask
@@ -798,7 +798,7 @@ public abstract class BasePlugin {
 
             project.file("$rootLocation/$flavorFolder")
         }
-        variantData.testFlavorTask = testFlavorTask
+        variantData.connectedTestTask = testFlavorTask
 
         return testFlavorTask
     }

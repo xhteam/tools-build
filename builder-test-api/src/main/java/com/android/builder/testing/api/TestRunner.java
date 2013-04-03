@@ -14,36 +14,28 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.api;
+package com.android.builder.testing.api;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import org.gradle.api.DefaultTask;
+import com.android.utils.ILogger;
 
+import java.io.File;
 import java.util.List;
 
 /**
- * A Build variant and all its public data.
  */
-public interface TestVariant extends ApkVariant {
+public interface TestRunner {
 
-    /**
-     * Returns the build variant that is tested by this variant.
-     */
-    @NonNull
-    BaseVariant getTestedVariant();
-
-    /**
-     * Returns the task to run the tests.
-     * Only valid for test project.
-     */
-    @Nullable
-    DefaultTask getConnectedInstrumentTest();
-
-    /**
-     * Returns the task to run the tests.
-     * Only valid for test project.
-     */
-    @NonNull
-    List<DefaultTask> getDeviceInstrumentTests();
+    boolean runTests(
+            @NonNull String projectName,
+            @NonNull String variantName,
+            @NonNull File testApk,
+            @NonNull String testPackageName,
+            @NonNull String testInstrumentationRunner,
+            @Nullable File testedApk,
+            @Nullable String testedPackageName,
+            @NonNull List<? extends DeviceConnector> deviceList,
+            @NonNull File resultsDir,
+            @NonNull ILogger logger);
 }

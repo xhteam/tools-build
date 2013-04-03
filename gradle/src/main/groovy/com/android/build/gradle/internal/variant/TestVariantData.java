@@ -16,15 +16,19 @@
 package com.android.build.gradle.internal.variant;
 
 import com.android.annotations.NonNull;
-import com.android.build.gradle.internal.tasks.TestFlavorTask;
+import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask;
 import com.android.builder.VariantConfiguration;
+import com.google.common.collect.Lists;
+
+import java.util.List;
 
 /**
  * Data about a variant that produce a test APK
  */
 public class TestVariantData extends ApkVariantData {
 
-    public TestFlavorTask testFlavorTask;
+    public DeviceProviderInstrumentTestTask connectedTestTask;
+    public final List<DeviceProviderInstrumentTestTask> providerTestTaskList = Lists.newArrayList();
 
     public TestVariantData(@NonNull VariantConfiguration config) {
         super(config);

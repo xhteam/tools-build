@@ -14,36 +14,22 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.api;
+package com.android.builder.testing.api;
 
 import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import org.gradle.api.DefaultTask;
 
 import java.util.List;
 
 /**
- * A Build variant and all its public data.
+ * Provides a list of remote or local devices.
  */
-public interface TestVariant extends ApkVariant {
+public interface DeviceProvider {
 
-    /**
-     * Returns the build variant that is tested by this variant.
-     */
     @NonNull
-    BaseVariant getTestedVariant();
+    String getName();
 
-    /**
-     * Returns the task to run the tests.
-     * Only valid for test project.
-     */
-    @Nullable
-    DefaultTask getConnectedInstrumentTest();
-
-    /**
-     * Returns the task to run the tests.
-     * Only valid for test project.
-     */
     @NonNull
-    List<DefaultTask> getDeviceInstrumentTests();
+    List<? extends DeviceConnector> getDevices();
+
+    void init() throws DeviceException;
 }

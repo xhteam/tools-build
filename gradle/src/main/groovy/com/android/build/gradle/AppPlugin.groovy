@@ -383,7 +383,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         variantDataList.add(testVariantData)
         testedVariantData.setTestVariantData(testVariantData);
         createTestTasks(testVariantData, testedVariantData, testConfigDependencies,
-                true /*mainTestTask*/)
+                true /*mainTestTask*/, false /*isLibraryTest*/)
 
         // and now create the API objects for the test variant and the tested variant.
         // first the tested variant.
@@ -490,7 +490,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         variantDataList.add(testVariantData)
         testedVariantData.setTestVariantData(testVariantData);
         AndroidTestTask testFlavorTask = createTestTasks(testVariantData, testedVariantData,
-                testConfigDependencies, false /*mainTestTask*/)
+                testConfigDependencies, false /*mainTestTask*/, false /*isLibraryTest*/)
 
         testTask.addTask(testFlavorTask)
 

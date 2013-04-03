@@ -78,7 +78,7 @@ public abstract class BaseExtension {
             Configuration compileConfiguration = configurations.findByName(
                     sourceSet.getCompileConfigurationName())
             if (compileConfiguration == null) {
-                compileConfiguration = configurations.add(sourceSet.getCompileConfigurationName())
+                compileConfiguration = configurations.create(sourceSet.getCompileConfigurationName())
             }
             compileConfiguration.setVisible(false);
             compileConfiguration.setDescription(
@@ -87,7 +87,7 @@ public abstract class BaseExtension {
             Configuration packageConfiguration = configurations.findByName(
                     sourceSet.getPackageConfigurationName())
             if (packageConfiguration == null) {
-                packageConfiguration = configurations.add(sourceSet.getPackageConfigurationName())
+                packageConfiguration = configurations.create(sourceSet.getPackageConfigurationName())
             }
             packageConfiguration.setVisible(false)
             packageConfiguration.extendsFrom(compileConfiguration)

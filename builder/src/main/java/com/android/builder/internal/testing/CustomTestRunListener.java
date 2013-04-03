@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.builder.testing;
+package com.android.builder.internal.testing;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;

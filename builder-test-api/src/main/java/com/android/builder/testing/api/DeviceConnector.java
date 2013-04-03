@@ -14,36 +14,23 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.api;
+package com.android.builder.testing.api;
 
 import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import org.gradle.api.DefaultTask;
+import com.android.ddmlib.IShellEnabledDevice;
+import com.android.ddmlib.TimeoutException;
 
-import java.util.List;
+import java.io.File;
 
 /**
- * A Build variant and all its public data.
+ * A connector to a device to install/uninstall APKs, and run shell command.
  */
-public interface TestVariant extends ApkVariant {
+public interface DeviceConnector extends IShellEnabledDevice {
 
-    /**
-     * Returns the build variant that is tested by this variant.
-     */
-    @NonNull
-    BaseVariant getTestedVariant();
+    void connect(int timeOut) throws TimeoutException;
+    void disconnect(int timeOut) throws TimeoutException;
 
-    /**
-     * Returns the task to run the tests.
-     * Only valid for test project.
-     */
-    @Nullable
-    DefaultTask getConnectedInstrumentTest();
+    void installPackage(@NonNull File apkFile) throws DeviceException;
 
-    /**
-     * Returns the task to run the tests.
-     * Only valid for test project.
-     */
-    @NonNull
-    List<DefaultTask> getDeviceInstrumentTests();
+    void uninstallPackage(@NonNull String packageName) throws DeviceException;
 }
