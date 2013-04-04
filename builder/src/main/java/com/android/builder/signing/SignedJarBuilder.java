@@ -32,6 +32,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.util.encoders.Base64;
 
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -157,7 +158,7 @@ public class SignedJarBuilder {
      */
     public SignedJarBuilder(OutputStream out, PrivateKey key, X509Certificate certificate)
             throws IOException, NoSuchAlgorithmException {
-        mOutputJar = new JarOutputStream(out);
+        mOutputJar = new JarOutputStream(new BufferedOutputStream(out));
         mOutputJar.setLevel(9);
         mKey = key;
         mCertificate = certificate;
