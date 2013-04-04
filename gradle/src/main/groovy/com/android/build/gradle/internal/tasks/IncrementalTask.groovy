@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
+
 import com.android.builder.internal.incremental.ChangeManager
-import com.android.builder.resources.FileStatus
-import com.android.builder.resources.SourceSet
+import com.android.ide.common.res2.FileStatus
+import com.android.ide.common.res2.SourceSet
 import com.google.common.collect.Lists
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.Optional

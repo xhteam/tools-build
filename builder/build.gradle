@@ -17,6 +17,7 @@ dependencies {
     compile 'org.bouncycastle:bcpkix-jdk15on:1.48'
 
     testCompile 'junit:junit:3.8.1'
+    testCompile "com.android.tools:testutils:$project.ext.baseAndroidVersion"
 }
 
 def getVersion() {

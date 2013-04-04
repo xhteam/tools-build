@@ -16,7 +16,7 @@
 
 package com.android.builder.internal.compiler;
 
-import com.android.builder.internal.util.concurrent.WaitableExecutor;
+import com.android.ide.common.internal.WaitableExecutor;
 
 import java.io.File;
 import java.io.IOException;

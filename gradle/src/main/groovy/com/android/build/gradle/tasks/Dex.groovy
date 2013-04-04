@@ -17,7 +17,7 @@ package com.android.build.gradle.tasks
 
 import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.builder.DexOptions
-import com.android.builder.resources.FileStatus
+import com.android.ide.common.res2.FileStatus
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.Nested
 import org.gradle.api.tasks.OutputFile

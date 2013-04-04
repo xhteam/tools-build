@@ -20,8 +20,8 @@ import com.android.annotations.NonNull
 import com.android.builder.compiling.DependencyFileProcessor
 import com.android.builder.internal.incremental.DependencyData
 import com.android.builder.internal.incremental.DependencyDataStore
-import com.android.builder.internal.util.concurrent.WaitableExecutor
-import com.android.builder.resources.FileStatus
+import com.android.ide.common.internal.WaitableExecutor
+import com.android.ide.common.res2.FileStatus
 import com.google.common.collect.Lists
 import com.google.common.collect.Multimap
 import org.gradle.api.tasks.OutputDirectory

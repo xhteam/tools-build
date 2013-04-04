@@ -22,9 +22,9 @@ import com.android.annotations.VisibleForTesting;
 import com.android.builder.dependency.AndroidDependency;
 import com.android.builder.dependency.DependencyContainer;
 import com.android.builder.dependency.JarDependency;
-import com.android.builder.resources.AssetSet;
-import com.android.builder.resources.ResourceSet;
 import com.android.builder.signing.SigningConfig;
+import com.android.ide.common.res2.AssetSet;
+import com.android.ide.common.res2.ResourceSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -531,7 +531,7 @@ public class VariantConfiguration {
      *
      * The list is ordered in ascending order of importance, meaning the first set is meant to be
      * overridden by the 2nd one and so on. This is meant to facilitate usage of the list in a
-     * {@link com.android.builder.resources.ResourceMerger}.
+     * {@link com.android.ide.common.res2.ResourceMerger}.
      *
      * @return a list ResourceSet.
      */
@@ -587,7 +587,7 @@ public class VariantConfiguration {
      *
      * The list is ordered in ascending order of importance, meaning the first set is meant to be
      * overridden by the 2nd one and so on. This is meant to facilitate usage of the list in a
-     * {@link com.android.builder.resources.ResourceMerger}.
+     * {@link com.android.ide.common.res2.AssetMerger}.
      *
      * @return a list ResourceSet.
      */

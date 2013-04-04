@@ -16,14 +16,14 @@
 
 package com.android.builder.internal.incremental;
 
-import com.android.builder.TestUtils;
-import com.android.builder.resources.BaseTestCase;
+import com.android.testutils.TestUtils;
+import junit.framework.TestCase;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class DependencyDataTest extends BaseTestCase {
+public class DependencyDataTest extends TestCase {
 
     public void testWindowsMode1() throws Exception {
         DependencyData data = getData("windows_mode1.d");

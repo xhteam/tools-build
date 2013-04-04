@@ -17,7 +17,7 @@
 package com.android.builder.internal.incremental;
 
 import com.android.annotations.NonNull;
-import com.android.builder.resources.FileStatus;
+import com.android.ide.common.res2.FileStatus;
 
 import java.io.File;
 import java.io.IOException;
