@@ -25,6 +25,7 @@ import com.android.builder.packaging.SealedPackageException;
 import com.android.builder.signing.CertificateInfo;
 import com.android.builder.signing.SignedJarBuilder;
 import com.android.builder.signing.SignedJarBuilder.IZipEntryFilter;
+import com.android.ide.common.packaging.PackagingUtils;
 import com.android.utils.ILogger;
 
 import java.io.File;

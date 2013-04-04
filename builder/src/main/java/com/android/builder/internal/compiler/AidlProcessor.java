@@ -18,7 +18,7 @@ package com.android.builder.internal.compiler;
 
 import com.android.annotations.NonNull;
 import com.android.builder.compiling.DependencyFileProcessor;
-import com.android.builder.internal.CommandLineRunner;
+import com.android.ide.common.internal.CommandLineRunner;
 import com.google.common.collect.Lists;
 
 import java.io.File;

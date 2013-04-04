@@ -20,11 +20,11 @@ import com.android.annotations.Nullable
 import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.test.report.TestReport
-import com.android.builder.internal.util.concurrent.WaitableExecutor
 import com.android.builder.testing.CustomTestRunListener
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
 import com.android.ddmlib.testrunner.RemoteAndroidTestRunner
+import com.android.ide.common.internal.WaitableExecutor
 import com.android.utils.ILogger
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -37,6 +37,7 @@ import org.gradle.logging.ConsoleRenderer
 import org.gradle.tooling.BuildException
 
 import java.util.concurrent.Callable
+
 /**
  * Run tests for a given variant
  */

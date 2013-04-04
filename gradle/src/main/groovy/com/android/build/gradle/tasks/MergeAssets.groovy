@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 package com.android.build.gradle.tasks
+
 import com.android.build.gradle.internal.tasks.IncrementalTask
-import com.android.builder.resources.AssetMerger
-import com.android.builder.resources.AssetSet
-import com.android.builder.resources.FileStatus
+import com.android.ide.common.res2.AssetMerger
+import com.android.ide.common.res2.AssetSet
+import com.android.ide.common.res2.FileStatus
 import com.android.utils.ILogger
 import com.android.utils.Pair
 import org.gradle.api.tasks.InputFiles

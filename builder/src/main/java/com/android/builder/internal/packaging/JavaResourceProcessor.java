@@ -20,6 +20,7 @@ package com.android.builder.internal.packaging;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
+import com.android.ide.common.packaging.PackagingUtils;
 
 import java.io.File;
 import java.io.IOException;
