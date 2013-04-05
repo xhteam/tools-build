@@ -15,7 +15,7 @@
  */
 
 package com.android.build.gradle.internal.test
-
+import com.android.annotations.NonNull
 import com.android.sdklib.internal.project.ProjectProperties
 import com.android.sdklib.internal.project.ProjectPropertiesWorkingCopy
 import junit.framework.TestCase
@@ -29,7 +29,7 @@ import java.security.CodeSource
 public abstract class BaseTest extends TestCase {
 
     /**
-     * Returns the gradle plugin test folder.
+     * Returns the root dir for the gradle plugin project
      */
     protected File getRootDir() {
         CodeSource source = getClass().getProtectionDomain().getCodeSource()
@@ -46,7 +46,7 @@ public abstract class BaseTest extends TestCase {
             }
         }
 
-        fail("Fail to get tests folder")
+        fail("Fail to get the tools/build folder")
     }
 
     /**
@@ -152,5 +152,22 @@ public abstract class BaseTest extends TestCase {
         }
 
         folder.delete()
+    }
+
+    /**
+     * Returns the name item from the collection of items. The items *must* have a "name" property.
+     * @param items the item collection to search for a match
+     * @param name the name of the item to return
+     * @return the found item or null
+     */
+    protected static <T> T findNamedItem(@NonNull Collection<T> items,
+                                         @NonNull String name) {
+        for (T item : items) {
+            if (name.equals(item.name)) {
+                return item
+            }
+        }
+
+        return null
     }
 }

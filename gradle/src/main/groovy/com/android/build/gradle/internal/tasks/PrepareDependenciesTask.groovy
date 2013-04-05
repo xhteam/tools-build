@@ -29,7 +29,7 @@ public class PrepareDependenciesTask extends BaseTask {
 
     @TaskAction
     protected void prepare() {
-        def minSdkVersion = variant.config.minSdkVersion
+        def minSdkVersion = variant.variantConfiguration.minSdkVersion
 
         for (DependencyChecker checker : checkers) {
             for (Integer api : checker.foundAndroidApis) {

@@ -16,12 +16,12 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultProductFlavor
 
 /**
  * A version of ProductFlavor that can receive a group name
  */
-public class GroupableProductFlavor extends ProductFlavor {
+public class GroupableProductFlavor extends DefaultProductFlavor {
     private static final long serialVersionUID = 1L
 
     private String flavorGroup

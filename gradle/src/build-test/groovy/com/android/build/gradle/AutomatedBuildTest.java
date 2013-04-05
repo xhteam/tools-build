@@ -31,7 +31,7 @@ public class AutomatedBuildTest extends BuildTest {
     private String gradleVersion;
     private TestType testType;
 
-    private static enum TestType { BUILD, REPORT };
+    private static enum TestType { BUILD, REPORT }
 
     private static final String[] sBuiltProjects = new String[] {
             "aidl", "api", "applibtest", "assets", "basic", "dependencies", "flavored",

@@ -16,12 +16,12 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultProductFlavor
 
 /**
  * DSL overlay to make methods that accept String... work.
  */
-class ProductFlavorDsl extends ProductFlavor {
+class ProductFlavorDsl extends DefaultProductFlavor {
     private static final long serialVersionUID = 1L
 
     ProductFlavorDsl(String name) {

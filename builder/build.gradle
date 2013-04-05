@@ -2,13 +2,14 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
 
-project.ext.baseAndroidVersion = "22.0-SNAPSHOT"
+evaluationDependsOn(':builder-model') 
 
 configurations {
     fakeMaven
 }
 
 dependencies {
+    compile project(':builder-model')
     compile "com.android.tools:sdklib:$project.ext.baseAndroidVersion"
     compile "com.android.tools:sdk-common:$project.ext.baseAndroidVersion"
     compile "com.android.tools.build:manifest-merger:$project.ext.baseAndroidVersion"
@@ -85,6 +86,7 @@ task publishLocal(type: Upload, dependsOn: mavenSetup) {
         }
     }
 }
+//publishLocal.dependsOn ':builder-model:publishLocal'
 
 project.ext.sonatypeUsername = hasProperty('sonatypeUsername') ? sonatypeUsername : ""
 project.ext.sonatypePassword = hasProperty('sonatypePassword') ? sonatypePassword : ""

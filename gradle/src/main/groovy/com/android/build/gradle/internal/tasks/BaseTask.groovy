@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
+
 import com.android.build.gradle.BasePlugin
-import com.android.build.gradle.internal.ApplicationVariant
+import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.builder.AndroidBuilder
 import org.gradle.api.DefaultTask
 
 public abstract class BaseTask extends DefaultTask {
 
     BasePlugin plugin
-    ApplicationVariant variant
+    BaseVariantData variant
 
     protected AndroidBuilder getBuilder() {
         return plugin.getAndroidBuilder(variant)

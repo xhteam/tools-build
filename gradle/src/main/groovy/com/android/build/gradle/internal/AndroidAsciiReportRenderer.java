@@ -16,13 +16,14 @@
 
 package com.android.build.gradle.internal;
 
+import com.android.build.gradle.internal.variant.BaseVariantData;
 import com.android.builder.dependency.AndroidDependency;
 import com.android.builder.dependency.BundleDependency;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
-import org.gradle.api.tasks.diagnostics.internal.GraphRenderer;
 import org.gradle.api.tasks.diagnostics.internal.TextReportRenderer;
+import org.gradle.internal.graph.GraphRenderer;
 import org.gradle.logging.StyledTextOutput;
 import org.gradle.util.GUtil;
 
@@ -56,7 +57,7 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
         super.completeProject(project);
     }
 
-    public void startVariant(final ApplicationVariant variant) {
+    public void startVariant(final BaseVariantData variantData) {
         if (hasConfigs) {
             getTextOutput().println();
         }
@@ -65,7 +66,7 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
         renderer.visit(new Action<StyledTextOutput>() {
             @Override
             public void execute(StyledTextOutput styledTextOutput) {
-                getTextOutput().withStyle(Identifier).text(variant.getName());
+                getTextOutput().withStyle(Identifier).text(variantData.getName());
                 getTextOutput().withStyle(Description).text("");
             }
         }, true);
@@ -76,10 +77,11 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
                 configuration.getDescription()) ? " - " + configuration.getDescription() : "";
     }
 
-    public void completeConfiguration(ApplicationVariant variant) {}
+    public void completeConfiguration(BaseVariantData variantData) {}
 
-    public void render(ApplicationVariant variant) throws IOException {
-        List<AndroidDependency> libraries = variant.getVariantConfiguration().getDirectLibraries();
+    public void render(BaseVariantData variantData) throws IOException {
+        List<AndroidDependency> libraries =
+                variantData.getVariantConfiguration().getDirectLibraries();
 
         renderNow(libraries);
     }

@@ -15,6 +15,8 @@
  */
 package com.android.build.gradle
 
+import com.android.build.gradle.api.AndroidSourceSet
+import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.CompileOptions
 import com.android.build.gradle.internal.dsl.AaptOptionsImpl
 import com.android.build.gradle.internal.dsl.AndroidSourceSetFactory
@@ -22,7 +24,7 @@ import com.android.build.gradle.internal.dsl.DexOptionsImpl
 import com.android.build.gradle.internal.dsl.ProductFlavorDsl
 import com.android.build.gradle.internal.test.TestOptions
 import com.android.builder.BuilderConstants
-import com.android.builder.ProductFlavor
+import com.android.builder.DefaultProductFlavor
 import com.android.sdklib.repository.FullRevision
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
@@ -31,6 +33,7 @@ import org.gradle.api.artifacts.ConfigurationContainer
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.internal.reflect.Instantiator
+
 /**
  * Base android extension for all android plugins.
  */
@@ -39,18 +42,16 @@ public abstract class BaseExtension {
     private String target
     private FullRevision buildToolsRevision
 
-    final ProductFlavor defaultConfig
+    final DefaultProductFlavor defaultConfig
     final AaptOptionsImpl aaptOptions
     final DexOptionsImpl dexOptions
     final TestOptions testOptions
     final CompileOptions compileOptions
 
 
-    private final BasePlugin plugin
-    private final DefaultDomainObjectSet<BuildVariant> buildVariants =
-        new DefaultDomainObjectSet<BuildVariant>(BuildVariant.class)
-    private final DefaultDomainObjectSet<BuildVariant> testBuildVariants =
-        new DefaultDomainObjectSet<BuildVariant>(BuildVariant.class)
+    protected final BasePlugin plugin
+    private final DefaultDomainObjectSet<TestVariant> testVariantList =
+        new DefaultDomainObjectSet<TestVariant>(TestVariant.class)
 
     /**
      * The source sets container.
@@ -129,7 +130,7 @@ public abstract class BaseExtension {
         sourceSetsContainer
     }
 
-    void defaultConfig(Action<ProductFlavor> action) {
+    void defaultConfig(Action<DefaultProductFlavor> action) {
         action.execute(defaultConfig)
     }
 
@@ -149,14 +150,13 @@ public abstract class BaseExtension {
         action.execute(testOptions)
     }
 
-    public DefaultDomainObjectSet<BuildVariant> getBuildVariants() {
+    public DefaultDomainObjectSet<TestVariant> getTestVariants() {
         plugin.createAndroidTasks()
-        return buildVariants
+        return testVariantList
     }
 
-    public DefaultDomainObjectSet<BuildVariant> getTestBuildVariants() {
-        plugin.createAndroidTasks()
-        return testBuildVariants
+    void addTestVariant(TestVariant testVariant) {
+        testVariantList.add(testVariant)
     }
 
     public String getCompileSdkVersion() {

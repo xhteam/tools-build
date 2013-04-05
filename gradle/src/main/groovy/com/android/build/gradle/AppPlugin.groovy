@@ -15,11 +15,15 @@
  */
 
 package com.android.build.gradle
+
+import com.android.annotations.NonNull
+import com.android.annotations.Nullable
+import com.android.build.gradle.api.ApplicationVariant
+import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.BuildTypeData
-import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
-import com.android.build.gradle.internal.ProductionAppVariant
-import com.android.build.gradle.internal.TestAppVariant
+import com.android.build.gradle.internal.api.ApplicationVariantImpl
+import com.android.build.gradle.internal.api.TestVariantImpl
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.build.gradle.internal.dsl.BuildTypeDsl
 import com.android.build.gradle.internal.dsl.BuildTypeFactory
@@ -31,7 +35,9 @@ import com.android.build.gradle.internal.tasks.AndroidReportTask
 import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.test.PluginHolder
 import com.android.build.gradle.internal.test.report.ReportType
-import com.android.builder.BuildType
+import com.android.build.gradle.internal.variant.ApplicationVariantData
+import com.android.build.gradle.internal.variant.TestVariantData
+import com.android.builder.DefaultBuildType
 import com.android.builder.VariantConfiguration
 import com.android.builder.signing.SigningConfig
 import com.google.common.collect.ArrayListMultimap
@@ -42,6 +48,7 @@ import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.BasePlugin
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 
 import javax.inject.Inject
 
@@ -54,6 +61,7 @@ import static com.android.builder.BuilderConstants.LINT
 import static com.android.builder.BuilderConstants.RELEASE
 import static com.android.builder.BuilderConstants.REPORTS
 import static com.android.builder.BuilderConstants.UI_TEST
+
 /**
  * Gradle plugin class for 'application' projects.
  */
@@ -68,8 +76,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     AndroidReportTask testTask
 
     @Inject
-    public AppPlugin(Instantiator instantiator) {
-        super(instantiator)
+    public AppPlugin(Instantiator instantiator, ToolingModelBuilderRegistry registry) {
+        super(instantiator, registry)
     }
 
     @Override
@@ -86,7 +94,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             pluginHolder.plugin = this;
         }
 
-        def buildTypeContainer = project.container(BuildType, new BuildTypeFactory(instantiator))
+        def buildTypeContainer = project.container(DefaultBuildType, new BuildTypeFactory(instantiator))
         def productFlavorContainer = project.container(GroupableProductFlavor,
                 new GroupableProductFlavorFactory(instantiator))
         def signingConfigContainer = project.container(SigningConfig,
@@ -103,7 +111,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             signingConfigs[signingConfigDsl.name] = signingConfig
         }
 
-        buildTypeContainer.whenObjectAdded { BuildType buildType ->
+        buildTypeContainer.whenObjectAdded { DefaultBuildType buildType ->
             ((BuildTypeDsl)buildType).init(signingConfigContainer.getByName(DEBUG))
             addBuildType(buildType)
         }
@@ -134,7 +142,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
      * and adding it to the map.
      * @param buildType the build type.
      */
-    private void addBuildType(BuildType buildType) {
+    private void addBuildType(DefaultBuildType buildType) {
         String name = buildType.name
         checkName(name, "BuildType")
 
@@ -322,7 +330,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             throw new RuntimeException("Test Build Type '$extension.testBuildType' does not exist.")
         }
 
-        ProductionAppVariant testedVariant = null
+        ApplicationVariantData testedVariantData = null
 
         ProductFlavorData defaultConfigData = getDefaultConfigData();
 
@@ -341,26 +349,28 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
             variantConfig.setDependencies(configDependencies)
 
-            ProductionAppVariant productionAppVariant = addVariant(variantConfig,
+            // create the variant and get its internal storage object.
+            ApplicationVariantData productionAppVariant = createApplicationVariant(variantConfig,
                     buildTypeData.assembleTask, configDependencies)
-            variants.add(productionAppVariant)
+            variantDataList.add(productionAppVariant)
 
             if (buildTypeData == testData) {
-                testedVariant = productionAppVariant
+                testedVariantData = productionAppVariant
             } else {
-                // add this non-tested variant to the list
-                DefaultBuildVariant buildVariant = instantiator.newInstance(
-                        DefaultBuildVariant.class, productionAppVariant)
-                extension.buildVariants.add(buildVariant)
+                // create the API object for this variant.
+                ApplicationVariant applicationVariant = instantiator.newInstance(
+                        ApplicationVariantImpl.class, productionAppVariant)
+                extension.addApplicationVariant(applicationVariant)
             }
         }
 
-        assert testedVariant != null
+        assert testedVariantData != null
 
         def testVariantConfig = new VariantConfiguration(
                 defaultConfigData.productFlavor, defaultConfigData.testSourceSet,
                 testData.buildType, null,
-                VariantConfiguration.Type.TEST, testedVariant.config, project.name)
+                VariantConfiguration.Type.TEST, testedVariantData.variantConfiguration,
+                project.name)
 
         // dependencies for the test variant
         List<ConfigurationDependencies> testConfigDependencies = []
@@ -368,17 +378,25 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
         testVariantConfig.setDependencies(testConfigDependencies)
 
-        def testVariant = new TestAppVariant(testVariantConfig)
-        variants.add(testVariant)
-        createTestTasks(testVariant, testedVariant, testConfigDependencies, true /*mainTestTask*/)
+        // create the internal storage for this variant.
+        def testVariantData = new TestVariantData(testVariantConfig)
+        variantDataList.add(testVariantData)
+        createTestTasks(testVariantData, testedVariantData, testConfigDependencies,
+                true /*mainTestTask*/)
 
-        // add the test and tested variants to the list
-        DefaultBuildVariant testedBuildVariant = instantiator.newInstance(
-                DefaultBuildVariant.class, testVariant)
-        extension.testBuildVariants.add(testedBuildVariant)
-        DefaultBuildVariant buildVariant = instantiator.newInstance(
-                DefaultBuildVariant.class, testedVariant, testedBuildVariant)
-        extension.buildVariants.add(buildVariant)
+        // and now create the API objects for the test variant and the tested variant.
+        // first the tested variant.
+        ApplicationVariantImpl applicationVariant = instantiator.newInstance(
+                ApplicationVariantImpl.class, testedVariantData)
+        extension.applicationVariants.add(applicationVariant)
+
+        // now the test variant
+        TestVariant testVariant = instantiator.newInstance(
+                TestVariantImpl.class, testVariantData, applicationVariant)
+        extension.addTestVariant(testVariant)
+
+        // finally wire the test variant inside the tested variant
+        applicationVariant.setTestVariant(testVariant)
     }
 
     /**
@@ -393,7 +411,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             throw new RuntimeException("Test Build Type '$extension.testBuildType' does not exist.")
         }
 
-        ProductionAppVariant testedVariant = null
+        ApplicationVariantData testedVariantData = null
 
         // assembleTask for this flavor(group)
         def assembleTask
@@ -405,7 +423,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             List<ConfigurationDependencies> configDependencies = []
             configDependencies.add(buildTypeData)
 
-            def variantConfig = new VariantConfiguration(
+            VariantConfiguration variantConfig = new VariantConfiguration(
                     extension.defaultConfig, getDefaultConfigData().sourceSet,
                     buildTypeData.buildType, buildTypeData.sourceSet, project.name)
 
@@ -419,9 +437,10 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
             variantConfig.setDependencies(configDependencies)
 
-            ProductionAppVariant productionAppVariant = addVariant(variantConfig, null,
-                    configDependencies)
-            variants.add(productionAppVariant)
+            // create the variant and get its internal storage object.
+            ApplicationVariantData productionAppVariant = createApplicationVariant(variantConfig,
+                    null, configDependencies)
+            variantDataList.add(productionAppVariant)
 
             buildTypeData.assembleTask.dependsOn productionAppVariant.assembleTask
 
@@ -433,21 +452,22 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             assembleTask.dependsOn productionAppVariant.assembleTask
 
             if (buildTypeData == testData) {
-                testedVariant = productionAppVariant
+                testedVariantData = productionAppVariant
             } else {
-                // add this non-tested variant to the list
-                DefaultBuildVariant buildVariant = instantiator.newInstance(
-                        DefaultBuildVariant.class, productionAppVariant)
-                extension.buildVariants.add(buildVariant)
+                // create the API object for this variant.
+                ApplicationVariant applicationVariant = instantiator.newInstance(
+                        ApplicationVariantImpl.class, productionAppVariant)
+                extension.addApplicationVariant(applicationVariant)
             }
         }
 
-        assert testedVariant != null
+        assert testedVariantData != null
 
-        def testVariantConfig = new VariantConfiguration(
+        VariantConfiguration testVariantConfig = new VariantConfiguration(
                 extension.defaultConfig, getDefaultConfigData().testSourceSet,
                 testData.buildType, null,
-                VariantConfiguration.Type.TEST, testedVariant.config, project.name)
+                VariantConfiguration.Type.TEST,
+                testedVariantData.variantConfiguration, project.name)
 
         /// add the container of dependencies
         // the order of the libraries is important. In descending order:
@@ -464,25 +484,31 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
 
         testVariantConfig.setDependencies(testConfigDependencies)
 
-        def testVariant = new TestAppVariant(testVariantConfig)
-        variants.add(testVariant)
-        AndroidTestTask testFlavorTask = createTestTasks(testVariant, testedVariant,
+        // create the internal storage for this variant.
+        TestVariantData testVariantData = new TestVariantData(testVariantConfig)
+        variantDataList.add(testVariantData)
+        AndroidTestTask testFlavorTask = createTestTasks(testVariantData, testedVariantData,
                 testConfigDependencies, false /*mainTestTask*/)
 
         testTask.addTask(testFlavorTask)
 
-        // add the test and tested variants to the list
-        DefaultBuildVariant testedBuildVariant = instantiator.newInstance(
-                DefaultBuildVariant.class, testVariant)
-        extension.testBuildVariants.add(testedBuildVariant)
-        DefaultBuildVariant buildVariant = instantiator.newInstance(
-                DefaultBuildVariant.class, testedVariant, testedBuildVariant)
-        extension.buildVariants.add(buildVariant)
+        // and now create the API objects for the test variant and the tested variant.
+        // first the tested variant.
+        ApplicationVariantImpl applicationVariant = instantiator.newInstance(
+                ApplicationVariantImpl.class, testedVariantData)
+        extension.applicationVariants.add(applicationVariant)
 
+        // now the test variant
+        TestVariant testVariant = instantiator.newInstance(
+                TestVariantImpl.class, testVariantData, applicationVariant)
+        extension.addTestVariant(testVariant)
+
+        // finally wire the test variant inside the tested variant
+        applicationVariant.setTestVariant(testVariant)
     }
 
     private Task createAssembleTask(ProductFlavorData[] flavorDataList) {
-        def name = ProductFlavorData.getFlavoredName(flavorDataList, true)
+        String name = ProductFlavorData.getFlavoredName(flavorDataList, true)
 
         def assembleTask = project.tasks.add("assemble${name}")
         assembleTask.description = "Assembles all builds for flavor ${name}"
@@ -492,16 +518,19 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     }
 
     /**
-     * Creates build tasks for a given variant.
-     * @param variantConfig
+     * Creates an ApplicationVariantData and its tasks for a given variant configuration.
+     * @param variantConfig the non-null variant configuration.
      * @param assembleTask an optional assembleTask to be used. If null, a new one is created.
+     * @param configDependencies a non null list of dependencies for this variant.
      * @return
      */
-    private ProductionAppVariant addVariant(VariantConfiguration variantConfig,
-                                            Task assembleTask,
-                                            List<ConfigurationDependencies> configDependencies) {
+    @NonNull
+    private ApplicationVariantData createApplicationVariant(
+            @NonNull VariantConfiguration variantConfig,
+            @Nullable Task assembleTask,
+            @NonNull List<ConfigurationDependencies> configDependencies) {
 
-        def variant = new ProductionAppVariant(variantConfig)
+        ApplicationVariantData variant = new ApplicationVariantData(variantConfig)
 
         createPrepareDependenciesTask(variant, configDependencies)
 

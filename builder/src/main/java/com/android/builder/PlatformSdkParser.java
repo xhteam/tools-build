@@ -40,7 +40,7 @@ public class PlatformSdkParser implements SdkParser {
     private File mZipAlign;
     private File mAdb;
 
-    PlatformSdkParser(@NonNull String sdkLocation) {
+    public PlatformSdkParser(@NonNull String sdkLocation) {
         mPlatformRootFolder = sdkLocation;
     }
 

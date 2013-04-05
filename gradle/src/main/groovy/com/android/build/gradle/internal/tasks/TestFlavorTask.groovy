@@ -17,9 +17,11 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
-import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.test.report.TestReport
+import com.android.build.gradle.internal.variant.BaseVariantData
+import com.android.build.gradle.internal.variant.TestVariantData
+import com.android.builder.internal.util.concurrent.WaitableExecutor
 import com.android.builder.testing.CustomTestRunListener
 import com.android.ddmlib.AndroidDebugBridge
 import com.android.ddmlib.IDevice
@@ -61,7 +63,7 @@ public class TestFlavorTask extends BaseTask implements AndroidTestTask {
     @Input
     String flavorName
 
-    ApplicationVariant testedVariant
+    BaseVariantData testedVariantData
 
     boolean ignoreFailures
     boolean testFailed
@@ -71,81 +73,82 @@ public class TestFlavorTask extends BaseTask implements AndroidTestTask {
      */
     private static class DeviceTestRunner implements Callable<Boolean> {
 
-        private final IDevice mDevice
-        private final String mDeviceName
-        private final String mFlavorName
-        private final File mResultsDir
-        private final File mTestApk
-        private final ApplicationVariant mVariant
-        private final File mTestedApk
-        private final ApplicationVariant mTestedVariant
-        private final ILogger mLogger
-        private final Project mProject
+        private final Project project
+        private final IDevice device
+        private final String deviceName
+        private final String flavorName
+        private final File resultsDir
+        private final File testApk
+        private final TestVariantData variantData
+        private final File testedApk
+        private final BaseVariantData testedVariantData
+        private final ILogger logger
 
         DeviceTestRunner(@NonNull IDevice device, @NonNull Project project,
                          @NonNull String flavorName,
-                         @NonNull File testApk, @NonNull ApplicationVariant variant,
-                         @Nullable File testedApk, @NonNull ApplicationVariant testedVariant,
+                         @NonNull File testApk, @NonNull TestVariantData variantData,
+                         @Nullable File testedApk, @NonNull BaseVariantData testedVariantData,
                          @NonNull File resultsDir, @NonNull ILogger logger) {
-            mProject = project
-            mDevice = device
-            mDeviceName = computeDeviceName(device)
-            mFlavorName = flavorName
-            mResultsDir = resultsDir
-            mTestApk = testApk
-            mVariant = variant
-            mTestedApk = testedApk
-            mTestedVariant = testedVariant
-            mLogger = logger
+            this.project = project
+            this.device = device
+            this.deviceName = computeDeviceName(device)
+            this.flavorName = flavorName
+            this.resultsDir = resultsDir
+            this.testApk = testApk
+            this.variantData = variantData
+            this.testedApk = testedApk
+            this.testedVariantData = testedVariantData
+            this.logger = logger
         }
 
         @Override
         Boolean call() throws Exception {
             try {
-                if (mTestedApk != null) {
-                    mLogger.info("Device '%s': installing %s", mDeviceName, mTestedApk.absolutePath)
-                    mDevice.installPackage(mTestedApk.absolutePath, true /*reinstall*/)
+                if (testedApk != null) {
+                    logger.info("Device '%s': installing %s", deviceName, testedApk.absolutePath)
+                    device.installPackage(testedApk.absolutePath, true /*reinstall*/)
                 }
 
-                mLogger.info("Device '%s': installing %s", mDeviceName, mTestApk.absolutePath)
-                mDevice.installPackage(mTestApk.absolutePath, true /*reinstall*/)
+                logger.info("Device '%s': installing %s", deviceName, testApk.absolutePath)
+                device.installPackage(testApk.absolutePath, true /*reinstall*/)
 
                 RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(
-                        mVariant.config.packageName, mVariant.config.instrumentationRunner,
-                        mDevice)
+                        variantData.variantConfiguration.packageName,
+                        variantData.variantConfiguration.instrumentationRunner,
+                        device)
 
-                runner.setRunName(mDevice.serialNumber)
+                runner.setRunName(device.serialNumber)
                 CustomTestRunListener runListener = new CustomTestRunListener(
-                        mDeviceName, mProject.name, mFlavorName, mLogger)
-                runListener.setReportDir(mResultsDir)
+                        deviceName, project.name, flavorName, logger)
+                runListener.setReportDir(resultsDir)
 
                 runner.run(runListener)
 
                 return runListener.runResult.hasFailedTests()
             } finally {
                 // uninstall the apps
-                String packageName = mVariant.packageName
-                mLogger.info("Device '%s': uninstalling %s", mDeviceName, packageName)
-                mDevice.uninstallPackage(packageName)
+                String packageName = variantData.packageName
+                logger.info("Device '%s': uninstalling %s", deviceName, packageName)
+                device.uninstallPackage(packageName)
 
-                if (mTestedApk != null) {
-                    packageName = mTestedVariant.packageName
-                    mLogger.info("Device '%s': uninstalling %s", mDeviceName, packageName)
-                    mDevice.uninstallPackage(packageName)
+                if (testedApk != null) {
+                    packageName = testedVariantData.packageName
+                    logger.info("Device '%s': uninstalling %s", deviceName, packageName)
+                    device.uninstallPackage(packageName)
                 }
             }
         }
 
-        private String computeDeviceName(@NonNull IDevice device) {
+        private static String computeDeviceName(@NonNull IDevice device) {
             String version = device.getProperty(IDevice.PROP_BUILD_VERSION);
             boolean emulator = device.isEmulator()
 
             String name;
             if (emulator) {
-                name = mDevice.avdName != null ? mDevice.avdName + "(AVD)" : mDevice.serialNumber
+                name = device.avdName != null ? device.avdName + "(AVD)" : device.serialNumber
             } else {
                 String model = device.getProperty(IDevice.PROP_DEVICE_MODEL)
-                name = model != null ? model : mDevice.serialNumber
+                name = model != null ? model : device.serialNumber
             }
 
             return version != null ? name + " - " + version : name
@@ -188,10 +191,13 @@ public class TestFlavorTask extends BaseTask implements AndroidTestTask {
 
         String flavor = getFlavorName()
 
+        assert variant instanceof TestVariantData
+        TestVariantData testVariantData = (TestVariantData) variant
+
         for (IDevice device : devices) {
             executor.execute(new DeviceTestRunner(device, project, flavor,
-                    testApk, variant,
-                    testedApk, testedVariant,
+                    testApk, testVariantData,
+                    testedApk, testedVariantData,
                     resultsOutDir, plugin.logger))
         }
 

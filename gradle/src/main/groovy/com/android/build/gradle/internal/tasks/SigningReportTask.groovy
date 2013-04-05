@@ -16,8 +16,8 @@
 
 package com.android.build.gradle.internal.tasks
 
-import com.android.build.gradle.internal.ApplicationVariant
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
+import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.builder.signing.CertificateInfo
 import com.android.builder.signing.KeystoreHelper
 import com.android.builder.signing.KeytoolException
@@ -43,7 +43,7 @@ import static org.gradle.logging.StyledTextOutput.Style.Normal
  */
 class SigningReportTask extends BaseTask {
 
-    private Set<ApplicationVariant> variants = [];
+    private Set<BaseVariantData> variants = [];
 
     @TaskAction
     public void generate() throws IOException {
@@ -53,13 +53,13 @@ class SigningReportTask extends BaseTask {
 
         Map<SigningConfig, SigningInfo> cache = Maps.newHashMap()
 
-        for (ApplicationVariant variant : variants) {
+        for (BaseVariantData variant : variants) {
             textOutput.withStyle(Identifier).text("Variant: ")
             textOutput.withStyle(Description).text(variant.name)
             textOutput.println()
 
             // get the data
-            SigningConfigDsl signingConfig = (SigningConfigDsl) variant.config.signingConfig
+            SigningConfigDsl signingConfig = (SigningConfigDsl) variant.variantConfiguration.signingConfig
             if (signingConfig == null) {
                 textOutput.withStyle(Identifier).text("Config: ")
                 textOutput.withStyle(Normal).text("none")
@@ -112,11 +112,11 @@ class SigningReportTask extends BaseTask {
      *
      * @param configurations The configuration. Must not be null.
      */
-    public void setVariants(Collection<ApplicationVariant> variants) {
+    public void setVariants(Collection<BaseVariantData> variants) {
         this.variants.addAll(variants);
     }
 
-    private SigningInfo getSigningInfo(SigningConfig signingConfig,
+    private static SigningInfo getSigningInfo(SigningConfig signingConfig,
                                        Map<SigningConfig, SigningInfo> cache) {
         SigningInfo signingInfo = cache.get(signingConfig)
 

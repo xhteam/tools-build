@@ -23,9 +23,9 @@ import java.io.File;
 
 public class VariantConfigurationTest extends TestCase {
 
-    private ProductFlavor mDefaultConfig;
-    private ProductFlavor mFlavorConfig;
-    private BuildType mBuildType;
+    private DefaultProductFlavor mDefaultConfig;
+    private DefaultProductFlavor mFlavorConfig;
+    private DefaultBuildType mBuildType;
 
     private static class ManifestParserMock implements ManifestParser {
 
@@ -53,9 +53,9 @@ public class VariantConfigurationTest extends TestCase {
 
     @Override
     protected void setUp() throws Exception {
-        mDefaultConfig = new ProductFlavor("main");
-        mFlavorConfig = new ProductFlavor("flavor");
-        mBuildType = new BuildType("debug");
+        mDefaultConfig = new DefaultProductFlavor("main");
+        mFlavorConfig = new DefaultProductFlavor("flavor");
+        mBuildType = new DefaultBuildType("debug");
     }
 
     public void testPackageOverrideNone() {

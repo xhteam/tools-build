@@ -35,6 +35,7 @@ subprojects {
     }
 
     group = 'com.android.tools.build'
+    project.ext.baseAndroidVersion = "22.0-SNAPSHOT"
 }
 
 // delay evaluation of this project before all subprojects have been evaluated.

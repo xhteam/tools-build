@@ -15,34 +15,31 @@
  */
 
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.internal.AndroidAsciiReportRenderer
-import com.android.build.gradle.internal.ApplicationVariant
+import com.android.build.gradle.internal.variant.BaseVariantData
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.TaskAction
 import org.gradle.logging.StyledTextOutputFactory
-
 /**
  */
 public class DependencyReportTask extends DefaultTask {
 
     private AndroidAsciiReportRenderer renderer = new AndroidAsciiReportRenderer();
 
-    private Set<ApplicationVariant> variants = [];
+    private Set<BaseVariantData> variants = [];
 
     @TaskAction
     public void generate() throws IOException {
         renderer.setOutput(getServices().get(StyledTextOutputFactory.class).create(getClass()));
 
-        SortedSet<ApplicationVariant> sortedConfigurations = new TreeSet<Configuration>(
-                new Comparator<ApplicationVariant>() {
-            public int compare(ApplicationVariant conf1, ApplicationVariant conf2) {
+        SortedSet<BaseVariantData> sortedConfigurations = new TreeSet<BaseVariantData>(
+                new Comparator<BaseVariantData>() {
+            public int compare(BaseVariantData conf1, BaseVariantData conf2) {
                 return conf1.getName().compareTo(conf2.getName());
             }
         });
         sortedConfigurations.addAll(getVariants());
-        for (ApplicationVariant variant : sortedConfigurations) {
+        for (BaseVariantData variant : sortedConfigurations) {
             renderer.startVariant(variant);
             renderer.render(variant);
         }
@@ -54,7 +51,7 @@ public class DependencyReportTask extends DefaultTask {
      *
      * @return the configurations.
      */
-    public Set<ApplicationVariant> getVariants() {
+    public Set<BaseVariantData> getVariants() {
         return variants;
     }
 
@@ -63,7 +60,7 @@ public class DependencyReportTask extends DefaultTask {
      *
      * @param configurations The configuration. Must not be null.
      */
-    public void setVariants(Collection<ApplicationVariant> variants) {
+    public void setVariants(Collection<BaseVariantData> variants) {
         this.variants.addAll(variants);
     }
 }

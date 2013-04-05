@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 package com.android.build.gradle
+
 import com.android.SdkConstants
+import com.android.annotations.NonNull
+import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.BuildTypeData
-import com.android.build.gradle.internal.DefaultBuildVariant
 import com.android.build.gradle.internal.ProductFlavorData
-import com.android.build.gradle.internal.ProductionAppVariant
-import com.android.build.gradle.internal.TestAppVariant
+import com.android.build.gradle.internal.api.LibraryVariantImpl
+import com.android.build.gradle.internal.api.TestVariantImpl
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
-import com.android.builder.dependency.AndroidDependency
+import com.android.build.gradle.internal.variant.LibraryVariantData
+import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.builder.BuilderConstants
+import com.android.builder.VariantConfiguration
+import com.android.builder.dependency.AndroidDependency
 import com.android.builder.dependency.BundleDependency
 import com.android.builder.dependency.DependencyContainer
 import com.android.builder.dependency.JarDependency
 import com.android.builder.dependency.ManifestDependency
-import com.android.builder.VariantConfiguration
 import com.google.common.collect.Sets
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -38,8 +42,10 @@ import org.gradle.api.tasks.bundling.Jar
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.BuildException
+import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 
 import javax.inject.Inject
+
 /**
  * Gradle plugin class for 'library' projects.
  */
@@ -52,8 +58,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
     BuildTypeData releaseBuildTypeData
 
     @Inject
-    public LibraryPlugin(Instantiator instantiator) {
-        super(instantiator)
+    public LibraryPlugin(Instantiator instantiator, ToolingModelBuilderRegistry registry) {
+        super(instantiator, registry)
     }
 
     @Override
@@ -115,28 +121,33 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         dependencies.add(releaseBuildTypeData)
         resolveDependencies(dependencies)
 
-        ProductionAppVariant testedVariant = createLibraryTasks(debugBuildTypeData, false)
-        ProductionAppVariant nonTestedVariant = createLibraryTasks(releaseBuildTypeData, true)
-        TestAppVariant testVariant = createTestTasks(testedVariant)
+        // create the variants and get their internal storage objects.
+        LibraryVariantData testedVariantData = createLibraryVariant(debugBuildTypeData, false)
+        LibraryVariantData notTestedVariantData = createLibraryVariant(releaseBuildTypeData, true)
+        TestVariantData testVariantData = createTestVariant(testedVariantData)
+
+        // and now create the API objects for the variants
 
         // add the not-tested build variant.
-        extension.buildVariants.add(
-                instantiator.newInstance(DefaultBuildVariant.class, nonTestedVariant))
+        extension.addLibraryVariant(
+                instantiator.newInstance(LibraryVariantImpl.class, notTestedVariantData))
 
-        // and add the test variant
-        DefaultBuildVariant testBuildVariant = instantiator.newInstance(
-                DefaultBuildVariant.class, testVariant)
-        extension.testBuildVariants.add(testBuildVariant)
+        // add the tested build variant
+        LibraryVariantImpl libraryVariant = instantiator.newInstance(LibraryVariantImpl.class,
+                testedVariantData);
+        extension.addLibraryVariant(libraryVariant);
 
-        // and finally the tested variant
-        extension.buildVariants.add(
-                instantiator.newInstance(DefaultBuildVariant.class,
-                        testedVariant, testBuildVariant))
+        // add the test variant
+        TestVariantImpl testVariant = instantiator.newInstance(TestVariantImpl.class,
+                testVariantData, libraryVariant)
+        extension.addTestVariant(testVariant)
 
+        // finally, wire the test Variant inside the tested library variant.
+        libraryVariant.setTestVariant(testVariant)
     }
 
-    private ProductionAppVariant createLibraryTasks(BuildTypeData buildTypeData,
-                                                    boolean publishArtifact) {
+    private LibraryVariantData createLibraryVariant(
+            @NonNull BuildTypeData buildTypeData, boolean publishArtifact) {
         ProductFlavorData defaultConfigData = getDefaultConfigData();
 
         // the order of the libraries is important. In descending order:
@@ -154,50 +165,51 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
 
         String packageName = variantConfig.getPackageFromManifest()
         if (packageName == null) {
-            throw new BuildException("Failed to read manifest")
+            throw new BuildException("Failed to read manifest", null)
         }
 
-        ProductionAppVariant variant = new ProductionAppVariant(variantConfig)
-        variants.add(variant)
+        LibraryVariantData variantData = new LibraryVariantData(variantConfig)
+        variantDataList.add(variantData)
 
-        createPrepareDependenciesTask(variant, configDependencies)
+        createPrepareDependenciesTask(variantData, configDependencies)
 
         // Add a task to process the manifest(s)
-        createProcessManifestTask(variant, DIR_BUNDLES)
+        createProcessManifestTask(variantData, DIR_BUNDLES)
 
         // Add a task to compile renderscript files.
-        createRenderscriptTask(variant)
+        createRenderscriptTask(variantData)
 
         // Add a task to merge the resource folders
-        createMergeResourcesTask(variant, "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/res",
+        createMergeResourcesTask(variantData,
+                "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/res",
                 false /*process9Patch*/)
 
         // Add a task to merge the assets folders
-        createMergeAssetsTask(variant,
-                "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/assets")
+        createMergeAssetsTask(variantData,
+                "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/assets")
 
         // Add a task to create the BuildConfig class
-        createBuildConfigTask(variant)
+        createBuildConfigTask(variantData)
 
         // Add a task to generate resource source files, directing the location
         // of the r.txt file to be directly in the bundle.
-        createProcessResTask(variant, "$project.buildDir/$DIR_BUNDLES/${variant.dirName}")
+        createProcessResTask(variantData, "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}")
 
         // process java resources
-        createProcessJavaResTask(variant)
+        createProcessJavaResTask(variantData)
 
-        createAidlTask(variant)
+        createAidlTask(variantData)
 
         // Add a compile task
-        createCompileTask(variant, null/*testedVariant*/)
+        createCompileTask(variantData, null/*testedVariant*/)
 
         // jar the classes.
         Jar jar = project.tasks.add("package${buildTypeData.buildType.name.capitalize()}Jar", Jar);
-        jar.dependsOn variant.javaCompileTask, variant.processJavaResources
-        jar.from(variant.javaCompileTask.outputs);
-        jar.from(variant.processJavaResources.destinationDir)
+        jar.dependsOn variantData.javaCompileTask, variantData.processJavaResources
+        jar.from(variantData.javaCompileTask.outputs);
+        jar.from(variantData.processJavaResources.destinationDir)
 
-        jar.destinationDir = project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}")
+        jar.destinationDir = project.file("$project.buildDir/$DIR_BUNDLES/${variantData.dirName}")
         jar.archiveName = "classes.jar"
         packageName = packageName.replace('.', '/');
         jar.exclude(packageName + "/R.class")
@@ -205,39 +217,39 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         jar.exclude(packageName + "/BuildConfig.class")
 
         // package the aidl files into the bundle folder
-        Sync packageAidl = project.tasks.add("package${variant.name}Aidl", Sync)
+        Sync packageAidl = project.tasks.add("package${variantData.name}Aidl", Sync)
         // packageAidl from 3 sources. the order is important to make sure the override works well.
         packageAidl.from(defaultConfigData.sourceSet.aidl.srcDirs,
                 buildTypeData.sourceSet.aidl.srcDirs).include("**/*.aidl")
         packageAidl.into(project.file(
-                "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_AIDL"))
+                "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/$SdkConstants.FD_AIDL"))
 
         // package the renderscript header files files into the bundle folder
-        Sync packageRenderscript = project.tasks.add("package${variant.name}Renderscript", Sync)
+        Sync packageRenderscript = project.tasks.add("package${variantData.name}Renderscript", Sync)
         // package from 3 sources. the order is important to make sure the override works well.
         packageRenderscript.from(defaultConfigData.sourceSet.renderscript.srcDirs,
                 buildTypeData.sourceSet.renderscript.srcDirs).include("**/*.rsh")
         packageRenderscript.into(project.file(
-                "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.FD_RENDERSCRIPT"))
+                "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/$SdkConstants.FD_RENDERSCRIPT"))
 
         // package the renderscript header files files into the bundle folder
-        Sync packageLocalJar = project.tasks.add("package${variant.name}LocalJar", Sync)
+        Sync packageLocalJar = project.tasks.add("package${variantData.name}LocalJar", Sync)
         packageLocalJar.from(getLocalJarFileList(configDependencies))
         packageLocalJar.into(project.file(
-                "$project.buildDir/$DIR_BUNDLES/${variant.dirName}/$SdkConstants.LIBS_FOLDER"))
+                "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/$SdkConstants.LIBS_FOLDER"))
 
-        Zip bundle = project.tasks.add("bundle${variant.name}", Zip)
+        Zip bundle = project.tasks.add("bundle${variantData.name}", Zip)
         bundle.dependsOn jar, packageAidl, packageRenderscript, packageLocalJar
-        bundle.setDescription("Assembles a bundle containing the library in ${variant.name}.");
+        bundle.setDescription("Assembles a bundle containing the library in ${variantData.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
         bundle.extension = BuilderConstants.EXT_LIB_ARCHIVE
-        if (variant.baseName != BuilderConstants.RELEASE) {
-            bundle.classifier = variant.baseName
+        if (variantData.baseName != BuilderConstants.RELEASE) {
+            bundle.classifier = variantData.baseName
         }
-        bundle.from(project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}"))
+        bundle.from(project.file("$project.buildDir/$DIR_BUNDLES/${variantData.dirName}"))
 
-        variant.packageLibTask = bundle
-        variant.outputFile = bundle.archivePath
+        variantData.packageLibTask = bundle
+        variantData.outputFile = bundle.archivePath
 
         if (publishArtifact) {
             // add the artifact that will be published
@@ -245,12 +257,12 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         }
 
         buildTypeData.assembleTask.dependsOn bundle
-        variant.assembleTask = bundle
+        variantData.assembleTask = bundle
 
         // configure the variant to be testable.
         variantConfig.output = new BundleDependency(
-                project.file("$project.buildDir/$DIR_BUNDLES/${variant.dirName}"),
-                variant.getName()) {
+                project.file("$project.buildDir/$DIR_BUNDLES/${variantData.dirName}"),
+                variantData.getName()) {
 
             @Override
             List<AndroidDependency> getDependencies() {
@@ -263,7 +275,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
             }
         };
 
-        return variant
+        return variantData
     }
 
     static Object[] getLocalJarFileList(List<? extends DependencyContainer> containerList) {
@@ -277,7 +289,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         return files.toArray()
     }
 
-    private TestAppVariant createTestTasks(ProductionAppVariant testedVariant) {
+    private TestVariantData createTestVariant(LibraryVariantData testedVariantData) {
         ProductFlavorData defaultConfigData = getDefaultConfigData();
 
         // the order of the libraries is important. In descending order:
@@ -288,14 +300,16 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         def testVariantConfig = new VariantConfiguration(
                 defaultConfigData.productFlavor, defaultConfigData.testSourceSet,
                 debugBuildTypeData.buildType, null,
-                VariantConfiguration.Type.TEST, testedVariant.config, project.name)
+                VariantConfiguration.Type.TEST,
+                testedVariantData.variantConfiguration, project.name)
 
         testVariantConfig.setDependencies(configDependencies)
 
-        def testVariant = new TestAppVariant(testVariantConfig,)
-        variants.add(testVariant)
-        createTestTasks(testVariant, testedVariant, configDependencies, true /*mainTestTask*/)
+        TestVariantData testVariantData = new TestVariantData(testVariantConfig,)
+        variantDataList.add(testVariantData)
+        createTestTasks(testVariantData, testedVariantData, configDependencies,
+                true /*mainTestTask*/)
 
-        return testVariant
+        return testVariantData
     }
 }
