@@ -84,14 +84,20 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
         return defaultConfig;
     }
 
-    @Override
     @NonNull
+    @Override
     public Map<String, BuildTypeContainer> getBuildTypes() {
         return buildTypes;
     }
 
-    @Override
     @NonNull
+    @Override
+    public Map<String, ProductFlavorContainer> getProductFlavors() {
+        return productFlavors;
+    }
+
+    @NonNull
+    @Override
     public Map<String, Variant> getVariants() {
         return variants;
     }

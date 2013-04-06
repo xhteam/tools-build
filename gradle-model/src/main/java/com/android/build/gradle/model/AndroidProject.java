@@ -37,5 +37,8 @@ public interface AndroidProject {
     Map<String, BuildTypeContainer> getBuildTypes();
 
     @NonNull
+    Map<String, ProductFlavorContainer> getProductFlavors();
+
+    @NonNull
     Map<String, Variant> getVariants();
 }
