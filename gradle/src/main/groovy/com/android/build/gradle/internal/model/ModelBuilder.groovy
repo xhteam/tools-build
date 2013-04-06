@@ -63,6 +63,10 @@ public class ModelBuilder implements ToolingModelBuilder {
             for (BuildTypeData btData : appPlugin.buildTypes.values()) {
                 androidProject.addBuildType(createBTC(btData))
             }
+            for (ProductFlavorData pfData : appPlugin.productFlavors.values()) {
+                androidProject.addProductFlavors(createPFC(pfData));
+            }
+
         } else if (libPlugin != null) {
             androidProject.addBuildType(createBTC(libPlugin.debugBuildTypeData))
                           .addBuildType(createBTC(libPlugin.releaseBuildTypeData))
