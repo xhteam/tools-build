@@ -19,6 +19,7 @@ import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.ide.common.res2.AssetMerger
 import com.android.ide.common.res2.AssetSet
 import com.android.ide.common.res2.FileStatus
+import com.android.ide.common.res2.MergedAssetWriter
 import com.android.utils.ILogger
 import com.android.utils.Pair
 import org.gradle.api.tasks.InputFiles
@@ -72,7 +73,8 @@ public class MergeAssets extends IncrementalTask {
         }
 
         // get the merged set and write it down.
-        merger.writeDataFolder(destinationDir)
+        MergedAssetWriter writer = new MergedAssetWriter(destinationDir)
+        merger.mergeData(writer)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
@@ -122,7 +124,8 @@ public class MergeAssets extends IncrementalTask {
             }
         }
 
-        merger.writeDataFolder(getOutputDir())
+        MergedAssetWriter writer = new MergedAssetWriter(getOutputDir())
+        merger.mergeData(writer)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
