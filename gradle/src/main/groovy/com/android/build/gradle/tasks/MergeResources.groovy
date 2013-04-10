@@ -76,7 +76,7 @@ public class MergeResources extends IncrementalTask {
         // get the merged set and write it down.
         MergedResourceWriter writer = new MergedResourceWriter(
                 destinationDir, getProcess9Patch() ? builder.aaptRunner : null)
-        merger.mergeData(writer)
+        merger.mergeData(writer, false /*doCleanUp*/)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
@@ -86,7 +86,7 @@ public class MergeResources extends IncrementalTask {
     protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs) {
         // create a merger and load the known state.
         ResourceMerger merger = new ResourceMerger()
-        if (!merger.loadFromBlob(getIncrementalFolder())) {
+        if (!merger.loadFromBlob(getIncrementalFolder(), true /*incrementalState*/)) {
             doFullTaskAction()
             return
         }
@@ -128,7 +128,7 @@ public class MergeResources extends IncrementalTask {
 
         MergedResourceWriter writer = new MergedResourceWriter(
                 getOutputDir(), getProcess9Patch() ? builder.aaptRunner : null)
-        merger.mergeData(writer)
+        merger.mergeData(writer, false /*doCleanUp*/)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())

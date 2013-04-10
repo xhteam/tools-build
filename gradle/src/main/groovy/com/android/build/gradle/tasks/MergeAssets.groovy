@@ -74,7 +74,7 @@ public class MergeAssets extends IncrementalTask {
 
         // get the merged set and write it down.
         MergedAssetWriter writer = new MergedAssetWriter(destinationDir)
-        merger.mergeData(writer)
+        merger.mergeData(writer, false /*doCleanUp*/)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
@@ -84,7 +84,7 @@ public class MergeAssets extends IncrementalTask {
     protected void doIncrementalTaskAction(Map<File, FileStatus> changedInputs) {
         // create a merger and load the known state.
         AssetMerger merger = new AssetMerger()
-        if (!merger.loadFromBlob(getIncrementalFolder())) {
+        if (!merger.loadFromBlob(getIncrementalFolder(), true /*incrementalState*/)) {
             doFullTaskAction()
             return
         }
@@ -125,7 +125,7 @@ public class MergeAssets extends IncrementalTask {
         }
 
         MergedAssetWriter writer = new MergedAssetWriter(getOutputDir())
-        merger.mergeData(writer)
+        merger.mergeData(writer, false /*doCleanUp*/)
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
