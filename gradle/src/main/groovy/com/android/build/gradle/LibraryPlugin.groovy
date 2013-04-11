@@ -307,6 +307,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
 
         TestVariantData testVariantData = new TestVariantData(testVariantConfig,)
         variantDataList.add(testVariantData)
+        testedVariantData.setTestVariantData(testVariantData);
         createTestTasks(testVariantData, testedVariantData, configDependencies,
                 true /*mainTestTask*/)
 

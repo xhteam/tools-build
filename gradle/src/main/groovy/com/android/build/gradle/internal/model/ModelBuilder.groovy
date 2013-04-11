@@ -16,12 +16,16 @@
 
 package com.android.build.gradle.internal.model
 import com.android.annotations.NonNull
+import com.android.annotations.Nullable
 import com.android.build.gradle.AppPlugin
 import com.android.build.gradle.BasePlugin
 import com.android.build.gradle.LibraryPlugin
 import com.android.build.gradle.internal.BuildTypeData
 import com.android.build.gradle.internal.ProductFlavorData
+import com.android.build.gradle.internal.variant.ApplicationVariantData
 import com.android.build.gradle.internal.variant.BaseVariantData
+import com.android.build.gradle.internal.variant.LibraryVariantData
+import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.build.gradle.model.AndroidProject
 import com.android.build.gradle.model.BuildTypeContainer
 import com.android.build.gradle.model.ProductFlavorContainer
@@ -73,30 +77,43 @@ public class ModelBuilder implements ToolingModelBuilder {
         }
 
         for (BaseVariantData variantData : basePlugin.variantDataList) {
-            androidProject.addVariant(createVariant(variantData, basePlugin))
+            if (!(variantData instanceof TestVariantData)) {
+                androidProject.addVariant(createVariant(variantData, basePlugin))
+            }
         }
 
         return androidProject
     }
 
     @NonNull
-    private static VariantImpl createVariant(BaseVariantData variantData, BasePlugin basePlugin) {
+    private static VariantImpl createVariant(@NonNull BaseVariantData variantData,
+                                             @NonNull BasePlugin basePlugin) {
+        TestVariantData testVariantData = null
+        if (variantData instanceof ApplicationVariantData ||
+                variantData instanceof LibraryVariantData) {
+            testVariantData = variantData.testVariantData
+        }
+
         VariantImpl variant = new VariantImpl(
                 variantData.baseName,
                 basePlugin.getRuntimeJarList(variantData),
                 variantData.assembleTask.name,
+                testVariantData?.assembleTask?.name,
                 variantData.variantConfiguration.buildType.name,
                 getProductFlavorNames(variantData),
                 ProductFlavorImpl.cloneFlavor(variantData.variantConfiguration.mergedFlavor),
                 variantData.outputFile,
+                testVariantData?.outputFile,
                 getGeneratedSourceFolders(variantData),
-                getGeneratedResourceFolders(variantData))
+                getGeneratedSourceFolders(testVariantData),
+                getGeneratedResourceFolders(variantData),
+                getGeneratedResourceFolders(testVariantData))
 
         return variant;
     }
 
     @NonNull
-    private static List<String> getProductFlavorNames(BaseVariantData variantData) {
+    private static List<String> getProductFlavorNames(@NonNull BaseVariantData variantData) {
         List<String> flavorNames = Lists.newArrayList()
 
         for (DefaultProductFlavor flavor : variantData.variantConfiguration.flavorConfigs) {
@@ -107,7 +124,11 @@ public class ModelBuilder implements ToolingModelBuilder {
     }
 
     @NonNull
-    private static List<File> getGeneratedSourceFolders(BaseVariantData variantData) {
+    private static List<File> getGeneratedSourceFolders(@Nullable BaseVariantData variantData) {
+        if (variantData == null) {
+            return Collections.emptyList()
+        }
+
         List<File> folders = Lists.newArrayList()
 
         folders.add(variantData.processResourcesTask.sourceOutputDir)
@@ -119,7 +140,11 @@ public class ModelBuilder implements ToolingModelBuilder {
     }
 
     @NonNull
-    private static List<File> getGeneratedResourceFolders(BaseVariantData variantData) {
+    private static List<File> getGeneratedResourceFolders(@Nullable BaseVariantData variantData) {
+        if (variantData == null) {
+            return Collections.emptyList()
+        }
+
         return Collections.singletonList(variantData.renderscriptCompileTask.resOutputDir)
     }
 
@@ -129,7 +154,7 @@ public class ModelBuilder implements ToolingModelBuilder {
      * @return a non-null ProductFlavorContainer
      */
     @NonNull
-    private static ProductFlavorContainer createPFC(ProductFlavorData productFlavorData) {
+    private static ProductFlavorContainer createPFC(@NonNull ProductFlavorData productFlavorData) {
         return new ProductFlavorContainerImpl(
                 ProductFlavorImpl.cloneFlavor(productFlavorData.productFlavor),
                 SourceProviderImpl.cloneProvider((SourceProvider) productFlavorData.sourceSet),
@@ -142,7 +167,7 @@ public class ModelBuilder implements ToolingModelBuilder {
      * @return a non-null BuildTypeContainer
      */
     @NonNull
-    private static BuildTypeContainer createBTC(BuildTypeData buildTypeData) {
+    private static BuildTypeContainer createBTC(@NonNull BuildTypeData buildTypeData) {
         return new BuildTypeContainerImpl(
                 BuildTypeImpl.cloneBuildType(buildTypeData.buildType),
                 SourceProviderImpl.cloneProvider((SourceProvider) buildTypeData.sourceSet))
@@ -154,7 +179,7 @@ public class ModelBuilder implements ToolingModelBuilder {
      * @param pluginClass the plugin class.
      * @return the plugin instance or null if it is not applied.
      */
-    private static <T> T getPlugin(Project project, Class<T> pluginClass) {
+    private static <T> T getPlugin(@NonNull Project project, @NonNull Class<T> pluginClass) {
         try {
             return project.getPlugins().findPlugin(pluginClass)
         } catch (UnknownPluginException ignored) {

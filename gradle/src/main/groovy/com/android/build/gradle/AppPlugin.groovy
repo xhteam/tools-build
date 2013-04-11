@@ -381,6 +381,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         // create the internal storage for this variant.
         def testVariantData = new TestVariantData(testVariantConfig)
         variantDataList.add(testVariantData)
+        testedVariantData.setTestVariantData(testVariantData);
         createTestTasks(testVariantData, testedVariantData, testConfigDependencies,
                 true /*mainTestTask*/)
 
@@ -487,6 +488,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         // create the internal storage for this variant.
         TestVariantData testVariantData = new TestVariantData(testVariantConfig)
         variantDataList.add(testVariantData)
+        testedVariantData.setTestVariantData(testVariantData);
         AndroidTestTask testFlavorTask = createTestTasks(testVariantData, testedVariantData,
                 testConfigDependencies, false /*mainTestTask*/)
 

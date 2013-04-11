@@ -17,6 +17,7 @@
 package com.android.build.gradle.model;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.builder.model.ProductFlavor;
 
 import java.io.File;
@@ -36,8 +37,14 @@ public interface Variant {
     @NonNull
     File getOutputFile();
 
+    @Nullable
+    File getOutputTestFile();
+
     @NonNull
     String getAssembleTaskName();
+
+    @Nullable
+    String getAssembleTestTaskName();
 
     @NonNull
     String getBuildType();
@@ -53,4 +60,10 @@ public interface Variant {
 
     @NonNull
     List<File> getGeneratedResourceFolders();
+
+    @Nullable
+    List<File> getGeneratedTestSourceFolders();
+
+    @Nullable
+    List<File> getGeneratedTestResourceFolders();
 }

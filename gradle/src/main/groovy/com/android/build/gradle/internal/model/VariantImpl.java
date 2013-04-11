@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.build.gradle.model.Variant;
 import com.android.builder.model.ProductFlavor;
 
@@ -36,37 +37,53 @@ class VariantImpl implements Variant, Serializable {
     private final List<String> bootClasspath;
     @NonNull
     private final String assembleTaskName;
+    @Nullable
+    private final String assembleTestTaskName;
     @NonNull
     private final String buildTypeName;
     @NonNull
     private final List<String> productFlavorNames;
     @NonNull
-    private final File outputFile;
-    @NonNull
     private final ProductFlavor mergedFlavor;
     @NonNull
+    private final File outputFile;
+    @Nullable
+    private final File testOutputFile;
+    @NonNull
     private final List<File> generatedSourceFolders;
+    @Nullable
+    private final List<File> generatedTestSourceFolders;
     @NonNull
     private final List<File> generatedResourceFolders;
+    @Nullable
+    private final List<File> generatedTestResourceFolders;
 
-    VariantImpl(@NonNull String name,
-                @NonNull List<String> bootClasspath,
-                @NonNull String assembleTaskName,
-                @NonNull String buildTypeName,
-                @NonNull List<String> productFlavorNames,
-                @NonNull ProductFlavorImpl mergedFlavor,
-                @NonNull File outputFile,
-                @NonNull List<File> generatedSourceFolders,
-                @NonNull List<File> generatedResourceFolders) {
+    VariantImpl(@NonNull  String name,
+                @NonNull  List<String> bootClasspath,
+                @NonNull  String assembleTaskName,
+                @Nullable String assembleTestTaskName,
+                @NonNull  String buildTypeName,
+                @NonNull  List<String> productFlavorNames,
+                @NonNull  ProductFlavorImpl mergedFlavor,
+                @NonNull  File outputFile,
+                @Nullable File testOutputFile,
+                @NonNull  List<File> generatedSourceFolders,
+                @Nullable  List<File> generatedTestSourceFolders,
+                @NonNull  List<File> generatedResourceFolders,
+                @Nullable  List<File> generatedTestResourceFolders) {
         this.name = name;
         this.bootClasspath = bootClasspath;
         this.assembleTaskName = assembleTaskName;
+        this.assembleTestTaskName = assembleTestTaskName;
         this.buildTypeName = buildTypeName;
         this.productFlavorNames = productFlavorNames;
-        this.outputFile = outputFile;
         this.mergedFlavor = mergedFlavor;
+        this.outputFile = outputFile;
+        this.testOutputFile = testOutputFile;
         this.generatedSourceFolders = generatedSourceFolders;
+        this.generatedTestSourceFolders = generatedTestSourceFolders;
         this.generatedResourceFolders = generatedResourceFolders;
+        this.generatedTestResourceFolders = generatedTestResourceFolders;
     }
 
     @Override
@@ -87,10 +104,22 @@ class VariantImpl implements Variant, Serializable {
         return assembleTaskName;
     }
 
+    @Nullable
+    @Override
+    public String getAssembleTestTaskName() {
+        return assembleTestTaskName;
+    }
+
     @Override
     @NonNull
     public File getOutputFile() {
         return outputFile;
+    }
+
+    @Nullable
+    @Override
+    public File getOutputTestFile() {
+        return testOutputFile;
     }
 
     @Override
@@ -117,9 +146,21 @@ class VariantImpl implements Variant, Serializable {
         return generatedSourceFolders;
     }
 
+    @Nullable
+    @Override
+    public List<File> getGeneratedTestSourceFolders() {
+        return generatedTestSourceFolders;
+    }
+
     @NonNull
     @Override
     public List<File> getGeneratedResourceFolders() {
         return generatedResourceFolders;
+    }
+
+    @Nullable
+    @Override
+    public List<File> getGeneratedTestResourceFolders() {
+        return generatedTestResourceFolders;
     }
 }

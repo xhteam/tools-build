@@ -62,8 +62,9 @@ public class AndroidProjectTest extends TestCase {
             assertEquals("Build Type Count", 2, buildTypes.size());
 
             Map<String, Variant> variants = model.getVariants();
-            assertEquals("Variant Count", 3 , variants.size());
+            assertEquals("Variant Count", 2 , variants.size());
 
+            // debug variant
             Variant debugVariant = variants.get("debug");
             assertNotNull("Debug Variant null-check", debugVariant);
             new ProductFlavorTester(debugVariant.getMergedFlavor(), "Debug Merged Flavor")
@@ -73,6 +74,16 @@ public class AndroidProjectTest extends TestCase {
                     .setTargetSdkVersion(16)
                     .test();
 
+            // this variant is tested.
+            assertNotNull(debugVariant.getAssembleTaskName());
+            assertNotNull(debugVariant.getOutputTestFile());
+
+            // release variant, not tested.
+            Variant releaseVariant = variants.get("release");
+            assertNotNull(releaseVariant);
+
+            assertNull(releaseVariant.getAssembleTestTaskName());
+            assertNull(releaseVariant.getOutputTestFile());
 
         } finally {
             // Clean up
@@ -154,7 +165,7 @@ public class AndroidProjectTest extends TestCase {
             assertEquals("Build Type Count", 2, buildTypes.size());
 
             Map<String, Variant> variants = model.getVariants();
-            assertEquals("Variant Count", 12 , variants.size());
+            assertEquals("Variant Count", 8 , variants.size());
 
             Variant f1faDebugVariant = variants.get("f1fa-debug");
             assertNotNull("f1fa-debug Variant null-check", f1faDebugVariant);
@@ -183,7 +194,6 @@ public class AndroidProjectTest extends TestCase {
 
             for (GradleProject child : model.getChildren()) {
                 String path = child.getPath();
-                System.out.println(">> " + path);
                 String name = path.substring(1);
                 File childDir = new File(projectDir, name);
 

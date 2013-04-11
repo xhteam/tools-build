@@ -16,6 +16,7 @@
 package com.android.build.gradle.internal.variant;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.builder.VariantConfiguration;
 
 /**
@@ -23,8 +24,15 @@ import com.android.builder.VariantConfiguration;
  */
 public class ApplicationVariantData extends ApkVariantData {
 
+    @Nullable
+    private TestVariantData testVariantData = null;
+
     public ApplicationVariantData(@NonNull VariantConfiguration config) {
         super(config);
+    }
+
+    public void setTestVariantData(TestVariantData testVariantData) {
+        this.testVariantData = testVariantData;
     }
 
     @NonNull
@@ -39,5 +47,10 @@ public class ApplicationVariantData extends ApkVariantData {
     @Override
     public boolean getRunProguard() {
         return getVariantConfiguration().getBuildType().isRunProguard();
+    }
+
+    @Nullable
+    public TestVariantData getTestVariantData() {
+        return testVariantData;
     }
 }
