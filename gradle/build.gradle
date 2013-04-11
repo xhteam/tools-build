@@ -42,6 +42,10 @@ dependencies {
     deviceTestCompile configurations.testRuntime
 }
 
+jar {
+    from 'NOTICE'
+}
+
 idea {
     module {
         testSourceDirs += files('src/build-test/groovy', 'src/device-test/groovy').files
