@@ -48,6 +48,7 @@ jar {
     // gather the local dependencies and package them in the builder jar.
     def internalDep = getInternalDependencies()
     from { internalDep.collect { it.directory ? it : zipTree(it) } }
+    from 'NOTICE'
 }
 
 // add the external dependencies to the fakeMaven configuration.
