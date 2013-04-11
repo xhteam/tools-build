@@ -27,11 +27,12 @@ import com.android.build.gradle.internal.variant.LibraryVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.builder.BuilderConstants
 import com.android.builder.VariantConfiguration
-import com.android.builder.dependency.AndroidDependency
-import com.android.builder.dependency.BundleDependency
 import com.android.builder.dependency.DependencyContainer
 import com.android.builder.dependency.JarDependency
+import com.android.builder.dependency.LibraryBundle
+import com.android.builder.dependency.LibraryDependency
 import com.android.builder.dependency.ManifestDependency
+import com.android.builder.model.AndroidLibrary
 import com.google.common.collect.Sets
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -260,15 +261,23 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         variantData.assembleTask = bundle
 
         // configure the variant to be testable.
-        variantConfig.output = new BundleDependency(
+        variantConfig.output = new LibraryBundle(
                 project.file("$project.buildDir/$DIR_BUNDLES/${variantData.dirName}"),
                 variantData.getName()) {
 
+            @NonNull
             @Override
-            List<AndroidDependency> getDependencies() {
+            List<LibraryDependency> getDependencies() {
                 return variantConfig.directLibraries
             }
 
+            @NonNull
+            @Override
+            List<? extends AndroidLibrary> getLibraryDependencies() {
+                return variantConfig.directLibraries
+            }
+
+            @NonNull
             @Override
             List<ManifestDependency> getManifestDependencies() {
                 return variantConfig.directLibraries

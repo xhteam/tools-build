@@ -21,9 +21,9 @@ import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.ProductFlavorData
-import com.android.build.gradle.internal.dependency.AndroidDependencyImpl
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.build.gradle.internal.dependency.DependencyChecker
+import com.android.build.gradle.internal.dependency.LibraryDependencyImpl
 import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
@@ -58,8 +58,8 @@ import com.android.builder.DefaultSdkParser
 import com.android.builder.PlatformSdkParser
 import com.android.builder.SdkParser
 import com.android.builder.VariantConfiguration
-import com.android.builder.dependency.AndroidDependency
 import com.android.builder.dependency.JarDependency
+import com.android.builder.dependency.LibraryDependency
 import com.android.builder.model.ProductFlavor
 import com.android.builder.model.SourceProvider
 import com.android.builder.signing.SigningConfig
@@ -115,7 +115,7 @@ public abstract class BasePlugin {
     private final Map<Object, AndroidBuilder> builders = Maps.newIdentityHashMap()
 
     final List<BaseVariantData> variantDataList = []
-    final Map<AndroidDependencyImpl, PrepareLibraryTask> prepareTaskMap = [:]
+    final Map<LibraryDependencyImpl, PrepareLibraryTask> prepareTaskMap = [:]
     final Map<SigningConfig, ValidateSigningTask> validateSigningTaskMap = [:]
 
     protected Project project
@@ -933,28 +933,28 @@ public abstract class BasePlugin {
         for (ConfigurationDependencies configDependencies : configDependenciesList) {
             prepareDependenciesTask.addChecker(configDependencies.checker)
 
-            for (AndroidDependencyImpl lib : configDependencies.libraries) {
+            for (LibraryDependencyImpl lib : configDependencies.libraries) {
                 addDependencyToPrepareTask(prepareDependenciesTask, lib)
             }
         }
     }
 
     def addDependencyToPrepareTask(PrepareDependenciesTask prepareDependenciesTask,
-                                   AndroidDependencyImpl lib) {
+                                   LibraryDependencyImpl lib) {
         def prepareLibTask = prepareTaskMap.get(lib)
         if (prepareLibTask != null) {
             prepareDependenciesTask.dependsOn prepareLibTask
         }
 
-        for (AndroidDependencyImpl childLib : lib.dependencies) {
+        for (LibraryDependencyImpl childLib : lib.dependencies) {
             addDependencyToPrepareTask(prepareDependenciesTask, childLib)
         }
     }
 
     def resolveDependencies(List<ConfigurationDependencies> configs) {
-        Map<ModuleVersionIdentifier, List<AndroidDependencyImpl>> modules = [:]
+        Map<ModuleVersionIdentifier, List<LibraryDependencyImpl>> modules = [:]
         Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts = [:]
-        Multimap<AndroidDependency, ConfigurationDependencies> reverseMap = ArrayListMultimap.create()
+        Multimap<LibraryDependency, ConfigurationDependencies> reverseMap = ArrayListMultimap.create()
 
         // start with the default config and its test
         resolveDependencyForConfig(defaultConfigData, modules, artifacts, reverseMap)
@@ -973,7 +973,7 @@ public abstract class BasePlugin {
         modules.values().each { List list ->
             if (!list.isEmpty()) {
                 // get the first item only
-                AndroidDependencyImpl androidDependency = (AndroidDependencyImpl) list.get(0)
+                LibraryDependencyImpl androidDependency = (LibraryDependencyImpl) list.get(0)
 
                 String bundleName = GUtil.toCamelCase(androidDependency.name.replaceAll("\\:", " "))
 
@@ -999,9 +999,9 @@ public abstract class BasePlugin {
 
     def resolveDependencyForConfig(
             ConfigurationDependencies configDependencies,
-            Map<ModuleVersionIdentifier, List<AndroidDependencyImpl>> modules,
+            Map<ModuleVersionIdentifier, List<LibraryDependencyImpl>> modules,
             Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
-            Multimap<AndroidDependency, ConfigurationDependencies> reverseMap) {
+            Multimap<LibraryDependency, ConfigurationDependencies> reverseMap) {
 
         // TODO support package configuration
         def compileClasspath = configDependencies.configuration
@@ -1012,7 +1012,7 @@ public abstract class BasePlugin {
         configDependencies.checker = new DependencyChecker(configDependencies, logger)
 
         // TODO - defer downloading until required -- This is hard to do as we need the info to build the variant config.
-        List<AndroidDependencyImpl> bundles = []
+        List<LibraryDependencyImpl> bundles = []
         List<JarDependency> jars = []
         List<JarDependency> localJars = []
         collectArtifacts(compileClasspath, artifacts)
@@ -1064,17 +1064,17 @@ public abstract class BasePlugin {
 
     def addDependency(ResolvedModuleVersionResult moduleVersion,
                       ConfigurationDependencies configDependencies,
-                      Collection<AndroidDependencyImpl> bundles,
+                      Collection<LibraryDependencyImpl> bundles,
                       List<JarDependency> jars,
-                      Map<ModuleVersionIdentifier, List<AndroidDependencyImpl>> modules,
+                      Map<ModuleVersionIdentifier, List<LibraryDependencyImpl>> modules,
                       Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
-                      Multimap<AndroidDependency, ConfigurationDependencies> reverseMap) {
+                      Multimap<LibraryDependency, ConfigurationDependencies> reverseMap) {
         def id = moduleVersion.id
         if (configDependencies.checker.excluded(id)) {
             return
         }
 
-        List<AndroidDependencyImpl> bundlesForThisModule = modules[id]
+        List<LibraryDependencyImpl> bundlesForThisModule = modules[id]
         if (bundlesForThisModule == null) {
             bundlesForThisModule = []
             modules[id] = bundlesForThisModule
@@ -1090,7 +1090,7 @@ public abstract class BasePlugin {
                 if (artifact.type == EXT_LIB_ARCHIVE) {
                     def explodedDir = project.file(
                             "$project.buildDir/exploded-bundles/$artifact.file.name")
-                    AndroidDependencyImpl adep = new AndroidDependencyImpl(
+                    LibraryDependencyImpl adep = new LibraryDependencyImpl(
                             explodedDir, nestedBundles, artifact.file,
                             id.group + ":" + id.name + ":" + id.version)
                     bundlesForThisModule << adep
@@ -1105,7 +1105,7 @@ public abstract class BasePlugin {
                 throw new GradleException("Module version $id depends on libraries but is not a library itself")
             }
         } else {
-            for (AndroidDependency adep : bundlesForThisModule) {
+            for (LibraryDependency adep : bundlesForThisModule) {
                 reverseMap.put(adep, configDependencies)
             }
         }
@@ -1156,11 +1156,11 @@ public abstract class BasePlugin {
 
     @NonNull
     protected List<ManifestDependencyImpl> getManifestDependencies(
-            List<AndroidDependency> libraries) {
+            List<LibraryDependency> libraries) {
 
         List<ManifestDependencyImpl> list = Lists.newArrayListWithCapacity(libraries.size())
 
-        for (AndroidDependency lib : libraries) {
+        for (LibraryDependency lib : libraries) {
             // get the dependencies
             List<ManifestDependencyImpl> children = getManifestDependencies(lib.dependencies)
             list.add(new ManifestDependencyImpl(lib.manifest, children))
@@ -1171,11 +1171,11 @@ public abstract class BasePlugin {
 
     @NonNull
     protected static List<SymbolFileProviderImpl> getTextSymbolDependencies(
-            List<AndroidDependency> libraries) {
+            List<LibraryDependency> libraries) {
 
         List<SymbolFileProviderImpl> list = Lists.newArrayListWithCapacity(libraries.size())
 
-        for (AndroidDependency lib : libraries) {
+        for (LibraryDependency lib : libraries) {
             list.add(new SymbolFileProviderImpl(lib.manifest, lib.symbolFile))
         }
 

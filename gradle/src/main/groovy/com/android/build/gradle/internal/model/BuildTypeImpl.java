@@ -57,6 +57,9 @@ class BuildTypeImpl implements BuildType, Serializable {
         return clonedBuildType;
     }
 
+    private BuildTypeImpl() {
+    }
+
     @NonNull
     @Override
     public String getName() {

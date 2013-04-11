@@ -17,19 +17,20 @@ package com.android.build.gradle.internal.dependency;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.builder.dependency.AndroidDependency;
-import com.android.builder.dependency.BundleDependency;
+import com.android.builder.dependency.LibraryBundle;
+import com.android.builder.dependency.LibraryDependency;
 import com.android.builder.dependency.ManifestDependency;
+import com.android.builder.model.AndroidLibrary;
 
 import java.io.File;
 import java.util.List;
 
-public class AndroidDependencyImpl extends BundleDependency {
-    final List<AndroidDependency> dependencies;
+public class LibraryDependencyImpl extends LibraryBundle {
+    final List<LibraryDependency> dependencies;
     final File bundle;
 
-    public AndroidDependencyImpl(@NonNull File explodedBundle,
-                                 @NonNull List<AndroidDependency> dependencies,
+    public LibraryDependencyImpl(@NonNull File explodedBundle,
+                                 @NonNull List<LibraryDependency> dependencies,
                                  @NonNull File bundle,
                                  @Nullable String name) {
         super(explodedBundle, name);
@@ -37,9 +38,15 @@ public class AndroidDependencyImpl extends BundleDependency {
         this.bundle = bundle;
     }
 
+    @NonNull
+    @Override
+    public List<? extends AndroidLibrary> getLibraryDependencies() {
+        return dependencies;
+    }
+
     @Override
     @NonNull
-    public List<AndroidDependency> getDependencies() {
+    public List<LibraryDependency> getDependencies() {
         return dependencies;
     }
 

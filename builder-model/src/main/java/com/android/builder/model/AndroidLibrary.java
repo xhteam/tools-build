@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.builder.dependency;
+package com.android.builder.model;
 
 import com.android.annotations.NonNull;
 
@@ -22,12 +22,12 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Represents a dependency on a Library Project.
+ * Represents an Android Library, its content and its own dependencies
  */
-public interface AndroidDependency extends ManifestDependency, SymbolFileProvider {
+public interface AndroidLibrary {
 
     /**
-     * Returns the location of the unarchived bundle.
+     * Returns the location of the unzipped archive.
      */
     @NonNull
     File getFolder();
@@ -36,7 +36,7 @@ public interface AndroidDependency extends ManifestDependency, SymbolFileProvide
      * Returns the direct dependency of this dependency.
      */
     @NonNull
-    List<AndroidDependency> getDependencies();
+    List<? extends AndroidLibrary> getLibraryDependencies();
 
     /**
      * Returns the location of the jar file to use for packaging.
@@ -48,10 +48,10 @@ public interface AndroidDependency extends ManifestDependency, SymbolFileProvide
 
     /**
      * Returns the list of local Jar files that are included in the dependency.
-     * @return a list of JarDependency. May be empty but not null.
+     * @return a list of File. May be empty but not null.
      */
     @NonNull
-    List<JarDependency> getLocalDependencies();
+    List<File> getLocalJars();
 
     /**
      * Returns the location of the res folder.

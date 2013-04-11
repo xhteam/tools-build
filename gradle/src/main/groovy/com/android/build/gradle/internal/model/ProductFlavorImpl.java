@@ -62,6 +62,9 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
         return clonedFlavor;
     }
 
+    private ProductFlavorImpl() {
+    }
+
     @NonNull
     @Override
     public String getName() {

@@ -71,7 +71,7 @@ public class DefaultManifestParser implements ManifestParser {
         try {
             Object value = AndroidManifest.getMinSdkVersion(new FileWrapper(manifestFile));
             if (value instanceof Integer) {
-                return ((Integer)value).intValue();
+                return (Integer) value;
             } else if (value instanceof String) {
                 // TODO: support codename
             }

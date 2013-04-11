@@ -17,6 +17,7 @@
 package com.android.build.gradle.model;
 
 import com.android.annotations.NonNull;
+import com.android.builder.model.AndroidLibrary;
 import com.android.builder.model.ProductFlavor;
 import com.android.builder.model.SourceProvider;
 import junit.framework.TestCase;
@@ -84,6 +85,12 @@ public class AndroidProjectTest extends TestCase {
 
             assertNull(releaseVariant.getAssembleTestTaskName());
             assertNull(releaseVariant.getOutputTestFile());
+
+            Dependencies dependencies = model.getDefaultConfig().getDependencies();
+            assertNotNull(dependencies);
+            assertTrue(dependencies.getJars().isEmpty());
+            assertTrue(dependencies.getLibraries().isEmpty());
+            assertTrue(dependencies.getProjectDependenciesPath().isEmpty());
 
         } finally {
             // Clean up
@@ -202,11 +209,102 @@ public class AndroidProjectTest extends TestCase {
                 childConnector.forProjectDirectory(childDir);
 
                 ProjectConnection childConnection = childConnector.connect();
+                try {
+                    AndroidProject androidProject = childConnection.getModel(AndroidProject.class);
+                    assertNotNull("Model Object null-check", androidProject);
+                    assertEquals("Model Name", name, androidProject.getName());
+                    assertEquals("Library Project", "lib".equals(name), androidProject.isLibrary());
 
-                AndroidProject androidProject = childConnection.getModel(AndroidProject.class);
-                assertNotNull("Model Object null-check", androidProject);
-                assertEquals("Model Name", name, androidProject.getName());
-                assertEquals("Library Project", "lib".equals(name), androidProject.isLibrary());
+                    if (!"lib".equals(name)) {
+                        Dependencies dependencies = androidProject.getDefaultConfig().getDependencies();
+                        assertNotNull(dependencies);
+
+                        List<AndroidLibrary> libs = dependencies.getLibraries();
+                        assertNotNull(libs);
+
+                        assertEquals(1, libs.size());
+                        AndroidLibrary androidLibrary = libs.get(0);
+                        assertNotNull(androidLibrary);
+                        // TODO: right now we can only test the folder name efficiently
+                        assertEquals("lib.aar", androidLibrary.getFolder().getName());
+                    }
+                } finally {
+                    childConnection.close();
+                }
+
+            }
+        } finally {
+            // Clean up
+            connection.close();
+        }
+    }
+
+    public void testFlavorLib() {
+        // Configure the connector and create the connection
+        GradleConnector connector = GradleConnector.newConnector();
+
+        File projectDir = new File(getTestDir(), "flavorlib");
+        connector.forProjectDirectory(projectDir);
+
+        ProjectConnection connection = connector.connect();
+        try {
+            GradleProject model = connection.getModel(GradleProject.class);
+            assertNotNull("Model Object null-check", model);
+
+            for (GradleProject child : model.getChildren()) {
+                String path = child.getPath();
+                String name = path.substring(1);
+
+                if ("app".equals(name)) {
+                    File childDir = new File(projectDir, name);
+
+                    GradleConnector childConnector = GradleConnector.newConnector();
+                    childConnector.forProjectDirectory(childDir);
+
+                    ProjectConnection childConnection = childConnector.connect();
+
+                    try {
+                        AndroidProject androidProject = childConnection.getModel(AndroidProject.class);
+                        assertNotNull("Model Object null-check", androidProject);
+                        assertEquals("Model Name", name, androidProject.getName());
+                        assertFalse("Library Project", androidProject.isLibrary());
+
+                        Dependencies dependencies = androidProject.getDefaultConfig().getDependencies();
+                        assertNotNull(dependencies);
+                        assertTrue(dependencies.getLibraries().isEmpty());
+
+                        ProductFlavorContainer flavor1 = androidProject.getProductFlavors().get("flavor1");
+                        assertNotNull(flavor1);
+
+                        dependencies = flavor1.getDependencies();
+                        assertNotNull(dependencies);
+                        List<AndroidLibrary> libs = dependencies.getLibraries();
+                        assertNotNull(libs);
+                        assertEquals(1, libs.size());
+                        AndroidLibrary androidLibrary = libs.get(0);
+                        assertNotNull(androidLibrary);
+                        // TODO: right now we can only test the folder name efficiently
+                        assertEquals("lib1.aar", androidLibrary.getFolder().getName());
+
+                        ProductFlavorContainer flavor2 = androidProject.getProductFlavors().get("flavor2");
+                        assertNotNull(flavor2);
+
+                        dependencies = flavor2.getDependencies();
+                        assertNotNull(dependencies);
+                        libs = dependencies.getLibraries();
+                        assertNotNull(libs);
+                        assertEquals(1, libs.size());
+                        androidLibrary = libs.get(0);
+                        assertNotNull(androidLibrary);
+                        // TODO: right now we can only test the folder name efficiently
+                        assertEquals("lib2.aar", androidLibrary.getFolder().getName());
+
+                    } finally {
+                        childConnection.close();
+                    }
+
+                    break;
+                }
             }
         } finally {
             // Clean up

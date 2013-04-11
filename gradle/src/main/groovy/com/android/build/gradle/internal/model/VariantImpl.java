@@ -49,6 +49,7 @@ class VariantImpl implements Variant, Serializable {
     private final File outputFile;
     @Nullable
     private final File testOutputFile;
+    private final boolean isSigned;
     @NonNull
     private final List<File> generatedSourceFolders;
     @Nullable
@@ -67,10 +68,11 @@ class VariantImpl implements Variant, Serializable {
                 @NonNull  ProductFlavorImpl mergedFlavor,
                 @NonNull  File outputFile,
                 @Nullable File testOutputFile,
+                          boolean isSigned,
                 @NonNull  List<File> generatedSourceFolders,
-                @Nullable  List<File> generatedTestSourceFolders,
+                @Nullable List<File> generatedTestSourceFolders,
                 @NonNull  List<File> generatedResourceFolders,
-                @Nullable  List<File> generatedTestResourceFolders) {
+                @Nullable List<File> generatedTestResourceFolders) {
         this.name = name;
         this.bootClasspath = bootClasspath;
         this.assembleTaskName = assembleTaskName;
@@ -80,6 +82,7 @@ class VariantImpl implements Variant, Serializable {
         this.mergedFlavor = mergedFlavor;
         this.outputFile = outputFile;
         this.testOutputFile = testOutputFile;
+        this.isSigned = isSigned;
         this.generatedSourceFolders = generatedSourceFolders;
         this.generatedTestSourceFolders = generatedTestSourceFolders;
         this.generatedResourceFolders = generatedResourceFolders;
@@ -120,6 +123,11 @@ class VariantImpl implements Variant, Serializable {
     @Override
     public File getOutputTestFile() {
         return testOutputFile;
+    }
+
+    @Override
+    public boolean isSigned() {
+        return isSigned;
     }
 
     @Override

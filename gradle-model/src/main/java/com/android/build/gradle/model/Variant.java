@@ -37,6 +37,8 @@ public interface Variant {
     @NonNull
     File getOutputFile();
 
+    boolean isSigned();
+
     @Nullable
     File getOutputTestFile();
 

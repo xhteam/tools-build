@@ -17,8 +17,8 @@
 package com.android.build.gradle.internal;
 
 import com.android.build.gradle.internal.variant.BaseVariantData;
-import com.android.builder.dependency.AndroidDependency;
-import com.android.builder.dependency.BundleDependency;
+import com.android.builder.dependency.LibraryBundle;
+import com.android.builder.dependency.LibraryDependency;
 import org.gradle.api.Action;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -80,13 +80,13 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
     public void completeConfiguration(BaseVariantData variantData) {}
 
     public void render(BaseVariantData variantData) throws IOException {
-        List<AndroidDependency> libraries =
+        List<LibraryDependency> libraries =
                 variantData.getVariantConfiguration().getDirectLibraries();
 
         renderNow(libraries);
     }
 
-    void renderNow(List<AndroidDependency> libraries) {
+    void renderNow(List<LibraryDependency> libraries) {
         if (libraries.isEmpty()) {
             getTextOutput().withStyle(Info).text("No dependencies");
             getTextOutput().println();
@@ -106,21 +106,21 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
         super.complete();
     }
 
-    private void render(final AndroidDependency lib, boolean lastChild) {
+    private void render(final LibraryDependency lib, boolean lastChild) {
         renderer.visit(new Action<StyledTextOutput>() {
             @Override
             public void execute(StyledTextOutput styledTextOutput) {
-                getTextOutput().text(((BundleDependency)lib).getName());
+                getTextOutput().text(((LibraryBundle)lib).getName());
             }
         }, lastChild);
 
         renderChildren(lib.getDependencies());
     }
 
-    private void renderChildren(List<AndroidDependency> libraries) {
+    private void renderChildren(List<LibraryDependency> libraries) {
         renderer.startChildren();
         for (int i = 0; i < libraries.size(); i++) {
-            AndroidDependency lib = libraries.get(i);
+            LibraryDependency lib = libraries.get(i);
             render(lib, i == libraries.size() - 1);
         }
         renderer.completeChildren();
