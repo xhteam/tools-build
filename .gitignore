@@ -10,6 +10,7 @@ tests/*/build
 tests/api/*/build
 tests/applibtest/*/build
 tests/assets/*/build
+tests/attrOrder/*/build
 tests/flavorlib/*/build
 tests/flavorlibWithFailedTests/*/build
 tests/libsTest/*/build

@@ -38,7 +38,7 @@ public class DeviceTest extends BuildTest {
     private String gradleVersion;
 
     private static final String[] sBuiltProjects = new String[] {
-        "api", "assets", "applibtest", "basic", "flavored", "flavorlib",
+        "api", "assets", "applibtest", "attrOrder", "basic", "flavored", "flavorlib",
         "flavors", "libsTest", "migrated", "multires", "overlay1", "overlay2", "pkgOverride",
     };
 
@@ -68,7 +68,7 @@ public class DeviceTest extends BuildTest {
     @Override
     protected void runTest() throws Throwable {
         try {
-            runTasksOnProject(projectName, gradleVersion, "deviceCheck");
+            runTasksOnProject(projectName, gradleVersion, "clean", "deviceCheck");
         } finally {
             // because runTasksOnProject will throw an exception if the gradle side fails, do this
             // in the finally block.
