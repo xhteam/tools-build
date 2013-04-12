@@ -33,6 +33,9 @@ public class ProcessTestManifest extends ProcessManifest {
     int minSdkVersion
 
     @Input
+    int targetSdkVersion
+
+    @Input
     String testedPackageName
 
     @Input
@@ -46,6 +49,7 @@ public class ProcessTestManifest extends ProcessManifest {
         getBuilder().processTestManifest(
                 getTestPackageName(),
                 getMinSdkVersion(),
+                getTargetSdkVersion(),
                 getTestedPackageName(),
                 getInstrumentationRunner(),
                 getLibraries(),

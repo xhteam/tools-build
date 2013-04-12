@@ -492,12 +492,33 @@ public class VariantConfiguration {
         return minSdkVersion;
     }
 
+    /**
+     * Return the targetSdkVersion for this variant.
+     *
+     * This uses both the value from the manifest (if present), and the override coming
+     * from the flavor(s) (if present).
+     * @return the targetSdkVersion
+     */
+    public int getTargetSdkVersion() {
+        if (mTestedConfig != null) {
+            return mTestedConfig.getTargetSdkVersion();
+        }
+        int targetSdkVersion = mMergedFlavor.getTargetSdkVersion();
+        if (targetSdkVersion == -1) {
+            // read it from the main manifest
+            File manifestLocation = mDefaultSourceProvider.getManifestFile();
+            targetSdkVersion = sManifestParser.getTargetSdkVersion(manifestLocation);
+        }
+
+        return targetSdkVersion;
+    }
+
     @Nullable
     public File getMainManifest() {
         File defaultManifest = mDefaultSourceProvider.getManifestFile();
 
         // this could not exist in a test project.
-        if (defaultManifest != null && defaultManifest.isFile()) {
+        if (defaultManifest.isFile()) {
             return defaultManifest;
         }
 
@@ -510,14 +531,14 @@ public class VariantConfiguration {
 
         if (mBuildTypeSourceProvider != null) {
             File typeLocation = mBuildTypeSourceProvider.getManifestFile();
-            if (typeLocation != null && typeLocation.isFile()) {
+            if (typeLocation.isFile()) {
                 inputs.add(typeLocation);
             }
         }
 
         for (SourceProvider sourceProvider : mFlavorSourceProviders) {
             File f = sourceProvider.getManifestFile();
-            if (f != null && f.isFile()) {
+            if (f.isFile()) {
                 inputs.add(f);
             }
         }
