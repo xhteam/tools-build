@@ -76,15 +76,19 @@ public class AndroidProjectTest extends TestCase {
                     .test();
 
             // this variant is tested.
-            assertNotNull(debugVariant.getAssembleTaskName());
-            assertNotNull(debugVariant.getOutputTestFile());
+            assertNotNull("Debug assemble test task null-check",
+                    debugVariant.getAssembleTestTaskName());
+            assertNotNull("Debug test output file null-check", debugVariant.getOutputTestFile());
+            assertTrue("Debug signed check", debugVariant.isSigned());
 
             // release variant, not tested.
             Variant releaseVariant = variants.get("release");
-            assertNotNull(releaseVariant);
+            assertNotNull("Release Variant null-check", releaseVariant);
 
-            assertNull(releaseVariant.getAssembleTestTaskName());
-            assertNull(releaseVariant.getOutputTestFile());
+            assertNull("Release assemble test task null-check",
+                    releaseVariant.getAssembleTestTaskName());
+            assertNull("Release test output file null-check", releaseVariant.getOutputTestFile());
+            assertFalse("Release signed check", releaseVariant.isSigned());
 
             Dependencies dependencies = model.getDefaultConfig().getDependencies();
             assertNotNull(dependencies);
