@@ -55,6 +55,9 @@ class SourceProviderImpl implements SourceProvider, Serializable {
         return sourceProviderClone;
     }
 
+    private SourceProviderImpl() {
+    }
+
     @NonNull
     @Override
     public File getManifestFile() {

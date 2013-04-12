@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Android Open Source Project
+ * Copyright (C) 2012 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,16 @@
 package com.android.build.gradle.model;
 
 import com.android.annotations.NonNull;
-import com.android.builder.model.BuildType;
-import com.android.builder.model.SourceProvider;
+import com.android.builder.model.AndroidLibrary;
 
-public interface BuildTypeContainer {
+/**
+ */
+public interface AndroidLibraryProject extends AndroidLibrary {
 
+    /**
+     * This is the Gradle project path.
+     * @return the project path. ':lib:project'
+     */
     @NonNull
-    BuildType getBuildType();
-
-    @NonNull
-    SourceProvider getSourceProvider();
-
-    @NonNull
-    Dependencies getDependency();
+    String getProjectPath();
 }

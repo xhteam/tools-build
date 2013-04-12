@@ -18,9 +18,9 @@ package com.android.build.gradle.internal.dependency
 import com.android.annotations.NonNull
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
-import com.android.builder.dependency.AndroidDependency
 import com.android.builder.dependency.DependencyContainer
 import com.android.builder.dependency.JarDependency
+import com.android.builder.dependency.LibraryDependency
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 /**
@@ -46,8 +46,11 @@ public class ConfigurationDependencies implements DependencyContainer {
         this.type = type
     }
 
-    private final List<AndroidDependencyImpl> libraries = []
+    @NonNull
+    private final List<LibraryDependencyImpl> libraries = []
+    @NonNull
     private final List<JarDependency> jars = []
+    @NonNull
     private final List<JarDependency> localJars = []
 
     public Configuration getConfiguration() {
@@ -58,7 +61,7 @@ public class ConfigurationDependencies implements DependencyContainer {
         return sourceSet.name
     }
 
-    void addLibraries(List<AndroidDependencyImpl> list) {
+    void addLibraries(List<LibraryDependencyImpl> list) {
         libraries.addAll(list)
     }
 
@@ -70,13 +73,14 @@ public class ConfigurationDependencies implements DependencyContainer {
         localJars.addAll(list)
     }
 
-    List<AndroidDependencyImpl> getLibraries() {
+    @NonNull
+    List<LibraryDependencyImpl> getLibraries() {
         return libraries
     }
 
     @NonNull
     @Override
-    List<? extends AndroidDependency> getAndroidDependencies() {
+    List<? extends LibraryDependency> getAndroidDependencies() {
         return libraries
     }
 

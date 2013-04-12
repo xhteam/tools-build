@@ -26,13 +26,14 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Default implementation of the AndroidDependency interface that handles a default bundle project
+ * Default implementation of the LibraryDependency interface that handles a default bundle project
  * structure.
  */
-public abstract class BundleDependency implements AndroidDependency {
+public abstract class LibraryBundle implements LibraryDependency {
 
     private final String mName;
     private final File mBundleFolder;
+    private List<File> mLocalJars;
     private List<JarDependency> mLocalDependencies;
 
     /**
@@ -40,12 +41,12 @@ public abstract class BundleDependency implements AndroidDependency {
      * @param bundleFolder the folder containing the library
      * @param name an optional name
      */
-    protected BundleDependency(@NonNull File bundleFolder, @Nullable String name) {
+    protected LibraryBundle(@NonNull File bundleFolder, @Nullable String name) {
         mName = name;
         mBundleFolder = bundleFolder;
     }
 
-    protected BundleDependency(@NonNull File bundleFolder) {
+    protected LibraryBundle(@NonNull File bundleFolder) {
         this(bundleFolder, null);
     }
 
@@ -87,14 +88,10 @@ public abstract class BundleDependency implements AndroidDependency {
     public List<JarDependency> getLocalDependencies() {
         synchronized (this) {
             if (mLocalDependencies == null) {
-                mLocalDependencies = Lists.newArrayList();
-                File[] jarList = new File(mBundleFolder, SdkConstants.LIBS_FOLDER).listFiles();
-                if (jarList != null) {
-                    for (File jars : jarList) {
-                        if (jars.isFile() && jars.getName().endsWith(".jar")) {
-                            mLocalDependencies.add(new JarDependency(jars));
-                        }
-                    }
+                List<File> jars = getLocalJars();
+                mLocalDependencies = Lists.newArrayListWithCapacity(jars.size());
+                for (File jar : jars) {
+                    mLocalDependencies.add(new JarDependency(jar));
                 }
             }
 
@@ -102,6 +99,25 @@ public abstract class BundleDependency implements AndroidDependency {
         }
     }
 
+    @NonNull
+    @Override
+    public List<File> getLocalJars() {
+        synchronized (this) {
+            if (mLocalJars == null) {
+                mLocalJars = Lists.newArrayList();
+                File[] jarList = new File(mBundleFolder, SdkConstants.LIBS_FOLDER).listFiles();
+                if (jarList != null) {
+                    for (File jars : jarList) {
+                        if (jars.isFile() && jars.getName().endsWith(".jar")) {
+                            mLocalJars.add(jars);
+                        }
+                    }
+                }
+            }
+
+            return mLocalJars;
+        }
+    }
 
     @Override
     @NonNull
@@ -155,7 +171,7 @@ public abstract class BundleDependency implements AndroidDependency {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BundleDependency that = (BundleDependency) o;
+        LibraryBundle that = (LibraryBundle) o;
 
         return Objects.equal(mName, that.mName);
     }

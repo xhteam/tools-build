@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Android Open Source Project
+ * Copyright (C) 2012 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,29 +17,25 @@
 package com.android.builder.dependency;
 
 import com.android.annotations.NonNull;
+import com.android.builder.model.AndroidLibrary;
 
 import java.util.List;
 
 /**
- * An object able to provide the three types of dependencies an Android project can have:
- * - local jar dependencies
- * - artifact jar dependencies
- * - android library dependencies
+ * Represents a dependency on a Library Project.
  */
-public interface DependencyContainer {
+public interface LibraryDependency extends AndroidLibrary, ManifestDependency, SymbolFileProvider {
 
     /**
-     * Returns a list top level dependency. Each library object should contain
-     * its own dependencies. This is actually a dependency graph.
-     *
-     * @return a non null (but possibly empty) list.
+     * Returns the direct dependency of this dependency.
      */
     @NonNull
-    List<? extends LibraryDependency> getAndroidDependencies();
+    List<LibraryDependency> getDependencies();
 
-    @NonNull
-    List<JarDependency> getJarDependencies();
-
+    /**
+     * Returns the list of local Jar files that are included in the dependency.
+     * @return a list of JarDependency. May be empty but not null.
+     */
     @NonNull
     List<JarDependency> getLocalDependencies();
 }

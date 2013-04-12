@@ -17,17 +17,25 @@
 package com.android.build.gradle.model;
 
 import com.android.annotations.NonNull;
-import com.android.builder.model.BuildType;
-import com.android.builder.model.SourceProvider;
+import com.android.builder.model.AndroidLibrary;
 
-public interface BuildTypeContainer {
+import java.io.File;
+import java.util.List;
+
+/**
+ */
+public interface Dependencies {
+
+    /**
+     * The list of libraries. Can be AndroidLibrary or AndroidLibraryProject
+     * @return the list of libraries.
+     */
+    @NonNull
+    List<AndroidLibrary> getLibraries();
 
     @NonNull
-    BuildType getBuildType();
+    List<File> getJars();
 
     @NonNull
-    SourceProvider getSourceProvider();
-
-    @NonNull
-    Dependencies getDependency();
+    List<String> getProjectDependenciesPath();
 }

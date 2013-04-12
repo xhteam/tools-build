@@ -19,7 +19,7 @@ package com.android.builder;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
-import com.android.builder.dependency.AndroidDependency;
+import com.android.builder.dependency.LibraryDependency;
 import com.android.builder.dependency.DependencyContainer;
 import com.android.builder.dependency.JarDependency;
 import com.android.builder.model.SourceProvider;
@@ -60,19 +60,19 @@ public class VariantConfiguration {
     private final String mDebugName;
     /** An optional output that is only valid if the type is Type#LIBRARY so that the test
      * for the library can use the library as if it was a normal dependency. */
-    private AndroidDependency mOutput;
+    private LibraryDependency mOutput;
 
     private DefaultProductFlavor mMergedFlavor;
 
     private final Set<JarDependency> mJars = Sets.newHashSet();
 
     /** List of direct library dependencies. Each object defines its own dependencies. */
-    private final List<AndroidDependency> mDirectLibraries = Lists.newArrayList();
+    private final List<LibraryDependency> mDirectLibraries = Lists.newArrayList();
 
     /** list of all library dependencies in a flat list.
      * The order is based on the order needed to call aapt: earlier libraries override resources
      * of latter ones. */
-    private final List<AndroidDependency> mFlatLibraries = Lists.newArrayList();
+    private final List<LibraryDependency> mFlatLibraries = Lists.newArrayList();
 
     public static enum Type {
         DEFAULT, LIBRARY, TEST
@@ -204,8 +204,8 @@ public class VariantConfiguration {
         }
         resolveIndirectLibraryDependencies(mDirectLibraries, mFlatLibraries);
 
-        for (AndroidDependency androidDependency : mFlatLibraries) {
-            mJars.addAll(androidDependency.getLocalDependencies());
+        for (LibraryDependency libraryDependency : mFlatLibraries) {
+            mJars.addAll(libraryDependency.getLocalDependencies());
         }
         return this;
     }
@@ -224,12 +224,12 @@ public class VariantConfiguration {
      * the variant that tests this library can properly include the tested library in its own
      * package.
      *
-     * @param output the output of the library as an AndroidDependency that will provides the
+     * @param output the output of the library as an LibraryDependency that will provides the
      *               location of all the created items.
      * @return the config object
      */
     @NonNull
-    public VariantConfiguration setOutput(AndroidDependency output) {
+    public VariantConfiguration setOutput(LibraryDependency output) {
         mOutput = output;
         return this;
     }
@@ -284,7 +284,7 @@ public class VariantConfiguration {
      * Returns the direct library dependencies
      */
     @NonNull
-    public List<AndroidDependency> getDirectLibraries() {
+    public List<LibraryDependency> getDirectLibraries() {
         return mDirectLibraries;
     }
 
@@ -292,7 +292,7 @@ public class VariantConfiguration {
      * Returns all the library dependencies, direct and transitive.
      */
     @NonNull
-    public List<AndroidDependency> getAllLibraries() {
+    public List<LibraryDependency> getAllLibraries() {
         return mFlatLibraries;
     }
 
@@ -314,18 +314,18 @@ public class VariantConfiguration {
      * @param outFlatDependencies where to store all the libraries.
      */
     @VisibleForTesting
-    void resolveIndirectLibraryDependencies(List<AndroidDependency> directDependencies,
-                                            List<AndroidDependency> outFlatDependencies) {
+    void resolveIndirectLibraryDependencies(List<LibraryDependency> directDependencies,
+                                            List<LibraryDependency> outFlatDependencies) {
         if (directDependencies == null) {
             return;
         }
         // loop in the inverse order to resolve dependencies on the libraries, so that if a library
         // is required by two higher level libraries it can be inserted in the correct place
         for (int i = directDependencies.size() - 1  ; i >= 0 ; i--) {
-            AndroidDependency library = directDependencies.get(i);
+            LibraryDependency library = directDependencies.get(i);
 
             // get its libraries
-            List<AndroidDependency> dependencies = library.getDependencies();
+            List<LibraryDependency> dependencies = library.getDependencies();
 
             // resolve the dependencies for those libraries
             resolveIndirectLibraryDependencies(dependencies, outFlatDependencies);
@@ -544,7 +544,7 @@ public class VariantConfiguration {
 
         // the list of dependency must be reversed to use the right overlay order.
         for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
-            AndroidDependency dependency = mFlatLibraries.get(n);
+            LibraryDependency dependency = mFlatLibraries.get(n);
             File resFolder = dependency.getResFolder();
             if (resFolder.isDirectory()) {
                 ResourceSet resourceSet = new ResourceSet(dependency.getFolder().getName());
@@ -600,7 +600,7 @@ public class VariantConfiguration {
 
         // the list of dependency must be reversed to use the right overlay order.
         for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
-            AndroidDependency dependency = mFlatLibraries.get(n);
+            LibraryDependency dependency = mFlatLibraries.get(n);
             File assetFolder = dependency.getAssetsFolder();
             if (assetFolder.isDirectory()) {
                 AssetSet assetSet = new AssetSet(dependency.getFolder().getName());
@@ -644,7 +644,7 @@ public class VariantConfiguration {
     public List<File> getRenderscriptImports() {
         List<File> list = Lists.newArrayList();
 
-        for (AndroidDependency lib : mFlatLibraries) {
+        for (LibraryDependency lib : mFlatLibraries) {
             File rsLib = lib.getRenderscriptFolder();
             if (rsLib.isDirectory()) {
                 list.add(rsLib);
@@ -684,7 +684,7 @@ public class VariantConfiguration {
     public List<File> getAidlImports() {
         List<File> list = Lists.newArrayList();
 
-        for (AndroidDependency lib : mFlatLibraries) {
+        for (LibraryDependency lib : mFlatLibraries) {
             File aidlLib = lib.getAidlFolder();
             if (aidlLib.isDirectory()) {
                 list.add(aidlLib);
@@ -721,7 +721,7 @@ public class VariantConfiguration {
     public Set<File> getCompileClasspath() {
         Set<File> classpath = Sets.newHashSet();
 
-        for (AndroidDependency lib : mFlatLibraries) {
+        for (LibraryDependency lib : mFlatLibraries) {
             classpath.add(lib.getJarFile());
             for (JarDependency jarDependency : lib.getLocalDependencies()) {
                 classpath.add(jarDependency.getJarFile());
@@ -754,8 +754,8 @@ public class VariantConfiguration {
             }
         }
 
-        for (AndroidDependency androidDependency : mFlatLibraries) {
-            File libJar = androidDependency.getJarFile();
+        for (LibraryDependency libraryDependency : mFlatLibraries) {
+            File libJar = libraryDependency.getJarFile();
             if (libJar.exists()) {
                 jars.add(libJar);
             }
