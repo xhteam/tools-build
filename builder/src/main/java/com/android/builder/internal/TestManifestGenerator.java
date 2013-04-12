@@ -30,23 +30,27 @@ public class TestManifestGenerator {
     private final static String TEMPLATE = "AndroidManifest.template";
     private final static String PH_PACKAGE = "#PACKAGE#";
     private final static String PH_MIN_SDK_VERSION = "#MINSDKVERSION#";
+    private final static String PH_TARGET_SDK_VERSION = "#TARGETSDKVERSION#";
     private final static String PH_TESTED_PACKAGE = "#TESTEDPACKAGE#";
     private final static String PH_TEST_RUNNER = "#TESTRUNNER#";
 
     private final String mOutputFile;
     private final String mPackageName;
     private final int mMinSdkVersion;
+    private final int mTargetSdkVersion;
     private final String mTestedPackageName;
     private final String mTestRunnerName;
 
     public TestManifestGenerator(@NonNull String outputFile,
                           @NonNull String packageName,
                           int minSdkVersion,
+                          int targetSdkVersion,
                           @NonNull String testedPackageName,
                           @NonNull String testRunnerName) {
         mOutputFile = outputFile;
         mPackageName = packageName;
         mMinSdkVersion = minSdkVersion;
+        mTargetSdkVersion = targetSdkVersion != -1 ? targetSdkVersion : minSdkVersion;
         mTestedPackageName = testedPackageName;
         mTestRunnerName = testRunnerName;
     }
@@ -55,6 +59,7 @@ public class TestManifestGenerator {
         Map<String, String> map = new HashMap<String, String>();
         map.put(PH_PACKAGE, mPackageName);
         map.put(PH_MIN_SDK_VERSION, Integer.toString(mMinSdkVersion));
+        map.put(PH_TARGET_SDK_VERSION, Integer.toString(mTargetSdkVersion));
         map.put(PH_TESTED_PACKAGE, mTestedPackageName);
         map.put(PH_TEST_RUNNER, mTestRunnerName);
 

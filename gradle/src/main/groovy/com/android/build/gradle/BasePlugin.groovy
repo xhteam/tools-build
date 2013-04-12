@@ -383,6 +383,9 @@ public abstract class BasePlugin {
         processTestManifestTask.conventionMapping.minSdkVersion = {
             config.minSdkVersion
         }
+        processTestManifestTask.conventionMapping.targetSdkVersion = {
+            config.targetSdkVersion
+        }
         processTestManifestTask.conventionMapping.testedPackageName = {
             config.testedPackageName
         }

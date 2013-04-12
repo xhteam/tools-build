@@ -46,6 +46,11 @@ public class VariantConfigurationTest extends TestCase {
         }
 
         @Override
+        public int getTargetSdkVersion(@NonNull File manifestFile) {
+            return -1;
+        }
+
+        @Override
         public String getVersionName(File manifestFile) {
             return "1.0";
         }
