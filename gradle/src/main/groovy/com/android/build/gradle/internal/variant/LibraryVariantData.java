@@ -16,6 +16,7 @@
 package com.android.build.gradle.internal.variant;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.builder.VariantConfiguration;
 import org.gradle.api.tasks.bundling.Zip;
 
@@ -26,8 +27,15 @@ public class LibraryVariantData extends BaseVariantData {
 
     public Zip packageLibTask;
 
+    @Nullable
+    private TestVariantData testVariantData = null;
+
     public LibraryVariantData(VariantConfiguration config) {
         super(config);
+    }
+
+    public void setTestVariantData(TestVariantData testVariantData) {
+        this.testVariantData = testVariantData;
     }
 
     @Override
@@ -60,4 +68,10 @@ public class LibraryVariantData extends BaseVariantData {
     public String getBaseName() {
         return getVariantConfiguration().getBuildType().getName();
     }
+
+    @Nullable
+    public TestVariantData getTestVariantData() {
+        return testVariantData;
+    }
+
 }

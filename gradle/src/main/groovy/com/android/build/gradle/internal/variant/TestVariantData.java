@@ -16,12 +16,15 @@
 package com.android.build.gradle.internal.variant;
 
 import com.android.annotations.NonNull;
+import com.android.build.gradle.internal.tasks.TestFlavorTask;
 import com.android.builder.VariantConfiguration;
 
 /**
  * Data about a variant that produce a test APK
  */
 public class TestVariantData extends ApkVariantData {
+
+    public TestFlavorTask testFlavorTask;
 
     public TestVariantData(@NonNull VariantConfiguration config) {
         super(config);

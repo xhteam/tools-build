@@ -19,7 +19,6 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.gradle.internal.StringHelper;
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask;
-import com.android.build.gradle.internal.tasks.TestFlavorTask;
 import com.android.build.gradle.tasks.AidlCompile;
 import com.android.build.gradle.tasks.GenerateBuildConfig;
 import com.android.build.gradle.tasks.MergeAssets;
@@ -60,7 +59,6 @@ public abstract class BaseVariantData {
     public File outputFile;
 
     public DefaultTask assembleTask;
-    public TestFlavorTask testFlavorTask;
 
     public BaseVariantData(@NonNull VariantConfiguration variantConfiguration) {
         this.variantConfiguration = variantConfiguration;
