@@ -32,7 +32,6 @@ android {
         versionName "2.0"
         minSdkVersion 16
         targetSdkVersion 16
-        signingConfig signingConfigs.myConfig
 
         buildConfig "private final static boolean DEFAULT = true;", \
                     "private final static String FOO = \"foo\";"
@@ -41,6 +40,7 @@ android {
     buildTypes {
         debug {
             packageNameSuffix ".debug"
+            signingConfig signingConfigs.myConfig
 
             buildConfig "private final static boolean DEBUG2 = false;"
         }
