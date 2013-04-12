@@ -84,4 +84,23 @@ public class DefaultManifestParser implements ManifestParser {
 
         return 1;
     }
+
+    @Override
+    public int getTargetSdkVersion(@NonNull File manifestFile) {
+        try {
+            Integer value = AndroidManifest.getTargetSdkVersion(new FileWrapper(manifestFile));
+            if (value != null) {
+                return value;
+            } else {
+                return -1;
+            }
+
+        } catch (XPathExpressionException e) {
+            // won't happen.
+        } catch (StreamException e) {
+            throw new RuntimeException(e);
+        }
+
+        return -1;
+    }
 }

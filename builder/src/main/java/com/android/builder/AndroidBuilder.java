@@ -80,7 +80,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * then build steps can be done with
  * {@link #generateBuildConfig(String, boolean, java.util.List, String)}
  * {@link #processManifest(java.io.File, java.util.List, java.util.List, String, int, String, int, int, String)}
- * {@link #processTestManifest(String, int, String, String, java.util.List, String)}
+ * {@link #processTestManifest(String, int, int, String, String, java.util.List, String)}
  * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
  * {@link #compileAllAidlFiles(java.util.List, java.io.File, java.util.List, com.android.builder.compiling.DependencyFileProcessor)}
  * {@link #convertByteCode(Iterable, Iterable, String, DexOptions, boolean)}
@@ -310,6 +310,7 @@ public class AndroidBuilder {
      *
      * @param testPackageName the package name of the test application
      * @param minSdkVersion the minSdkVersion of the test application
+     * @param targetSdkVersion the targetSdkVersion of the test application
      * @param testedPackageName the package name of the tested application
      * @param instrumentationRunner the name of the instrumentation runner
      * @param libraries the library dependency graph
@@ -325,6 +326,7 @@ public class AndroidBuilder {
     public void processTestManifest(
             @NonNull String testPackageName,
                      int minSdkVersion,
+                     int targetSdkVersion,
             @NonNull String testedPackageName,
             @NonNull String instrumentationRunner,
             @NonNull List<? extends ManifestDependency> libraries,
@@ -343,6 +345,7 @@ public class AndroidBuilder {
                 generateTestManifest(
                         testPackageName,
                         minSdkVersion,
+                        targetSdkVersion,
                         testedPackageName,
                         instrumentationRunner,
                         generatedTestManifest.getAbsolutePath());
@@ -359,6 +362,7 @@ public class AndroidBuilder {
             generateTestManifest(
                     testPackageName,
                     minSdkVersion,
+                    targetSdkVersion,
                     testedPackageName,
                     instrumentationRunner,
                     outManifestLocation);
@@ -368,6 +372,7 @@ public class AndroidBuilder {
     private void generateTestManifest(
             String testPackageName,
             int minSdkVersion,
+            int targetSdkVersion,
             String testedPackageName,
             String instrumentationRunner,
             String outManifestLocation) {
@@ -375,6 +380,7 @@ public class AndroidBuilder {
                 outManifestLocation,
                 testPackageName,
                 minSdkVersion,
+                targetSdkVersion,
                 testedPackageName,
                 instrumentationRunner);
         try {
