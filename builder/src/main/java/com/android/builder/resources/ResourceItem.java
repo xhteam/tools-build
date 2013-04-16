@@ -28,7 +28,7 @@ import org.w3c.dom.Node;
  * in case of a resource coming from a value file.
  *
  */
-class ResourceItem extends DataItem<ResourceFile> {
+class ResourceItem extends DataItem<ResourceFile> implements Comparable<ResourceItem> {
 
     private static final String ATTR_TYPE = "type";
 
@@ -152,5 +152,14 @@ class ResourceItem extends DataItem<ResourceFile> {
         int result = super.hashCode();
         result = 31 * result + mType.hashCode();
         return result;
+    }
+
+    @Override
+    public int compareTo(ResourceItem resourceItem) {
+        int comp = mType.compareTo(resourceItem.getType());
+        if (comp == 0) {
+            comp = getName().compareTo(resourceItem.getName());
+        }
+        return comp;
     }
 }

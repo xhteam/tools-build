@@ -35,7 +35,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -233,7 +234,7 @@ public class ResourceMerger extends DataMerger<ResourceItem, ResourceFile, Resou
             boolean mustWriteFile = mQualifierWithDeletedValues.remove(key);
 
             // get the list of items to write
-            Collection<ResourceItem> items = mValuesResMap.get(key);
+            List<ResourceItem> items = mValuesResMap.get(key);
 
             // now check if we really have to write it
             if (!mustWriteFile) {
@@ -266,6 +267,8 @@ public class ResourceMerger extends DataMerger<ResourceItem, ResourceFile, Resou
 
                     Node rootNode = document.createElement(TAG_RESOURCES);
                     document.appendChild(rootNode);
+
+                    Collections.sort(items);
 
                     for (ResourceItem item : items) {
                         Node adoptedNode = NodeUtils.adoptNode(document, item.getValue());
