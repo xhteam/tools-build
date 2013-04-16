@@ -38,7 +38,7 @@ public class DeviceTest extends BuildTest {
     private String gradleVersion;
 
     private static final String[] sBuiltProjects = new String[] {
-        "api", "assets", "applibtest", "basic", "flavored", "flavorlib",
+        "api", "assets", "applibtest", "attrOrder", "basic", "flavored", "flavorlib",
         "flavors", "libsTest", "migrated", "multires", "overlay1", "overlay2", "pkgOverride",
     };
 
