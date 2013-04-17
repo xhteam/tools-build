@@ -1,6 +1,7 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'signing'
+apply plugin: 'clone-artifacts'
 
 configurations {
     gradleApi
@@ -42,6 +43,20 @@ dependencies {
     deviceTestCompile configurations.testCompile
     deviceTestCompile configurations.testRuntime
 }
+
+// configuration for dependencies provided by the runtime,
+// in this case proguard.
+configurations{
+    provided
+}
+
+dependencies{
+    provided 'net.sf.proguard:proguard-gradle:4.9'
+}
+
+//Include provided for compilation
+sourceSets.main.compileClasspath += configurations.provided
+
 
 idea {
     module {
