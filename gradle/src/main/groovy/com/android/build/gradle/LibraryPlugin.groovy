@@ -205,7 +205,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         createCompileTask(variantData, null/*testedVariant*/)
 
         // jar the classes.
-        Jar jar = project.tasks.add("package${buildTypeData.buildType.name.capitalize()}Jar", Jar);
+        Jar jar = project.tasks.create("package${buildTypeData.buildType.name.capitalize()}Jar", Jar);
         jar.dependsOn variantData.javaCompileTask, variantData.processJavaResources
         jar.from(variantData.javaCompileTask.outputs);
         jar.from(variantData.processJavaResources.destinationDir)
@@ -218,7 +218,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         jar.exclude(packageName + "/BuildConfig.class")
 
         // package the aidl files into the bundle folder
-        Sync packageAidl = project.tasks.add("package${variantData.name}Aidl", Sync)
+        Sync packageAidl = project.tasks.create("package${variantData.name}Aidl", Sync)
         // packageAidl from 3 sources. the order is important to make sure the override works well.
         packageAidl.from(defaultConfigData.sourceSet.aidl.srcDirs,
                 buildTypeData.sourceSet.aidl.srcDirs).include("**/*.aidl")
@@ -226,7 +226,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
                 "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/$SdkConstants.FD_AIDL"))
 
         // package the renderscript header files files into the bundle folder
-        Sync packageRenderscript = project.tasks.add("package${variantData.name}Renderscript", Sync)
+        Sync packageRenderscript = project.tasks.create("package${variantData.name}Renderscript",
+                Sync)
         // package from 3 sources. the order is important to make sure the override works well.
         packageRenderscript.from(defaultConfigData.sourceSet.renderscript.srcDirs,
                 buildTypeData.sourceSet.renderscript.srcDirs).include("**/*.rsh")
@@ -234,12 +235,12 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
                 "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/$SdkConstants.FD_RENDERSCRIPT"))
 
         // package the renderscript header files files into the bundle folder
-        Sync packageLocalJar = project.tasks.add("package${variantData.name}LocalJar", Sync)
+        Sync packageLocalJar = project.tasks.create("package${variantData.name}LocalJar", Sync)
         packageLocalJar.from(getLocalJarFileList(configDependencies))
         packageLocalJar.into(project.file(
                 "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/$SdkConstants.LIBS_FOLDER"))
 
-        Zip bundle = project.tasks.add("bundle${variantData.name}", Zip)
+        Zip bundle = project.tasks.create("bundle${variantData.name}", Zip)
         bundle.dependsOn jar, packageAidl, packageRenderscript, packageLocalJar
         bundle.setDescription("Assembles a bundle containing the library in ${variantData.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
