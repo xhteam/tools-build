@@ -80,13 +80,13 @@ import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.artifacts.SelfResolvingDependency
 import org.gradle.api.artifacts.result.ResolvedDependencyResult
 import org.gradle.api.artifacts.result.ResolvedModuleVersionResult
-import org.gradle.api.internal.plugins.ProcessResources
 import org.gradle.api.logging.LogLevel
 import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.tasks.Copy
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.internal.reflect.Instantiator
+import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.BuildException
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.gradle.util.GUtil
@@ -155,11 +155,11 @@ public abstract class BasePlugin {
         project.tasks.assemble.description =
             "Assembles all variants of all applications and secondary packages."
 
-        uninstallAll = project.tasks.add("uninstallAll")
+        uninstallAll = project.tasks.create("uninstallAll")
         uninstallAll.description = "Uninstall all applications."
         uninstallAll.group = INSTALL_GROUP
 
-        deviceCheck = project.tasks.add("deviceCheck")
+        deviceCheck = project.tasks.create("deviceCheck")
         deviceCheck.description = "Runs all checks that requires a connected device."
         deviceCheck.group = JavaBasePlugin.VERIFICATION_GROUP
 
@@ -324,7 +324,7 @@ public abstract class BasePlugin {
 
     protected void createProcessManifestTask(BaseVariantData variantData,
                                              String manifestOurDir) {
-        def processManifestTask = project.tasks.add("process${variantData.name}Manifest",
+        def processManifestTask = project.tasks.create("process${variantData.name}Manifest",
                 ProcessAppManifest)
         variantData.processManifestTask = processManifestTask
         processManifestTask.dependsOn variantData.prepareDependenciesTask
@@ -367,7 +367,7 @@ public abstract class BasePlugin {
 
     protected void createProcessTestManifestTask(BaseVariantData variantData,
                                                  String manifestOurDir) {
-        def processTestManifestTask = project.tasks.add("process${variantData.name}TestManifest",
+        def processTestManifestTask = project.tasks.create("process${variantData.name}TestManifest",
                 ProcessTestManifest)
         variantData.processManifestTask = processTestManifestTask
         processTestManifestTask.dependsOn variantData.prepareDependenciesTask
@@ -404,7 +404,7 @@ public abstract class BasePlugin {
     protected void createRenderscriptTask(BaseVariantData variantData) {
         VariantConfiguration config = variantData.variantConfiguration
 
-        def renderscriptTask = project.tasks.add("compile${variantData.name}Renderscript",
+        def renderscriptTask = project.tasks.create("compile${variantData.name}Renderscript",
                 RenderscriptCompile)
         variantData.renderscriptCompileTask = renderscriptTask
 
@@ -434,7 +434,7 @@ public abstract class BasePlugin {
 
     protected void createMergeResourcesTask(BaseVariantData variantData, String location,
                                             boolean process9Patch) {
-        def mergeResourcesTask = project.tasks.add("merge${variantData.name}Resources",
+        def mergeResourcesTask = project.tasks.create("merge${variantData.name}Resources",
                 MergeResources)
         variantData.mergeResourcesTask = mergeResourcesTask
 
@@ -459,7 +459,7 @@ public abstract class BasePlugin {
             location = "$project.buildDir/assets/$variantData.dirName"
         }
 
-        def mergeAssetsTask = project.tasks.add("merge${variantData.name}Assets", MergeAssets)
+        def mergeAssetsTask = project.tasks.create("merge${variantData.name}Assets", MergeAssets)
         variantData.mergeAssetsTask = mergeAssetsTask
 
         mergeAssetsTask.dependsOn variantData.prepareDependenciesTask
@@ -475,7 +475,7 @@ public abstract class BasePlugin {
     }
 
     protected void createBuildConfigTask(BaseVariantData variantData) {
-        def generateBuildConfigTask = project.tasks.add(
+        def generateBuildConfigTask = project.tasks.create(
                 "generate${variantData.name}BuildConfig", GenerateBuildConfig)
         variantData.generateBuildConfigTask = generateBuildConfigTask
 
@@ -512,7 +512,7 @@ public abstract class BasePlugin {
     }
 
     protected void createProcessResTask(BaseVariantData variantData, final String symbolLocation) {
-        def processResources = project.tasks.add("process${variantData.name}Resources",
+        def processResources = project.tasks.create("process${variantData.name}Resources",
                 ProcessAndroidResources)
         variantData.processResourcesTask = processResources
         processResources.dependsOn variantData.processManifestTask, variantData.mergeResourcesTask, variantData.mergeAssetsTask
@@ -566,7 +566,7 @@ public abstract class BasePlugin {
     protected void createProcessJavaResTask(BaseVariantData variantData) {
         VariantConfiguration variantConfiguration = variantData.variantConfiguration
 
-        Copy processResources = project.tasks.add("process${variantData.name}JavaRes",
+        Copy processResources = project.tasks.create("process${variantData.name}JavaRes",
                 ProcessResources);
         variantData.processJavaResources = processResources
 
@@ -591,7 +591,7 @@ public abstract class BasePlugin {
     protected void createAidlTask(BaseVariantData variantData) {
         VariantConfiguration variantConfiguration = variantData.variantConfiguration
 
-        def compileTask = project.tasks.add("compile${variantData.name}Aidl", AidlCompile)
+        def compileTask = project.tasks.create("compile${variantData.name}Aidl", AidlCompile)
         variantData.aidlCompileTask = compileTask
         variantData.aidlCompileTask.dependsOn variantData.prepareDependenciesTask
 
@@ -611,7 +611,7 @@ public abstract class BasePlugin {
 
     protected void createCompileTask(BaseVariantData variantData,
                                      BaseVariantData testedVariantData) {
-        def compileTask = project.tasks.add("compile${variantData.name}", JavaCompile)
+        def compileTask = project.tasks.create("compile${variantData.name}", JavaCompile)
         variantData.javaCompileTask = compileTask
         compileTask.dependsOn variantData.processResourcesTask, variantData.generateBuildConfigTask, variantData.aidlCompileTask
 
@@ -732,7 +732,7 @@ public abstract class BasePlugin {
         }
 
         // create the check task for this test
-        def testFlavorTask = project.tasks.add(
+        def testFlavorTask = project.tasks.create(
                 mainTestTask ? INSTRUMENTATION_TEST : "$INSTRUMENTATION_TEST${testedVariantData.name}",
                 mainTestTask ? TestLibraryTask : TestFlavorTask)
         testFlavorTask.description = "Installs and runs the tests for Build ${testedVariantData.name}."
@@ -791,7 +791,7 @@ public abstract class BasePlugin {
     protected void addPackageTasks(ApkVariantData variantData, Task assembleTask) {
         // Add a dex task
         def dexTaskName = "dex${variantData.name}"
-        def dexTask = project.tasks.add(dexTaskName, Dex)
+        def dexTask = project.tasks.create(dexTaskName, Dex)
         variantData.dexTask = dexTask
         dexTask.dependsOn variantData.javaCompileTask
 
@@ -809,7 +809,7 @@ public abstract class BasePlugin {
         dexTask.dexOptions = extension.dexOptions
 
         // Add a task to generate application package
-        def packageApp = project.tasks.add("package${variantData.name}", PackageApplication)
+        def packageApp = project.tasks.create("package${variantData.name}", PackageApplication)
         variantData.packageApplicationTask = packageApp
         packageApp.dependsOn variantData.processResourcesTask, dexTask, variantData.processJavaResources
 
@@ -836,7 +836,7 @@ public abstract class BasePlugin {
         if (sc != null) {
             ValidateSigningTask validateSigningTask = validateSigningTaskMap.get(sc)
             if (validateSigningTask == null) {
-                validateSigningTask = project.tasks.add("validate${sc.name.capitalize()}Signing",
+                validateSigningTask = project.tasks.create("validate${sc.name.capitalize()}Signing",
                     ValidateSigningTask)
                 validateSigningTask.plugin = this
                 validateSigningTask.signingConfig = sc
@@ -862,7 +862,7 @@ public abstract class BasePlugin {
         if (signedApk) {
             if (variantData.zipAlign) {
                 // Add a task to zip align application package
-                def zipAlignTask = project.tasks.add("zipalign${variantData.name}", ZipAlign)
+                def zipAlignTask = project.tasks.create("zipalign${variantData.name}", ZipAlign)
                 variantData.zipAlignTask = zipAlignTask
 
                 zipAlignTask.dependsOn packageApp
@@ -879,7 +879,7 @@ public abstract class BasePlugin {
             }
 
             // Add a task to install the application package
-            def installTask = project.tasks.add("install${variantData.name}", InstallTask)
+            def installTask = project.tasks.create("install${variantData.name}", InstallTask)
             installTask.description = "Installs the " + variantData.description
             installTask.group = INSTALL_GROUP
             installTask.dependsOn appTask
@@ -891,7 +891,7 @@ public abstract class BasePlugin {
 
         // Add an assemble task
         if (assembleTask == null) {
-            assembleTask = project.tasks.add("assemble${variantData.name}")
+            assembleTask = project.tasks.create("assemble${variantData.name}")
             assembleTask.description = "Assembles the " + variantData.description
             assembleTask.group = org.gradle.api.plugins.BasePlugin.BUILD_GROUP
         }
@@ -899,7 +899,7 @@ public abstract class BasePlugin {
         variantData.assembleTask = assembleTask
 
         // add an uninstall task
-        def uninstallTask = project.tasks.add("uninstall${variantData.name}", UninstallTask)
+        def uninstallTask = project.tasks.create("uninstall${variantData.name}", UninstallTask)
         uninstallTask.description = "Uninstalls the " + variantData.description
         uninstallTask.group = INSTALL_GROUP
         uninstallTask.variant = variantData
@@ -910,12 +910,12 @@ public abstract class BasePlugin {
     }
 
     private void createReportTasks() {
-        def dependencyReportTask = project.tasks.add("androidDependencies", DependencyReportTask)
+        def dependencyReportTask = project.tasks.create("androidDependencies", DependencyReportTask)
         dependencyReportTask.setDescription("Displays the Android dependencies of the project")
         dependencyReportTask.setVariants(variantDataList)
         dependencyReportTask.setGroup("Android")
 
-        def signingReportTask = project.tasks.add("signingReport", SigningReportTask)
+        def signingReportTask = project.tasks.create("signingReport", SigningReportTask)
         signingReportTask.setDescription("Displays the signing info for each variant")
         signingReportTask.setVariants(variantDataList)
         signingReportTask.setGroup("Android")
@@ -924,7 +924,7 @@ public abstract class BasePlugin {
     protected void createPrepareDependenciesTask(
             @NonNull BaseVariantData variantData,
             @NonNull List<ConfigurationDependencies> configDependenciesList) {
-        def prepareDependenciesTask = project.tasks.add("prepare${variantData.name}Dependencies",
+        def prepareDependenciesTask = project.tasks.create("prepare${variantData.name}Dependencies",
                 PrepareDependenciesTask)
         variantData.prepareDependenciesTask = prepareDependenciesTask
 
@@ -980,7 +980,7 @@ public abstract class BasePlugin {
 
                 String bundleName = GUtil.toCamelCase(androidDependency.name.replaceAll("\\:", " "))
 
-                def prepareLibraryTask = project.tasks.add("prepare${bundleName}Library",
+                def prepareLibraryTask = project.tasks.create("prepare${bundleName}Library",
                         PrepareLibraryTask)
                 prepareLibraryTask.description = "Prepare ${androidDependency.name}"
                 prepareLibraryTask.bundle = androidDependency.bundle

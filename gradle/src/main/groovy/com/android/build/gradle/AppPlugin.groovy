@@ -215,12 +215,12 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             createTasksForDefaultBuild()
         } else {
             // there'll be more than one test app, so we need a top level assembleTest
-            assembleTest = project.tasks.add("assembleTest")
+            assembleTest = project.tasks.create("assembleTest")
             assembleTest.group = BasePlugin.BUILD_GROUP
             assembleTest.description = "Assembles all the Test applications"
 
             // same for the test task
-            testTask = project.tasks.add(INSTRUMENTATION_TEST, AndroidReportTask)
+            testTask = project.tasks.create(INSTRUMENTATION_TEST, AndroidReportTask)
             testTask.group = JavaBasePlugin.VERIFICATION_GROUP
             testTask.description = "Installs and runs instrumentation tests for all flavors"
             testTask.reportType = ReportType.MULTI_FLAVOR
@@ -512,7 +512,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     private Task createAssembleTask(ProductFlavorData[] flavorDataList) {
         String name = ProductFlavorData.getFlavoredName(flavorDataList, true)
 
-        def assembleTask = project.tasks.add("assemble${name}")
+        def assembleTask = project.tasks.create("assemble${name}")
         assembleTask.description = "Assembles all builds for flavor ${name}"
         assembleTask.group = "Build"
 
