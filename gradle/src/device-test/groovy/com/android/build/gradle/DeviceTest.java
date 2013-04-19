@@ -40,6 +40,7 @@ public class DeviceTest extends BuildTest {
     private static final String[] sBuiltProjects = new String[] {
         "api", "assets", "applibtest", "attrOrder", "basic", "flavored", "flavorlib",
         "flavors", "libsTest", "migrated", "multires", "overlay1", "overlay2", "pkgOverride",
+        "proguard", "proguardLib",
     };
 
     public static Test suite() {

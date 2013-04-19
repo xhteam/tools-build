@@ -21,12 +21,14 @@ import com.android.build.gradle.tasks.PackageApplication;
 import com.android.build.gradle.tasks.ZipAlign;
 import com.android.builder.VariantConfiguration;
 import org.gradle.api.DefaultTask;
+import proguard.gradle.ProGuardTask;
 
 /**
  * Base data about a variant that generates an APK file.
  */
 public abstract class ApkVariantData extends BaseVariantData {
 
+    public ProGuardTask proguardTask;
     public Dex dexTask;
     public PackageApplication packageApplicationTask;
     public ZipAlign zipAlignTask;

@@ -135,4 +135,11 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
     public List<String> getBuildConfig() {
         return Collections.emptyList();
     }
+
+    @NonNull
+    @Override
+    public List<Object> getProguardFiles() {
+        return Collections.emptyList();
+    }
+
 }

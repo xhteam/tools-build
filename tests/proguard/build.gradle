@@ -1,0 +1,37 @@
+buildscript {
+    repositories {
+        maven { url '../../repo' }
+        maven { url '../../../../prebuilts/tools/common/m2/repository' }
+        maven { url '../../../../prebuilts/tools/common/m2/internal' }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:0.4-SNAPSHOT'
+    }
+}
+apply plugin: 'android'
+
+android {
+    compileSdkVersion 15
+    buildToolsVersion "17.0"
+
+    testBuildType "proguard"
+
+    defaultConfig {
+        versionCode 12
+        versionName "2.0"
+        minSdkVersion 16
+        targetSdkVersion 16
+    }
+
+    buildTypes {
+        proguard.initWith(buildTypes.debug)
+        proguard {
+            runProguard true
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+        }
+    }
+
+    dexOptions {
+        incremental false
+    }
+}

@@ -90,6 +90,7 @@ import org.gradle.language.jvm.tasks.ProcessResources
 import org.gradle.tooling.BuildException
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.gradle.util.GUtil
+import proguard.gradle.ProGuardTask
 
 import static com.android.builder.BuilderConstants.EXT_LIB_ARCHIVE
 import static com.android.builder.BuilderConstants.FLAVORS
@@ -120,6 +121,8 @@ public abstract class BasePlugin {
 
     protected Project project
     protected SdkParser androidSdkParser
+    private File androidSdkDir
+    private boolean isPlatformSdk = false
     private LoggerWrapper loggerWrapper
 
     private boolean hasCreatedTasks = false
@@ -146,6 +149,7 @@ public abstract class BasePlugin {
         this.project = project
 
         checkGradleVersion()
+        findSdkLocation()
 
         project.apply plugin: JavaBasePlugin
 
@@ -193,7 +197,7 @@ public abstract class BasePlugin {
                     "The 'java' plugin has been applied, but it is not compatible with the Android plugins.")
         }
 
-        findSdk(project)
+        loadSdk()
 
         if (hasCreatedTasks) {
             return
@@ -218,7 +222,12 @@ public abstract class BasePlugin {
     }
 
     SdkParser getSdkParser() {
-        return androidSdkParser;
+        return androidSdkParser
+    }
+
+    File getSdkDir() {
+        checkSdkLocation()
+        return androidSdkDir
     }
 
     ILogger getLogger() {
@@ -257,15 +266,11 @@ public abstract class BasePlugin {
         return androidBuilder
     }
 
-    private void findSdk(Project project) {
-        // if already set through tests.
+    private void findSdkLocation() {
         if (TEST_SDK_DIR != null) {
-            androidSdkParser = new DefaultSdkParser(TEST_SDK_DIR.absolutePath)
+            androidSdkDir = TEST_SDK_DIR
             return
         }
-
-        boolean defaultParser = true
-        File sdkDir = null
 
         def rootDir = project.rootDir
         def localProperties = new File(rootDir, SdkConstants.FN_LOCAL_PROPERTIES)
@@ -277,38 +282,54 @@ public abstract class BasePlugin {
             def sdkDirProp = properties.getProperty('sdk.dir')
 
             if (sdkDirProp != null) {
-                sdkDir = new File(sdkDirProp)
+                androidSdkDir = new File(sdkDirProp)
             } else {
                 sdkDirProp = properties.getProperty('android.dir')
                 if (sdkDirProp != null) {
-                    sdkDir = new File(rootDir, sdkDirProp)
-                    defaultParser = false
+                    androidSdkDir = new File(rootDir, sdkDirProp)
+                    isPlatformSdk = true
                 } else {
                     throw new RuntimeException(
                             "No sdk.dir property defined in local.properties file.")
                 }
             }
         } else {
-            def envVar = System.getenv("ANDROID_HOME")
+            String envVar = System.getenv("ANDROID_HOME")
             if (envVar != null) {
-                sdkDir = new File(envVar)
+                androidSdkDir = new File(envVar)
+            } else {
+                String property = System.getProperty("android.home")
+                if (property != null) {
+                    androidSdkDir = new File(property)
+                }
             }
         }
+    }
 
-        if (sdkDir == null) {
+    private void checkSdkLocation() {
+        // don't complain in test mode
+        if (TEST_SDK_DIR != null) {
+            return
+        }
+
+        if (androidSdkDir == null) {
             throw new RuntimeException(
                     "SDK location not found. Define location with sdk.dir in the local.properties file or with an ANDROID_HOME environment variable.")
         }
 
-        if (!sdkDir.directory) {
+        if (!androidSdkDir.isDirectory()) {
             throw new RuntimeException(
-                    "The SDK directory '$sdkDir' specified in local.properties does not exist.")
+                    "The SDK directory '$androidSdkDir.absolutePath' does not exist.")
         }
+    }
 
-        if (defaultParser) {
-            androidSdkParser = new DefaultSdkParser(sdkDir.absolutePath)
+    private void loadSdk() {
+        checkSdkLocation()
+        //noinspection GroovyIfStatementWithIdenticalBranches
+        if (isPlatformSdk) {
+            androidSdkParser = new PlatformSdkParser(androidSdkDir.absolutePath)
         } else {
-            androidSdkParser = new PlatformSdkParser(sdkDir.absolutePath)
+            androidSdkParser = new DefaultSdkParser(androidSdkDir.absolutePath)
         }
     }
 
@@ -789,19 +810,75 @@ public abstract class BasePlugin {
      *                assembleTask is always set in the Variant.
      */
     protected void addPackageTasks(ApkVariantData variantData, Task assembleTask) {
+
+        VariantConfiguration variantConfig = variantData.variantConfiguration
+
+        Closure libraryClosure = { project.files({ variantConfig.packagedJars }) }
+        Closure sourceClosure = { variantData.javaCompileTask.outputs.files }
+        Closure proguardFileClosure = { }
+
+        if (!(variantData instanceof TestVariantData) && variantConfig.buildType.runProguard) {
+
+            def proguardTask = project.tasks.create("proguard${variantData.name}", ProGuardTask);
+            proguardTask.dependsOn variantData.javaCompileTask
+            variantData.proguardTask = proguardTask
+
+            File outFile = project.file(
+                    "${project.buildDir}/libs/proguard-${variantData.baseName}.jar")
+
+            libraryClosure = { Collections.emptyList() }
+            sourceClosure = { Collections.emptyList() }
+            proguardFileClosure = { outFile }
+
+            // because the Proguard task acts on all the config right away and not when the
+            // task actually runs, let's configure it in its doFirst
+
+            proguardTask.doFirst {
+
+                // all the config files coming from build type, product flavors.
+                List<Object> proguardFiles = variantConfig.getProguardFiles(true /*includeLibs*/);
+                for (Object proguardFile : proguardFiles) {
+                    proguardTask.configuration(proguardFile)
+                }
+
+                // also the config file output by aapt
+                proguardTask.configuration(variantData.processResourcesTask.proguardOutputFile)
+
+                // injar: the compilation output
+                proguardTask.injars(variantData.javaCompileTask.destinationDir)
+
+                // injar: the dependencies
+                for (File inJar : variantConfig.packagedJars) {
+                    proguardTask.injars(inJar)
+                }
+
+                // libraryJars: the runtime jars
+                for (String runtimeJar : getRuntimeJarList(variantData)) {
+                    proguardTask.libraryjars(runtimeJar)
+                }
+
+                proguardTask.outjars(outFile)
+            }
+        }
+
         // Add a dex task
         def dexTaskName = "dex${variantData.name}"
         def dexTask = project.tasks.create(dexTaskName, Dex)
         variantData.dexTask = dexTask
-        dexTask.dependsOn variantData.javaCompileTask
+        if (variantData.proguardTask != null) {
+            dexTask.dependsOn variantData.proguardTask
+        } else {
+            dexTask.dependsOn variantData.javaCompileTask
+        }
 
         dexTask.plugin = this
         dexTask.variant = variantData
         dexTask.incrementalFolder =
                 project.file("$project.buildDir/incremental/dex/$variantData.dirName")
 
-        dexTask.conventionMapping.libraries = { project.files({ variantData.variantConfiguration.packagedJars }) }
-        dexTask.conventionMapping.sourceFiles = { variantData.javaCompileTask.outputs.files } // this creates a dependency
+        dexTask.conventionMapping.libraries = libraryClosure
+        dexTask.conventionMapping.sourceFiles = sourceClosure
+        dexTask.conventionMapping.proguardedJar = proguardFileClosure
         dexTask.conventionMapping.outputFile = {
             project.file(
                     "${project.buildDir}/libs/${project.archivesBaseName}-${variantData.baseName}.dex")

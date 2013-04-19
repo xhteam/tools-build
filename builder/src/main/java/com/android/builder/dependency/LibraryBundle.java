@@ -31,6 +31,8 @@ import java.util.List;
  */
 public abstract class LibraryBundle implements LibraryDependency {
 
+    public static final String FN_PROGUARD_TXT = "proguard.txt";
+
     private final String mName;
     private final File mBundleFolder;
     private List<File> mLocalJars;
@@ -152,7 +154,7 @@ public abstract class LibraryBundle implements LibraryDependency {
     @Override
     @NonNull
     public File getProguardRules() {
-        return new File(mBundleFolder, "proguard.txt");
+        return new File(mBundleFolder, FN_PROGUARD_TXT);
     }
 
     @Override

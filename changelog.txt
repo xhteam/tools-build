@@ -1,5 +1,10 @@
 0.4
 
+* Support for ProGuard 4.9
+   - enable with BuildType.runProguard
+   - add proguard config files with BuiltType.proguardFile or ProductFlavor.proguardFile
+   - default proguard files accessible through android.getDefaultProguardFile(name) with name
+     being 'proguard-android.txt' or 'proguard-android-optimize.txt'
 * Fixes:
    - Fix support for subfolders in assets/
    - Fix cases where Android Libraries have local Jars dependencies

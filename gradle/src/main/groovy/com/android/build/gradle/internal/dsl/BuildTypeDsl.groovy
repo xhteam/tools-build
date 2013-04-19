@@ -20,12 +20,15 @@ import com.android.annotations.NonNull
 import com.android.builder.DefaultBuildType
 import com.android.builder.BuilderConstants
 import com.android.builder.signing.SigningConfig
+import com.google.common.collect.Lists
 
 /**
  * DSL overlay to make methods that accept String... work.
  */
 public class BuildTypeDsl extends DefaultBuildType implements Serializable {
     private static final long serialVersionUID = 1L
+
+    private List<Object> proguardFiles = Lists.newArrayList();
 
     BuildTypeDsl(@NonNull String name) {
         super(name)
@@ -57,7 +60,6 @@ public class BuildTypeDsl extends DefaultBuildType implements Serializable {
         return this;
     }
 
-
     @Override
     boolean equals(o) {
         if (this.is(o)) return true
@@ -75,5 +77,32 @@ public class BuildTypeDsl extends DefaultBuildType implements Serializable {
 
     public void buildConfig(String line) {
         setBuildConfig(line)
+    }
+
+    @NonNull
+    public BuildTypeDsl proguardFile(Object proguardFile) {
+        proguardFiles.add(proguardFile);
+        return this;
+    }
+
+    @NonNull
+    public BuildTypeDsl proguardFiles(Object... proguardFileArray) {
+        Collections.addAll(proguardFiles, proguardFileArray);
+        return this;
+    }
+
+    @NonNull
+    public BuildTypeDsl setProguardFiles(Iterable<?> proguardFileIterable) {
+        proguardFiles.clear();
+        for (Object proguardFile : proguardFileIterable) {
+            proguardFiles.add(proguardFile);
+        }
+        return this;
+    }
+
+    @Override
+    @NonNull
+    public List<Object> getProguardFiles() {
+        return proguardFiles;
     }
 }
