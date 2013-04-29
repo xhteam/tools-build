@@ -28,19 +28,23 @@ import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.model.ModelBuilder
-import com.android.build.gradle.internal.tasks.AndroidTestTask
+import com.android.build.gradle.internal.tasks.AndroidReportTask
 import com.android.build.gradle.internal.tasks.DependencyReportTask
+import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestLibraryTask
+import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
 import com.android.build.gradle.internal.tasks.InstallTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.PrepareLibraryTask
 import com.android.build.gradle.internal.tasks.SigningReportTask
-import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
-import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestLibraryTask
+import com.android.build.gradle.internal.tasks.TestServerTask
 import com.android.build.gradle.internal.tasks.UninstallTask
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
+import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.variant.ApkVariantData
 import com.android.build.gradle.internal.variant.BaseVariantData
+import com.android.build.gradle.internal.variant.LibraryVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
+import com.android.build.gradle.internal.variant.TestedVariantData
 import com.android.build.gradle.tasks.AidlCompile
 import com.android.build.gradle.tasks.Dex
 import com.android.build.gradle.tasks.GenerateBuildConfig
@@ -63,6 +67,9 @@ import com.android.builder.dependency.LibraryDependency
 import com.android.builder.model.ProductFlavor
 import com.android.builder.model.SourceProvider
 import com.android.builder.signing.SigningConfig
+import com.android.builder.testing.ConnectedDeviceProvider
+import com.android.builder.testing.api.DeviceProvider
+import com.android.builder.testing.api.TestServer
 import com.android.sdklib.repository.FullRevision
 import com.android.utils.ILogger
 import com.google.common.collect.ArrayListMultimap
@@ -92,13 +99,15 @@ import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.gradle.util.GUtil
 import proguard.gradle.ProGuardTask
 
+import static com.android.builder.BuilderConstants.CONNECTED
+import static com.android.builder.BuilderConstants.DEVICE
 import static com.android.builder.BuilderConstants.EXT_LIB_ARCHIVE
-import static com.android.builder.BuilderConstants.FLAVORS
-import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
-import static com.android.builder.BuilderConstants.INSTRUMENTATION_TEST
-import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
-import static com.android.builder.BuilderConstants.REPORTS
-
+import static com.android.builder.BuilderConstants.FD_FLAVORS
+import static com.android.builder.BuilderConstants.FD_FLAVORS_ALL
+import static com.android.builder.BuilderConstants.FD_INSTRUMENT_RESULTS
+import static com.android.builder.BuilderConstants.FD_INSTRUMENT_TESTS
+import static com.android.builder.BuilderConstants.FD_REPORTS
+import static com.android.builder.BuilderConstants.INSTRUMENT_TEST
 /**
  * Base class for all Android plugins
  */
@@ -134,6 +143,7 @@ public abstract class BasePlugin {
     protected Task uninstallAll
     protected Task assembleTest
     protected Task deviceCheck
+    protected Task connectedCheck
 
     protected abstract BaseExtension getAndroidExtension()
 
@@ -164,8 +174,12 @@ public abstract class BasePlugin {
         uninstallAll.group = INSTALL_GROUP
 
         deviceCheck = project.tasks.create("deviceCheck")
-        deviceCheck.description = "Runs all checks that requires a connected device."
+        deviceCheck.description = "Runs all device checks using Device Providers and Test Servers."
         deviceCheck.group = JavaBasePlugin.VERIFICATION_GROUP
+
+        connectedCheck = project.tasks.create("connectedCheck")
+        connectedCheck.description = "Runs all device checks on currently connected devices."
+        connectedCheck.group = JavaBasePlugin.VERIFICATION_GROUP
 
         project.afterEvaluate {
             createAndroidTasks()
@@ -211,7 +225,7 @@ public abstract class BasePlugin {
     protected setDefaultConfig(DefaultProductFlavor defaultConfig,
                                NamedDomainObjectContainer<AndroidSourceSet> sourceSets) {
         mainSourceSet = sourceSets.create(defaultConfig.name)
-        testSourceSet = sourceSets.create(INSTRUMENTATION_TEST)
+        testSourceSet = sourceSets.create(INSTRUMENT_TEST)
 
         defaultConfigData = new ProductFlavorData<DefaultProductFlavor>(defaultConfig, mainSourceSet,
                 testSourceSet, project, ConfigurationDependencies.ConfigType.DEFAULT)
@@ -687,27 +701,20 @@ public abstract class BasePlugin {
     }
 
     /**
-     * Creates the test tasks, and return the main test[*] entry point.
-     *
-     * The main "test[*]" task can be created two different ways:
-     * mainTask is false: this creates the task for the given variant (with its variant name).
-     * mainTask is true: this creates the main "test" task, and makes check depend on it.
+     * Creates the tasks to build the test apk.
      *
      * @param variant the test variant
      * @param testedVariant the tested variant
      * @param configDependencies the list of config dependencies
-     * @param mainTestTask whether the main task is a main test task.
-     * @param isLibraryTest whether the test is for a library project.
-     * @return the test task.
      */
-    protected AndroidTestTask createTestTasks(@NonNull TestVariantData variantData,
-                                              @NonNull BaseVariantData testedVariantData,
-                                              List<ConfigurationDependencies> configDependencies,
-                                              boolean mainTestTask, boolean isLibraryTest) {
+    protected void createTestApkTasks(@NonNull TestVariantData variantData,
+                                      @NonNull BaseVariantData testedVariantData,
+                                      @NonNull List<ConfigurationDependencies> configDependencies) {
         // The test app is signed with the same info as the tested app so there's no need
         // to test both.
         if (!variantData.isSigned()) {
-            throw new GradleException("Tested Variant '${testedVariant.name}' is not configured to create a signed APK.")
+            throw new GradleException(
+                    "Tested Variant '${testedVariantData.name}' is not configured to create a signed APK.")
         }
 
         createPrepareDependenciesTask(variantData, configDependencies)
@@ -751,56 +758,216 @@ public abstract class BasePlugin {
         if (assembleTest != null) {
             assembleTest.dependsOn variantData.assembleTask
         }
+    }
 
-        // create the check task for this test
-        def testFlavorTask = project.tasks.create(
-                mainTestTask ? INSTRUMENTATION_TEST : "$INSTRUMENTATION_TEST${testedVariantData.name}",
-                isLibraryTest ? DeviceProviderInstrumentTestLibraryTask : DeviceProviderInstrumentTestTask)
-        testFlavorTask.description = "Installs and runs the tests for Build ${testedVariantData.name}."
-        testFlavorTask.group = JavaBasePlugin.VERIFICATION_GROUP
-        testFlavorTask.dependsOn testedVariantData.assembleTask, variantData.assembleTask
 
-        if (mainTestTask) {
-            deviceCheck.dependsOn testFlavorTask
+    protected void createCheckTasks(boolean hasFlavors, boolean isLibraryTest) {
+        List<AndroidReportTask> reportTasks = Lists.newArrayListWithExpectedSize(2)
+
+        List<DeviceProvider> providers = extension.deviceProviders
+        List<TestServer> servers = extension.testServers
+
+        Task mainConnectedTask = connectedCheck
+        String connectedRootName = "${CONNECTED}${INSTRUMENT_TEST.capitalize()}"
+        // if more than one flavor, create a report aggregator task and make this the parent
+        // task for all new connected tasks.
+        if (hasFlavors) {
+            mainConnectedTask = project.tasks.create(connectedRootName, AndroidReportTask)
+            mainConnectedTask.group = JavaBasePlugin.VERIFICATION_GROUP
+            mainConnectedTask.description = "Installs and runs instrumentation tests for all flavors on connected devices."
+            mainConnectedTask.reportType = ReportType.MULTI_FLAVOR
+            connectedCheck.dependsOn mainConnectedTask
+
+            mainConnectedTask.conventionMapping.resultsDir = {
+                String rootLocation = extension.testOptions.resultsDir != null ?
+                    extension.testOptions.resultsDir : "$project.buildDir/$FD_INSTRUMENT_RESULTS"
+
+                project.file("$rootLocation/connected/$FD_FLAVORS_ALL")
+            }
+            mainConnectedTask.conventionMapping.reportsDir = {
+                String rootLocation = extension.testOptions.reportDir != null ?
+                    extension.testOptions.reportDir :
+                    "$project.buildDir/$FD_REPORTS/$FD_INSTRUMENT_TESTS"
+
+                project.file("$rootLocation/connected/$FD_FLAVORS_ALL")
+            }
+
+            reportTasks.add(mainConnectedTask)
         }
 
-        testFlavorTask.plugin = this
-        testFlavorTask.variant = variantData
-        testFlavorTask.testedVariantData = testedVariantData
-        testFlavorTask.flavorName = variantData.flavorName
+        Task mainProviderTask = deviceCheck
+        // if more than one provider tasks, either because of several flavors, or because of
+        // more than one providers, then create an aggregate report tasks for all of them.
+        if (providers.size() > 1 || hasFlavors) {
+            mainProviderTask = project.tasks.create("${DEVICE}${INSTRUMENT_TEST.capitalize()}",
+                    AndroidReportTask)
+            mainProviderTask.group = JavaBasePlugin.VERIFICATION_GROUP
+            mainProviderTask.description = "Installs and runs instrumentation tests using all Device Providers."
+            mainProviderTask.reportType = ReportType.MULTI_FLAVOR
+            deviceCheck.dependsOn mainProviderTask
 
-        testFlavorTask.conventionMapping.adbExe = { androidSdkParser.adb }
+            mainProviderTask.conventionMapping.resultsDir = {
+                String rootLocation = extension.testOptions.resultsDir != null ?
+                    extension.testOptions.resultsDir : "$project.buildDir/$FD_INSTRUMENT_RESULTS"
 
-        testFlavorTask.conventionMapping.testApp = { variantData.outputFile }
+                project.file("$rootLocation/devices/$FD_FLAVORS_ALL")
+            }
+            mainProviderTask.conventionMapping.reportsDir = {
+                String rootLocation = extension.testOptions.reportDir != null ?
+                    extension.testOptions.reportDir :
+                    "$project.buildDir/$FD_REPORTS/$FD_INSTRUMENT_TESTS"
+
+                project.file("$rootLocation/devices/$FD_FLAVORS_ALL")
+            }
+
+            reportTasks.add(mainProviderTask)
+        }
+
+        // now look for the testedvariant and create the check tasks for them.
+        // don't use an auto loop as we can't reuse baseVariantData or the closure lower
+        // gets broken.
+        int count = variantDataList.size();
+        for (int i = 0 ; i < count ; i++) {
+            final BaseVariantData baseVariantData = variantDataList.get(i);
+            if (baseVariantData instanceof TestedVariantData) {
+                final TestVariantData testVariantData = ((TestedVariantData) baseVariantData).testVariantData
+                if (testVariantData == null) {
+                    continue
+                }
+
+                // create the check tasks for this test
+
+                // first the connected one.
+                def connectedTask = createDeviceProviderInstrumentTestTask(
+                        hasFlavors ?
+                            "${connectedRootName}${baseVariantData.name}" : connectedRootName,
+                        "Installs and runs the tests for Build '${baseVariantData.name}' on connected devices.",
+                        isLibraryTest ?
+                            DeviceProviderInstrumentTestLibraryTask :
+                            DeviceProviderInstrumentTestTask,
+                        testVariantData,
+                        baseVariantData,
+                        new ConnectedDeviceProvider(androidSdkParser),
+                        CONNECTED
+                )
+
+                mainConnectedTask.dependsOn connectedTask
+                testVariantData.connectedTestTask = connectedTask
+
+                // now the providers.
+                // now return the other providers
+                for (DeviceProvider deviceProvider : providers) {
+                    def providerTask = createDeviceProviderInstrumentTestTask(
+                            hasFlavors ?
+                                "${deviceProvider.name}${INSTRUMENT_TEST.capitalize()}${baseVariantData.name}" :
+                                "${deviceProvider.name}${INSTRUMENT_TEST.capitalize()}",
+                            "Installs and runs the tests for Build '${baseVariantData.name}' using Provider '${deviceProvider.name.capitalize()}'.",
+                            isLibraryTest ?
+                                DeviceProviderInstrumentTestLibraryTask :
+                                DeviceProviderInstrumentTestTask,
+                            testVariantData,
+                            baseVariantData,
+                            deviceProvider,
+                            "$DEVICE/$deviceProvider.name"
+                    )
+
+                    mainProviderTask.dependsOn providerTask
+                    testVariantData.providerTestTaskList.add(providerTask)
+                }
+
+                // now the test servers
+                for (TestServer testServer : servers) {
+                    def serverTask = project.tasks.create(
+                            hasFlavors ?
+                                "${testServer.name}${"upload".capitalize()}${baseVariantData.name}" :
+                                "${testServer.name}${"upload".capitalize()}",
+                            TestServerTask)
+                    serverTask.description = "Uploads APKs for Build '${baseVariantData.name}' to Test Server '${testServer.name.capitalize()}'."
+                    serverTask.group = JavaBasePlugin.VERIFICATION_GROUP
+                    serverTask.dependsOn testVariantData.assembleTask, baseVariantData.assembleTask
+
+                    serverTask.testServer = testServer
+
+                    serverTask.conventionMapping.testApk = { testVariantData.outputFile }
+                    if (!(baseVariantData instanceof LibraryVariantData)) {
+                        serverTask.conventionMapping.testedApk = { baseVariantData.outputFile }
+                    }
+
+                    deviceCheck.dependsOn serverTask
+                }
+            }
+        }
+
+        // If gradle is launched with --continue, we want to run all tests and generate an
+        // aggregate report (to help with the fact that we may have several build variants, or
+        // or several device providers).
+        // To do that, the report tasks must run even if one of their dependent tasks (flavor
+        // or specific provider tasks) fails, when --continue is used, and the report task is
+        // meant to run (== is in the task graph).
+        // To do this, we make the children tasks ignore their errors (ie they won't fail and
+        // stop the build).
+        if (!reportTasks.isEmpty() && project.gradle.startParameter.continueOnFailure) {
+            project.gradle.taskGraph.whenReady { taskGraph ->
+                for (AndroidReportTask reportTask : reportTasks) {
+                    if (taskGraph.hasTask(reportTask)) {
+                        reportTask.setWillRun()
+                    }
+                }
+            }
+        }
+    }
+
+    private DeviceProviderInstrumentTestTask createDeviceProviderInstrumentTestTask(
+            @NonNull String taskName,
+            @NonNull String description,
+            @NonNull Class<? extends DeviceProviderInstrumentTestTask> taskClass,
+            @NonNull TestVariantData variantData,
+            @NonNull BaseVariantData testedVariantData,
+            @NonNull DeviceProvider deviceProvider,
+            @NonNull String subFolder) {
+
+        def testTask = project.tasks.create(taskName, taskClass)
+        testTask.description = description
+        testTask.group = JavaBasePlugin.VERIFICATION_GROUP
+        testTask.dependsOn testedVariantData.assembleTask, variantData.assembleTask
+
+        testTask.plugin = this
+        testTask.variant = variantData
+        testTask.testedVariantData = testedVariantData
+        testTask.flavorName = variantData.flavorName
+        testTask.deviceProvider = deviceProvider
+
+        testTask.conventionMapping.testApp = { variantData.outputFile }
         if (testedVariantData.variantConfiguration.type != VariantConfiguration.Type.LIBRARY) {
-            testFlavorTask.conventionMapping.testedApp = { testedVariantData.outputFile }
+            testTask.conventionMapping.testedApp = { testedVariantData.outputFile }
         }
 
-        testFlavorTask.conventionMapping.resultsDir = {
+        testTask.conventionMapping.resultsDir = {
             String rootLocation = extension.testOptions.resultsDir != null ?
-                extension.testOptions.resultsDir : "$project.buildDir/$INSTRUMENTATION_RESULTS"
+                extension.testOptions.resultsDir :
+                "$project.buildDir/$FD_INSTRUMENT_RESULTS"
 
             String flavorFolder = variantData.flavorDirName
             if (!flavorFolder.isEmpty()) {
-                flavorFolder = "$FLAVORS/" + flavorFolder
+                flavorFolder = "$FD_FLAVORS/" + flavorFolder
             }
 
-            project.file("$rootLocation/$flavorFolder")
+            project.file("$rootLocation/$subFolder/$flavorFolder")
         }
-        testFlavorTask.conventionMapping.reportsDir = {
+        testTask.conventionMapping.reportsDir = {
             String rootLocation = extension.testOptions.reportDir != null ?
-                extension.testOptions.reportDir : "$project.buildDir/$REPORTS/$INSTRUMENTATION_TESTS"
+                extension.testOptions.reportDir :
+                "$project.buildDir/$FD_REPORTS/$FD_INSTRUMENT_TESTS"
 
             String flavorFolder = variantData.flavorDirName
             if (!flavorFolder.isEmpty()) {
-                flavorFolder = "$FLAVORS/" + flavorFolder
+                flavorFolder = "$FD_FLAVORS/" + flavorFolder
             }
 
-            project.file("$rootLocation/$flavorFolder")
+            project.file("$rootLocation/$subFolder/$flavorFolder")
         }
-        variantData.connectedTestTask = testFlavorTask
 
-        return testFlavorTask
+        return testTask
     }
 
     /**

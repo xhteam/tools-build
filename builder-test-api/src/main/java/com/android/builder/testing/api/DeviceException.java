@@ -19,6 +19,7 @@ package com.android.builder.testing.api;
 import com.android.annotations.NonNull;
 
 /**
+ * Exception thrown during device actions.
  */
 public class DeviceException extends Exception {
 

@@ -24,18 +24,20 @@ import java.io.File;
 import java.util.List;
 
 /**
+ * A test runner able to run tests on a list of {@link DeviceConnector}
  */
 public interface TestRunner {
 
     boolean runTests(
-            @NonNull String projectName,
-            @NonNull String variantName,
-            @NonNull File testApk,
-            @NonNull String testPackageName,
-            @NonNull String testInstrumentationRunner,
+            @NonNull  String projectName,
+            @NonNull  String variantName,
+            @NonNull  File testApk,
+            @NonNull  String testPackageName,
+            @NonNull  String testInstrumentationRunner,
             @Nullable File testedApk,
             @Nullable String testedPackageName,
-            @NonNull List<? extends DeviceConnector> deviceList,
-            @NonNull File resultsDir,
-            @NonNull ILogger logger);
+            @NonNull  List<? extends DeviceConnector> deviceList,
+                      int timeout,
+            @NonNull  File resultsDir,
+            @NonNull  ILogger logger);
 }

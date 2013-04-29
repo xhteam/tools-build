@@ -16,6 +16,7 @@
 package com.android.build.gradle
 
 import com.android.SdkConstants
+import com.android.annotations.NonNull
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.CompileOptions
@@ -26,7 +27,10 @@ import com.android.build.gradle.internal.dsl.ProductFlavorDsl
 import com.android.build.gradle.internal.test.TestOptions
 import com.android.builder.BuilderConstants
 import com.android.builder.DefaultProductFlavor
+import com.android.builder.testing.api.DeviceProvider
+import com.android.builder.testing.api.TestServer
 import com.android.sdklib.repository.FullRevision
+import com.google.common.collect.Lists
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.artifacts.Configuration
@@ -49,10 +53,14 @@ public abstract class BaseExtension {
     final TestOptions testOptions
     final CompileOptions compileOptions
 
-
-    protected final BasePlugin plugin
     private final DefaultDomainObjectSet<TestVariant> testVariantList =
         new DefaultDomainObjectSet<TestVariant>(TestVariant.class)
+
+    private final List<DeviceProvider> deviceProviderList = Lists.newArrayList();
+    private final List<TestServer> testServerList = Lists.newArrayList();
+
+    protected final BasePlugin plugin
+
 
     /**
      * The source sets container.
@@ -151,6 +159,25 @@ public abstract class BaseExtension {
         action.execute(testOptions)
     }
 
+    void deviceProvider(DeviceProvider deviceProvider) {
+        deviceProviderList.add(deviceProvider)
+    }
+
+    @NonNull
+    List<DeviceProvider> getDeviceProviders() {
+        return deviceProviderList
+    }
+
+    void testServer(TestServer testServer) {
+        testServerList.add(testServer)
+    }
+
+    @NonNull
+    List<TestServer> getTestServers() {
+        return testServerList
+    }
+
+    @NonNull
     public DefaultDomainObjectSet<TestVariant> getTestVariants() {
         plugin.createAndroidTasks()
         return testVariantList

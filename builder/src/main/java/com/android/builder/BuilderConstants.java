@@ -36,16 +36,19 @@ public class BuilderConstants {
 
     public final static String LINT = "lint";
 
-    public final static String REPORTS = "reports";
+    public final static String FD_REPORTS = "reports";
 
-    public final static String INSTRUMENTATION_TEST = "instrumentTest";
-    public final static String INSTRUMENTATION_TESTS = "instrumentTests";
-    public final static String INSTRUMENTATION_RESULTS = INSTRUMENTATION_TEST + "-results";
+    public final static String CONNECTED = "connected";
+    public final static String DEVICE = "device";
+
+    public final static String INSTRUMENT_TEST = "instrumentTest";
+    public final static String FD_INSTRUMENT_TESTS = "instrumentTests";
+    public final static String FD_INSTRUMENT_RESULTS = INSTRUMENT_TEST + "-results";
 
     public final static String UI_TEST = "uiTest";
-    public final static String UI_TESTS = "uiTests";
-    public final static String UI_RESULTS = UI_TEST + "-results";
+    public final static String FD_UI_TESTS = "uiTests";
+    public final static String FD_UI_RESULTS = UI_TEST + "-results";
 
-    public final static String FLAVORS = "flavors";
-    public final static String FLAVORS_ALL = "all";
+    public final static String FD_FLAVORS = "flavors";
+    public final static String FD_FLAVORS_ALL = "all";
 }

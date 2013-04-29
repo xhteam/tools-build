@@ -23,13 +23,33 @@ import java.util.List;
 /**
  * Provides a list of remote or local devices.
  */
-public interface DeviceProvider {
+public abstract class DeviceProvider {
 
+    /**
+     * Returns the name of the provider. Must be unique, not contain spaces, and start with a lower
+     * case.
+     *
+     * @return the name of the provider.
+     */
     @NonNull
-    String getName();
+    public abstract String getName();
 
+    /**
+     * Initializes the provider. This is called before any other method (except {@link #getName()}).
+     * @throws DeviceException
+     */
+    public abstract void init() throws DeviceException;
+
+    /**
+     * Returns a list of DeviceConnector.
+     * @return a non-null list (but could be empty.)
+     */
     @NonNull
-    List<? extends DeviceConnector> getDevices();
+    public abstract List<? extends DeviceConnector> getDevices();
 
-    void init() throws DeviceException;
+    /**
+     * Returns the timeout to use.
+     * @return the time out.
+     */
+    public abstract int getTimeout();
 }

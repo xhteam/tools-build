@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 package com.android.build.gradle.internal.tasks
-
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.test.report.TestReport
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
-import com.android.builder.testing.ConnectedDeviceProvider
-import com.android.builder.testing.api.DeviceProvider
 import com.android.builder.testing.SimpleTestRunner
+import com.android.builder.testing.api.DeviceProvider
 import com.android.builder.testing.api.TestRunner
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
@@ -30,14 +28,10 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.logging.ConsoleRenderer
-
 /**
  * Run instrumentation tests for a given variant
  */
 public class DeviceProviderInstrumentTestTask extends BaseTask implements AndroidTestTask {
-
-    @InputFile
-    File adbExe
 
     @InputFile
     File testApp
@@ -54,9 +48,9 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
     @Input
     String flavorName
 
-    BaseVariantData testedVariantData
-
     DeviceProvider deviceProvider
+
+    BaseVariantData testedVariantData
 
     boolean ignoreFailures
     boolean testFailed
@@ -77,7 +71,6 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
         String flavor = getFlavorName()
 
         TestRunner testRunner = new SimpleTestRunner();
-        deviceProvider = new ConnectedDeviceProvider(getAdbExe());
         deviceProvider.init();
 
         boolean success = testRunner.runTests(project.name, flavor,
@@ -87,6 +80,7 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
                 testedApk,
                 testedVariantData.variantConfiguration.packageName,
                 deviceProvider.devices,
+                deviceProvider.getTimeout(),
                 resultsOutDir, plugin.logger);
 
         // run the report from the results.

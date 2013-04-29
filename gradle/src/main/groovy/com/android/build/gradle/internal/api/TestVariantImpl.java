@@ -39,7 +39,6 @@ import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.compile.JavaCompile;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -205,8 +204,8 @@ public class TestVariantImpl implements TestVariant {
 
     @NonNull
     @Override
-    public List<DefaultTask> getDeviceInstrumentTests() {
-        return Collections.emptyList();
+    public List<? extends DefaultTask> getProviderInstrumentTests() {
+        return variantData.providerTestTaskList;
     }
 
     @Override

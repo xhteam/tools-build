@@ -31,7 +31,7 @@ import java.io.IOException;
 /**
  * Local device connected to with ddmlib. This is a wrapper around {@link IDevice}.
  */
-public class ConnectedDevice implements DeviceConnector {
+public class ConnectedDevice extends DeviceConnector {
 
     private final IDevice iDevice;
 
