@@ -69,7 +69,7 @@ public class ConnectedDevice extends DeviceConnector {
     }
 
     @Override
-    public void installPackage(@NonNull File apkFile) throws DeviceException {
+    public void installPackage(@NonNull File apkFile, int timeout) throws DeviceException {
         try {
             iDevice.installPackage(apkFile.getAbsolutePath(), true /*reinstall*/);
         } catch (Exception e) {
@@ -78,7 +78,7 @@ public class ConnectedDevice extends DeviceConnector {
     }
 
     @Override
-    public void uninstallPackage(@NonNull String packageName) throws DeviceException {
+    public void uninstallPackage(@NonNull String packageName, int timeout) throws DeviceException {
         try {
             iDevice.uninstallPackage(packageName);
         } catch (Exception e) {

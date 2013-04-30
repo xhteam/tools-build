@@ -75,11 +75,11 @@ public class SimpleTestCallable implements Callable<Boolean> {
 
             if (testedApk != null) {
                 logger.info("DeviceConnector '%s': installing %s", deviceName, testedApk);
-                device.installPackage(testedApk);
+                device.installPackage(testedApk, timeout);
             }
 
             logger.info("DeviceConnector '%s': installing %s", deviceName, testApk);
-            device.installPackage(testApk);
+            device.installPackage(testApk, timeout);
 
             RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(
                     testPackageName,
@@ -114,7 +114,7 @@ public class SimpleTestCallable implements Callable<Boolean> {
             throws DeviceException {
         if (packageName != null) {
             logger.info("DeviceConnector '%s': uninstalling %s", deviceName, packageName);
-            device.uninstallPackage(packageName);
+            device.uninstallPackage(packageName, timeout);
         } else {
             logger.info("DeviceConnector '%s': unable to uninstall %s: unable to get package name",
                     deviceName, apk);
