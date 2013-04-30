@@ -83,7 +83,7 @@ task publishLocal(type: Upload) {
     configuration = configurations.archives
     repositories {
         mavenDeployer {
-            repository(url: uri("$rootDir/repo"))
+            repository(url: uri("$rootProject.ext.androidHostOut/repo"))
         }
     }
 }
