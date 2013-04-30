@@ -30,11 +30,6 @@ subprojects {
     apply plugin: 'findbugs'
 
     repositories {
-        // repository containing the cloned 3rd party artifacts.
-        maven { url = uri(rootProject.cloneArtifacts.mainRepo) }
-        maven { url = uri(rootProject.cloneArtifacts.secondaryRepo) }
-
-        // repository with the artifacts from tools/base
         maven { url = uri("$rootProject.ext.androidHostOut/repo") }
     }
 
@@ -66,6 +61,12 @@ subprojects {
 
     group = 'com.android.tools.build'
     project.ext.baseAndroidVersion = "22.0-SNAPSHOT"
+}
+
+task prepareRepo(type: Copy) {
+    from { rootProject.cloneArtifacts.mainRepo }
+    from { rootProject.cloneArtifacts.secondaryRepo }
+    into { "$rootProject.ext.androidHostOut/repo" }
 }
 
 // delay evaluation of this project before all subprojects have been evaluated.

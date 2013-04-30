@@ -5,9 +5,9 @@ apply plugin: 'clone-artifacts'
 
 evaluationDependsOn(':builder-model') 
 
-configurations {
-    fakeMaven
-}
+//configurations {
+//    fakeMaven
+//}
 
 dependencies {
     compile project(':builder-model')
@@ -33,61 +33,62 @@ def getVersion() {
 version = getVersion()
 archivesBaseName = 'builder'
 
-def getInternalDependencies() {
-    def list = []
-
-    Set<ResolvedArtifact> artifacts = configurations.runtime.resolvedConfiguration.resolvedArtifacts
-    for (ResolvedArtifact artifact : artifacts) {
-        def group = artifact.moduleVersion.id.group
-        if (group.startsWith('com.android.tools') || group == 'base' || group == 'swt') {
-            list << artifact.file
-        }
-    }
-
-    list
-}
+//def getInternalDependencies() {
+//    def list = []
+//
+//    Set<ResolvedArtifact> artifacts = configurations.runtime.resolvedConfiguration.resolvedArtifacts
+//    for (ResolvedArtifact artifact : artifacts) {
+//        def group = artifact.moduleVersion.id.group
+//        if (group.startsWith('com.android.tools') || group == 'base' || group == 'swt') {
+//            list << artifact.file
+//       }
+//    }
+//
+//    list
+//}
 
 jar {
     // gather the local dependencies and package them in the builder jar.
-    def internalDep = getInternalDependencies()
-    from { internalDep.collect { it.directory ? it : zipTree(it) } }
+//    def internalDep = getInternalDependencies()
+//    from { internalDep.collect { it.directory ? it : zipTree(it) } }
 }
 
 // add the external dependencies to the fakeMaven configuration.
-task mavenSetup << {
-    Set<ResolvedArtifact> artifacts = configurations.runtime.resolvedConfiguration.resolvedArtifacts
-    for (ResolvedArtifact artifact : artifacts) {
-        def group = artifact.moduleVersion.id.group
-        if (!(group.startsWith('com.android.tools') || group == 'base' || group == 'swt')) {
-            def id = artifact.moduleVersion.id
-            project.dependencies {
-                fakeMaven "${id.group}:${id.name}:${id.version}"
-            }
-        }
-    }
-}
+//task mavenSetup << {
+//    Set<ResolvedArtifact> artifacts = configurations.runtime.resolvedConfiguration.resolvedArtifacts
+//    for (ResolvedArtifact artifact : artifacts) {
+//        def group = artifact.moduleVersion.id.group
+//        if (!(group.startsWith('com.android.tools') || group == 'base' || group == 'swt')) {
+//            def id = artifact.moduleVersion.id
+//            project.dependencies {
+//                fakeMaven "${id.group}:${id.name}:${id.version}"
+//            }
+//        }
+//    }
+//}
 
 configure(install.repositories.mavenInstaller) {
     // Discard all the dependencies from the POM, as they are packaged in the JAR.
-    pom.scopeMappings.mappings.clear()
+//    pom.scopeMappings.mappings.clear()
     // add the fake ones from fakeMaven
-    pom.scopeMappings.addMapping(300, configurations.fakeMaven, "compile")
+//    pom.scopeMappings.addMapping(300, configurations.fakeMaven, "compile")
 }
 
-task publishLocal(type: Upload, dependsOn: mavenSetup) {
+task publishLocal(type: Upload) {
     configuration = configurations.archives
     repositories {
         mavenDeployer {
-            repository(url: uri("$rootDir/repo"))
+            repository(url: uri("$rootProject.ext.androidHostOut/repo"))
 
             // Discard all the dependencies from the POM, as they are packaged in the JAR.
-            pom.scopeMappings.mappings.clear()
+//            pom.scopeMappings.mappings.clear()
             // add the fake ones from fakeMaven
-            pom.scopeMappings.addMapping(300, configurations.fakeMaven, "compile")
+//            pom.scopeMappings.addMapping(300, configurations.fakeMaven, "compile")
         }
     }
 }
-//publishLocal.dependsOn ':builder-model:publishLocal'
+//publishLocal.dependsOn mavenSetup
+publishLocal.dependsOn ':builder-model:publishLocal'
 
 project.ext.sonatypeUsername = hasProperty('sonatypeUsername') ? sonatypeUsername : ""
 project.ext.sonatypePassword = hasProperty('sonatypePassword') ? sonatypePassword : ""
@@ -112,7 +113,7 @@ uploadArchives {
             }
 
             // Discard all the dependencies from the POM, as they are packaged in the JAR.
-            pom.scopeMappings.mappings.clear()
+//            pom.scopeMappings.mappings.clear()
 
             pom.project {
                 name 'Android Builder library'
@@ -142,7 +143,7 @@ uploadArchives {
     }
 }
 
-uploadArchives.dependsOn mavenSetup
+//uploadArchives.dependsOn mavenSetup
 
 
 // custom tasks for creating source/javadoc jars

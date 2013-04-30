@@ -18,14 +18,14 @@ def getVersion() {
 version = getVersion()
 archivesBaseName = 'builder-model'
 
-//task publishLocal(type: Upload) {
-//    configuration = configurations.archives
-//    repositories {
-//        mavenDeployer {
-//            repository(url: uri("$rootDir/repo"))
-//        }
-//    }
-//}
+task publishLocal(type: Upload) {
+    configuration = configurations.archives
+    repositories {
+        mavenDeployer {
+            repository(url: uri("$rootProject.ext.androidHostOut/repo"))
+        }
+    }
+}
 
 // custom tasks for creating source/javadoc jars
 task sourcesJar(type: Jar, dependsOn:classes) {
