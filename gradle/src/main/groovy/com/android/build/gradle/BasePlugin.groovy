@@ -103,7 +103,7 @@ import static com.android.builder.BuilderConstants.REPORTS
  * Base class for all Android plugins
  */
 public abstract class BasePlugin {
-    public static final String GRADLE_MIN_VERSION = "1.6-20130404052254+0000"
+    public static final String GRADLE_MIN_VERSION = "1.6-rc-1"
     public static final String[] GRADLE_SUPPORTED_VERSIONS = [ GRADLE_MIN_VERSION ]
 
     public static final String INSTALL_GROUP = "Install"
