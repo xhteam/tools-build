@@ -588,7 +588,7 @@ public abstract class BasePlugin {
         }
         if (variantData.runProguard) {
             processResources.conventionMapping.proguardOutputFile = {
-                project.file("$project.buildDir/proguard/${variantData.dirName}/rules.txt")
+                project.file("$project.buildDir/proguard/${variantData.dirName}/aapt_rules.txt")
             }
         }
 
@@ -991,7 +991,7 @@ public abstract class BasePlugin {
             variantData.proguardTask = proguardTask
 
             File outFile = project.file(
-                    "${project.buildDir}/libs/proguard-${variantData.baseName}.jar")
+                    "${project.buildDir}/classes-proguard/${variantData.dirName}/classes.jar")
 
             libraryClosure = { Collections.emptyList() }
             sourceClosure = { Collections.emptyList() }
@@ -1025,6 +1025,14 @@ public abstract class BasePlugin {
                 }
 
                 proguardTask.outjars(outFile)
+
+                proguardTask.dump("${project.buildDir}/proguard/${variantData.dirName}/dump.txt")
+                proguardTask.printseeds(
+                        "${project.buildDir}/proguard/${variantData.dirName}/seeds.txt")
+                proguardTask.printusage(
+                        "${project.buildDir}/proguard/${variantData.dirName}/usage.txt")
+                proguardTask.printmapping(
+                        "${project.buildDir}/proguard/${variantData.dirName}/mapping.txt")
             }
         }
 
