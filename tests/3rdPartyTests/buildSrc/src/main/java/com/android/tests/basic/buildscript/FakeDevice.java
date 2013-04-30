@@ -42,7 +42,7 @@ public class FakeDevice extends DeviceConnector {
     }
 
     @Override
-    public void installPackage(@NonNull File apkFile) throws DeviceException {
+    public void installPackage(@NonNull File apkFile, int timeout) throws DeviceException {
         System.out.println(String.format("INSTALL(%S) CALLED", name));
 
         if (apkFile == null) {
@@ -69,7 +69,7 @@ public class FakeDevice extends DeviceConnector {
     }
 
     @Override
-    public void uninstallPackage(@NonNull String packageName) throws DeviceException {
+    public void uninstallPackage(@NonNull String packageName, int timeout) throws DeviceException {
         System.out.println(String.format("UNINSTALL(%S) CALLED", name));
         uninstallCalled = true;
     }
