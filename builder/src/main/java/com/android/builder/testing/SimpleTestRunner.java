@@ -34,16 +34,17 @@ public class SimpleTestRunner implements TestRunner {
 
     @Override
     public boolean runTests(
-            @NonNull String projectName,
-            @NonNull String variantName,
-            @NonNull File testApk,
-            @NonNull String testPackageName,
-            @NonNull String testInstrumentationRunner,
+            @NonNull  String projectName,
+            @NonNull  String variantName,
+            @NonNull  File testApk,
+            @NonNull  String testPackageName,
+            @NonNull  String testInstrumentationRunner,
             @Nullable File testedApk,
             @Nullable String testedPackageName,
-            @NonNull List<? extends DeviceConnector> deviceList,
-            @NonNull File resultsDir,
-            @NonNull ILogger logger) {
+            @NonNull  List<? extends DeviceConnector> deviceList,
+                      int timeout,
+            @NonNull  File resultsDir,
+            @NonNull  ILogger logger) {
 
         WaitableExecutor<Boolean> executor = new WaitableExecutor<Boolean>();
 
@@ -51,7 +52,7 @@ public class SimpleTestRunner implements TestRunner {
             executor.execute(new SimpleTestCallable(device, projectName, variantName,
                     testApk, testPackageName, testInstrumentationRunner,
                     testedApk, testedPackageName,
-                    resultsDir, logger));
+                    resultsDir, timeout, logger));
         }
 
         try {

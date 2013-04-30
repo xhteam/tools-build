@@ -127,6 +127,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         LibraryVariantData testedVariantData = createLibraryVariant(debugBuildTypeData, false)
         LibraryVariantData notTestedVariantData = createLibraryVariant(releaseBuildTypeData, true)
         TestVariantData testVariantData = createTestVariant(testedVariantData)
+        // create the test tasks.
+        createCheckTasks(false /*hasFlavors*/, true /*isLibrary*/)
 
         // and now create the API objects for the variants
 
@@ -328,8 +330,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         TestVariantData testVariantData = new TestVariantData(testVariantConfig,)
         variantDataList.add(testVariantData)
         testedVariantData.setTestVariantData(testVariantData);
-        createTestTasks(testVariantData, testedVariantData, configDependencies,
-                true /*mainTestTask*/, true /*isLibraryTest*/)
+        createTestApkTasks(testVariantData, testedVariantData, configDependencies)
 
         return testVariantData
     }

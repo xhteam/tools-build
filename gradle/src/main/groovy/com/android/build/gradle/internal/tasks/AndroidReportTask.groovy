@@ -59,6 +59,10 @@ class AndroidReportTask extends BaseTask implements AndroidTestTask {
         return list
     }
 
+    /**
+     * Sets that this current task will run and therefore needs to tell its children
+     * class to not stop on failures.
+     */
     public void setWillRun() {
         for (AndroidTestTask task : subTasks) {
             task.ignoreFailures = true

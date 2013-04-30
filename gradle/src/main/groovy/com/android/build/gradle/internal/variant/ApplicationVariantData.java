@@ -22,7 +22,7 @@ import com.android.builder.VariantConfiguration;
 /**
  * Data about a variant that produce an application APK
  */
-public class ApplicationVariantData extends ApkVariantData {
+public class ApplicationVariantData extends ApkVariantData implements TestedVariantData {
 
     @Nullable
     private TestVariantData testVariantData = null;
@@ -31,11 +31,7 @@ public class ApplicationVariantData extends ApkVariantData {
         super(config);
     }
 
-    public void setTestVariantData(TestVariantData testVariantData) {
-        this.testVariantData = testVariantData;
-    }
-
-    @NonNull
+   @NonNull
     @Override
     protected String computeName() {
         return getVariantConfiguration().hasFlavors() ?
@@ -49,6 +45,12 @@ public class ApplicationVariantData extends ApkVariantData {
         return getVariantConfiguration().getBuildType().isRunProguard();
     }
 
+    @Override
+    public void setTestVariantData(@Nullable TestVariantData testVariantData) {
+        this.testVariantData = testVariantData;
+    }
+
+    @Override
     @Nullable
     public TestVariantData getTestVariantData() {
         return testVariantData;

@@ -41,16 +41,19 @@ public class SimpleTestCallable implements Callable<Boolean> {
     private final String testInstrumentationRunner;
     private final File testedApk;
     private final String testedPackageName;
+    private final int timeout;
     private final ILogger logger;
 
     public SimpleTestCallable(@NonNull DeviceConnector device, @NonNull String projectName,
-                     @NonNull String flavorName,
-                     @NonNull File testApk,
-                     @NonNull String testPackageName,
-                     @NonNull String testInstrumentationRunner,
+                     @NonNull  String flavorName,
+                     @NonNull  File testApk,
+                     @NonNull  String testPackageName,
+                     @NonNull  String testInstrumentationRunner,
                      @Nullable File testedApk,
                      @Nullable String testedPackageName,
-                     @NonNull File resultsDir, @NonNull ILogger logger) {
+                     @NonNull  File resultsDir,
+                               int timeout,
+                     @NonNull  ILogger logger) {
         this.projectName = projectName;
         this.device = device;
         this.flavorName = flavorName;
@@ -60,6 +63,7 @@ public class SimpleTestCallable implements Callable<Boolean> {
         this.testInstrumentationRunner = testInstrumentationRunner;
         this.testedApk = testedApk;
         this.testedPackageName = testedPackageName;
+        this.timeout = timeout;
         this.logger = logger;
     }
 
@@ -67,6 +71,8 @@ public class SimpleTestCallable implements Callable<Boolean> {
     public Boolean call() throws Exception {
         String deviceName = device.getName();
         try {
+            device.connect(timeout);
+
             if (testedApk != null) {
                 logger.info("DeviceConnector '%s': installing %s", deviceName, testedApk);
                 device.installPackage(testedApk);
@@ -81,6 +87,8 @@ public class SimpleTestCallable implements Callable<Boolean> {
                     device);
 
             runner.setRunName(deviceName);
+            runner.setMaxtimeToOutputResponse(timeout);
+
             CustomTestRunListener runListener = new CustomTestRunListener(
                     deviceName, projectName, flavorName, logger);
             runListener.setReportDir(resultsDir);
@@ -95,6 +103,8 @@ public class SimpleTestCallable implements Callable<Boolean> {
             if (testedApk != null && testedPackageName != null) {
                 uninstall(testedApk, testedPackageName, deviceName);
             }
+
+            device.disconnect(timeout);
         }
     }
 

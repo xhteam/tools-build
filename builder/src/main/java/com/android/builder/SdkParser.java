@@ -17,6 +17,7 @@
 package com.android.builder;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.repository.FullRevision;
@@ -69,6 +70,7 @@ public interface SdkParser {
     /**
       * Returns the location of the annotations jar for compilation targets that are <= 15.
       */
+    @NonNull
     String getAnnotationsJar();
 
     /**
@@ -76,15 +78,18 @@ public interface SdkParser {
      *
      * @return the FullRevision or null if the revision couldn't not be found
      */
+    @Nullable
     FullRevision getPlatformToolsRevision();
 
     /**
      * Returns the location of the zip align tool.
      */
+    @NonNull
     File getZipAlign();
 
     /**
      * Returns the location of the adb tool.
      */
+    @NonNull
     File getAdb();
 }

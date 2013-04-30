@@ -15,7 +15,6 @@
  */
 
 package com.android.build.gradle
-
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
 import com.android.build.gradle.api.ApplicationVariant
@@ -31,10 +30,7 @@ import com.android.build.gradle.internal.dsl.GroupableProductFlavor
 import com.android.build.gradle.internal.dsl.GroupableProductFlavorFactory
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.dsl.SigningConfigFactory
-import com.android.build.gradle.internal.tasks.AndroidReportTask
-import com.android.build.gradle.internal.tasks.AndroidTestTask
 import com.android.build.gradle.internal.test.PluginHolder
-import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.variant.ApplicationVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.builder.DefaultBuildType
@@ -42,30 +38,25 @@ import com.android.builder.VariantConfiguration
 import com.android.builder.signing.SigningConfig
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
+import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.BasePlugin
-import org.gradle.api.plugins.JavaBasePlugin
 import org.gradle.internal.reflect.Instantiator
 import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 
 import javax.inject.Inject
 
 import static com.android.builder.BuilderConstants.DEBUG
-import static com.android.builder.BuilderConstants.FLAVORS_ALL
-import static com.android.builder.BuilderConstants.INSTRUMENTATION_RESULTS
-import static com.android.builder.BuilderConstants.INSTRUMENTATION_TEST
-import static com.android.builder.BuilderConstants.INSTRUMENTATION_TESTS
+import static com.android.builder.BuilderConstants.INSTRUMENT_TEST
 import static com.android.builder.BuilderConstants.LINT
 import static com.android.builder.BuilderConstants.RELEASE
-import static com.android.builder.BuilderConstants.REPORTS
 import static com.android.builder.BuilderConstants.UI_TEST
-
 /**
  * Gradle plugin class for 'application' projects.
  */
-class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradle.api.Plugin<Project> {
+class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Project> {
     static PluginHolder pluginHolder;
 
     final Map<String, BuildTypeData> buildTypes = [:]
@@ -73,7 +64,6 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     final Map<String, SigningConfig> signingConfigs = [:]
 
     AppExtension extension
-    AndroidReportTask testTask
 
     @Inject
     public AppPlugin(Instantiator instantiator, ToolingModelBuilderRegistry registry) {
@@ -173,7 +163,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         }
 
         def mainSourceSet = extension.sourceSetsContainer.create(productFlavor.name)
-        String testName = "${INSTRUMENTATION_TEST}${productFlavor.name.capitalize()}"
+        String testName = "${INSTRUMENT_TEST}${productFlavor.name.capitalize()}"
         def testSourceSet = extension.sourceSetsContainer.create(testName)
 
         ProductFlavorData<GroupableProductFlavor> productFlavorData =
@@ -184,9 +174,9 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
     }
 
     private static void checkName(String name, String displayName) {
-        if (name.startsWith(INSTRUMENTATION_TEST)) {
+        if (name.startsWith(INSTRUMENT_TEST)) {
             throw new RuntimeException(
-                    "${displayName} names cannot start with '${INSTRUMENTATION_TEST}'")
+                    "${displayName} names cannot start with '${INSTRUMENT_TEST}'")
         }
 
         if (name.startsWith(UI_TEST)) {
@@ -219,27 +209,6 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             assembleTest.group = BasePlugin.BUILD_GROUP
             assembleTest.description = "Assembles all the Test applications"
 
-            // same for the test task
-            testTask = project.tasks.create(INSTRUMENTATION_TEST, AndroidReportTask)
-            testTask.group = JavaBasePlugin.VERIFICATION_GROUP
-            testTask.description = "Installs and runs instrumentation tests for all flavors"
-            testTask.reportType = ReportType.MULTI_FLAVOR
-            deviceCheck.dependsOn testTask
-
-            testTask.conventionMapping.resultsDir = {
-                String rootLocation = extension.testOptions.resultsDir != null ?
-                    extension.testOptions.resultsDir : "$project.buildDir/$INSTRUMENTATION_RESULTS"
-
-                project.file("$rootLocation/$FLAVORS_ALL")
-            }
-            testTask.conventionMapping.reportsDir = {
-                String rootLocation = extension.testOptions.reportDir != null ?
-                    extension.testOptions.reportDir :
-                    "$project.buildDir/$REPORTS/$INSTRUMENTATION_TESTS"
-
-                project.file("$rootLocation/$FLAVORS_ALL")
-            }
-
             // check whether we have multi flavor builds
             if (extension.flavorGroupList == null || extension.flavorGroupList.size() < 2) {
                 productFlavors.values().each { ProductFlavorData productFlavorData ->
@@ -269,20 +238,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             }
         }
 
-        // If gradle is launched with --continue, we want to run all tests and generate an
-        // aggregate report (to help with the fact that we may have several build variants).
-        // To do that, the "test" task (which does the aggregation) must always run even if
-        // one of its dependent task (all the testFlavor tasks) fails, so we make them ignore their
-        // error.
-        // We cannot do that always: in case the test task is not going to run, we do want the
-        // individual testFlavor tasks to fail.
-        if (testTask != null && project.gradle.startParameter.continueOnFailure) {
-            project.gradle.taskGraph.whenReady { taskGraph ->
-                if (taskGraph.hasTask(testTask)) {
-                    testTask.setWillRun()
-                }
-            }
-        }
+        // create the test tasks.
+        createCheckTasks(!productFlavors.isEmpty(), false /*isLibrary*/)
     }
 
     /**
@@ -350,16 +307,16 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             variantConfig.setDependencies(configDependencies)
 
             // create the variant and get its internal storage object.
-            ApplicationVariantData productionAppVariant = createApplicationVariant(variantConfig,
+            ApplicationVariantData appVariantData = createApplicationVariant(variantConfig,
                     buildTypeData.assembleTask, configDependencies)
-            variantDataList.add(productionAppVariant)
+            variantDataList.add(appVariantData)
 
             if (buildTypeData == testData) {
-                testedVariantData = productionAppVariant
+                testedVariantData = appVariantData
             } else {
                 // create the API object for this variant.
                 ApplicationVariant applicationVariant = instantiator.newInstance(
-                        ApplicationVariantImpl.class, productionAppVariant)
+                        ApplicationVariantImpl.class, appVariantData)
                 extension.addApplicationVariant(applicationVariant)
             }
         }
@@ -382,8 +339,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         def testVariantData = new TestVariantData(testVariantConfig)
         variantDataList.add(testVariantData)
         testedVariantData.setTestVariantData(testVariantData);
-        createTestTasks(testVariantData, testedVariantData, testConfigDependencies,
-                true /*mainTestTask*/, false /*isLibraryTest*/)
+        createTestApkTasks(testVariantData, testedVariantData, testConfigDependencies)
 
         // and now create the API objects for the test variant and the tested variant.
         // first the tested variant.
@@ -439,25 +395,25 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
             variantConfig.setDependencies(configDependencies)
 
             // create the variant and get its internal storage object.
-            ApplicationVariantData productionAppVariant = createApplicationVariant(variantConfig,
+            ApplicationVariantData appVariantData = createApplicationVariant(variantConfig,
                     null, configDependencies)
-            variantDataList.add(productionAppVariant)
+            variantDataList.add(appVariantData)
 
-            buildTypeData.assembleTask.dependsOn productionAppVariant.assembleTask
+            buildTypeData.assembleTask.dependsOn appVariantData.assembleTask
 
             if (assembleTask == null) {
                 // create the task based on the name of the flavors.
                 assembleTask = createAssembleTask(flavorDataList)
                 project.tasks.assemble.dependsOn assembleTask
             }
-            assembleTask.dependsOn productionAppVariant.assembleTask
+            assembleTask.dependsOn appVariantData.assembleTask
 
             if (buildTypeData == testData) {
-                testedVariantData = productionAppVariant
+                testedVariantData = appVariantData
             } else {
                 // create the API object for this variant.
                 ApplicationVariant applicationVariant = instantiator.newInstance(
-                        ApplicationVariantImpl.class, productionAppVariant)
+                        ApplicationVariantImpl.class, appVariantData)
                 extension.addApplicationVariant(applicationVariant)
             }
         }
@@ -489,10 +445,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements org.gradl
         TestVariantData testVariantData = new TestVariantData(testVariantConfig)
         variantDataList.add(testVariantData)
         testedVariantData.setTestVariantData(testVariantData);
-        AndroidTestTask testFlavorTask = createTestTasks(testVariantData, testedVariantData,
-                testConfigDependencies, false /*mainTestTask*/, false /*isLibraryTest*/)
+        createTestApkTasks(testVariantData, testedVariantData, testConfigDependencies)
 
-        testTask.addTask(testFlavorTask)
 
         // and now create the API objects for the test variant and the tested variant.
         // first the tested variant.

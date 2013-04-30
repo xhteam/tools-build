@@ -17,6 +17,7 @@
 package com.android.builder.testing;
 
 import com.android.annotations.NonNull;
+import com.android.builder.SdkParser;
 import com.android.builder.testing.api.DeviceConnector;
 import com.android.builder.testing.api.DeviceException;
 import com.android.builder.testing.api.DeviceProvider;
@@ -24,24 +25,23 @@ import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
 import com.google.common.collect.Lists;
 
-import java.io.File;
 import java.util.List;
 
 /**
  * DeviceProvider for locally connected devices. Basically returns the list of devices that
  * are currently connected at the time {@link #init()} is called.
  */
-public class ConnectedDeviceProvider implements DeviceProvider {
+public class ConnectedDeviceProvider extends DeviceProvider {
 
 
     @NonNull
-    private final File adbExe;
+    private final SdkParser sdkParser;
 
     @NonNull
     private final List<ConnectedDevice> localDevices = Lists.newArrayList();
 
-    public ConnectedDeviceProvider(@NonNull File adbExe) {
-        this.adbExe = adbExe;
+    public ConnectedDeviceProvider(@NonNull SdkParser sdkParser) {
+        this.sdkParser = sdkParser;
     }
 
     @Override
@@ -61,8 +61,8 @@ public class ConnectedDeviceProvider implements DeviceProvider {
         try {
             AndroidDebugBridge.initIfNeeded(false /*clientSupport*/);
 
-            AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(adbExe.getAbsolutePath(),
-                    false /*forceNewBridge*/);
+            AndroidDebugBridge bridge = AndroidDebugBridge.createBridge(
+                    sdkParser.getAdb().getAbsolutePath(), false /*forceNewBridge*/);
 
             long timeOut = 30000; // 30 sec
             int sleepTime = 1000;
@@ -87,5 +87,10 @@ public class ConnectedDeviceProvider implements DeviceProvider {
         } catch (Exception e) {
             throw new DeviceException(e);
         }
+    }
+
+    @Override
+    public int getTimeout() {
+        return 0;
     }
 }

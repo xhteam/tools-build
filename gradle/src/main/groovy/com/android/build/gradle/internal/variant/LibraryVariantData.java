@@ -23,7 +23,7 @@ import org.gradle.api.tasks.bundling.Zip;
 /**
  * Data about a variant that produce a Library bundle (.aar)
  */
-public class LibraryVariantData extends BaseVariantData {
+public class LibraryVariantData extends BaseVariantData implements TestedVariantData {
 
     public Zip packageLibTask;
 
@@ -32,10 +32,6 @@ public class LibraryVariantData extends BaseVariantData {
 
     public LibraryVariantData(VariantConfiguration config) {
         super(config);
-    }
-
-    public void setTestVariantData(TestVariantData testVariantData) {
-        this.testVariantData = testVariantData;
     }
 
     @Override
@@ -69,9 +65,14 @@ public class LibraryVariantData extends BaseVariantData {
         return getVariantConfiguration().getBuildType().getName();
     }
 
+    @Override
+    public void setTestVariantData(@Nullable TestVariantData testVariantData) {
+        this.testVariantData = testVariantData;
+    }
+
+    @Override
     @Nullable
     public TestVariantData getTestVariantData() {
         return testVariantData;
     }
-
 }

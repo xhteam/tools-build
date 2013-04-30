@@ -45,5 +45,5 @@ public interface TestVariant extends ApkVariant {
      * Only valid for test project.
      */
     @NonNull
-    List<DefaultTask> getDeviceInstrumentTests();
+    List<? extends DefaultTask> getProviderInstrumentTests();
 }

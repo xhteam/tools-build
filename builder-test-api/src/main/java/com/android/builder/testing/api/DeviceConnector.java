@@ -25,12 +25,35 @@ import java.io.File;
 /**
  * A connector to a device to install/uninstall APKs, and run shell command.
  */
-public interface DeviceConnector extends IShellEnabledDevice {
+public abstract class DeviceConnector implements IShellEnabledDevice {
 
-    void connect(int timeOut) throws TimeoutException;
-    void disconnect(int timeOut) throws TimeoutException;
+    /**
+     * Establishes the connection with the device. Called before any other actions.
+     * @param timeOut the time out.
+     * @throws TimeoutException
+     */
+    public abstract void connect(int timeOut) throws TimeoutException;
 
-    void installPackage(@NonNull File apkFile) throws DeviceException;
+    /**
+     * Disconnects from the device. No other action is called afterwards.
+     * @param timeOut the time out.
+     * @throws TimeoutException
+     */
+    public abstract void disconnect(int timeOut) throws TimeoutException;
 
-    void uninstallPackage(@NonNull String packageName) throws DeviceException;
+    /**
+     * Installs the given APK on the device.
+     * @param apkFile the APK file to install.
+     * @param timeout the time out.
+     * @throws DeviceException
+     */
+    public abstract void installPackage(@NonNull File apkFile, int timeout) throws DeviceException;
+
+    /**
+     * Uninstall the given package name from the device
+     * @param packageName the package name
+     * @param timeout the time out
+     * @throws DeviceException
+     */
+    public abstract void uninstallPackage(@NonNull String packageName, int timeout) throws DeviceException;
 }

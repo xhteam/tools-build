@@ -18,6 +18,7 @@ package com.android.builder;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.builder.internal.FakeAndroidTarget;
 import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
@@ -81,6 +82,7 @@ public class PlatformSdkParser implements SdkParser {
     }
 
     @Override
+    @NonNull
     public String getAnnotationsJar() {
         String host;
         if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_DARWIN) {
@@ -95,11 +97,13 @@ public class PlatformSdkParser implements SdkParser {
     }
 
     @Override
+    @Nullable
     public FullRevision getPlatformToolsRevision() {
         return new FullRevision(99);
     }
 
     @Override
+    @NonNull
     public File getZipAlign() {
         if (mZipAlign == null) {
             mZipAlign = new File(getHostToolsFolder(), SdkConstants.FN_ZIPALIGN);
@@ -109,6 +113,7 @@ public class PlatformSdkParser implements SdkParser {
     }
 
     @Override
+    @NonNull
     public File getAdb() {
         if (mAdb == null) {
 

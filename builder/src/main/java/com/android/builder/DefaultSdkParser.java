@@ -18,6 +18,7 @@ package com.android.builder;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
 import com.android.sdklib.SdkManager;
@@ -107,6 +108,7 @@ public class DefaultSdkParser implements SdkParser {
     }
 
     @Override
+    @NonNull
     public String getAnnotationsJar() {
         return mSdkLocation + FD_TOOLS +
                 '/' + FD_SUPPORT +
@@ -114,6 +116,7 @@ public class DefaultSdkParser implements SdkParser {
     }
 
     @Override
+    @Nullable
     public FullRevision getPlatformToolsRevision() {
         File platformTools = getPlatformToolsFolder();
         if (!platformTools.isDirectory()) {
@@ -146,6 +149,7 @@ public class DefaultSdkParser implements SdkParser {
     }
 
     @Override
+    @NonNull
     public File getZipAlign() {
         if (mZipAlign == null) {
             mZipAlign = new File(getToolsFolder(), SdkConstants.FN_ZIPALIGN);
@@ -154,6 +158,7 @@ public class DefaultSdkParser implements SdkParser {
     }
 
     @Override
+    @NonNull
     public File getAdb() {
         if (mAdb == null) {
             mAdb = new File(getPlatformToolsFolder(), SdkConstants.FN_ADB);

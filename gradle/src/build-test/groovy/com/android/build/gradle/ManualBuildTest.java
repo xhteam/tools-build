@@ -67,6 +67,14 @@ public class ManualBuildTest extends BuildTest {
         }
     }
 
+    public void test3rdPartyTests() throws Exception {
+        // custom because we want to run deviceCheck even without devices, since we use
+        // a fake DeviceProvider that doesn't use a device, but only record the calls made
+        // to the DeviceProvider and the DeviceConnector.
+        runGradleTasks(sdkDir, BasePlugin.GRADLE_MIN_VERSION,
+                new File(testDir, "3rdPartyTests"), "clean", "deviceCheck");
+    }
+
     private static void checkImageColor(File folder, String fileName, int expectedColor)
             throws IOException {
         File f = new File(folder, fileName);

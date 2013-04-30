@@ -17,15 +17,31 @@
 package com.android.builder.testing.api;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
+
+import java.io.File;
 
 /**
  * Base interface for Remote CI Servers.
- * TODO
- *
  */
-public interface TestServer {
+public abstract class TestServer {
 
+    /**
+     * Returns the name of the server. Must be unique, not contain spaces, and start with a lower
+     * case.
+     *
+     * @return the name of the provider.
+     */
     @NonNull
-    String getName();
+    public abstract String getName();
 
+    /**
+     * Uploads the APKs to the server.
+     *
+     * TODO: add more details
+     *
+     * @param testApk the APK containing the tests.
+     * @param testedApk the APK to be tested. This is optional in case the test apk is self-tested.
+     */
+    public abstract void uploadApks(@NonNull File testApk, @Nullable File testedApk);
 }
