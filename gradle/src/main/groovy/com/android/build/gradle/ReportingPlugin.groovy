@@ -16,7 +16,7 @@
 
 package com.android.build.gradle
 import com.android.build.gradle.internal.tasks.AndroidReportTask
-import com.android.build.gradle.internal.tasks.TestLibraryTask
+import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestLibraryTask
 import com.android.build.gradle.internal.test.TestOptions
 import com.android.build.gradle.internal.test.report.ReportType
 import org.gradle.api.Project
@@ -44,7 +44,7 @@ class ReportingPlugin implements org.gradle.api.Plugin<Project> {
 
         extension = project.extensions.create('android', TestOptions)
 
-        AndroidReportTask mergeReportsTask = project.tasks.add("mergeAndroidReports",
+        AndroidReportTask mergeReportsTask = project.tasks.create("mergeAndroidReports",
                 AndroidReportTask)
         mergeReportsTask.group = JavaBasePlugin.VERIFICATION_GROUP
         mergeReportsTask.description = "Merges all the Android test reports from the sub projects."
@@ -70,8 +70,8 @@ class ReportingPlugin implements org.gradle.api.Plugin<Project> {
                 for (AndroidReportTask task : tasks) {
                     mergeReportsTask.addTask(task)
                 }
-                TaskCollection<TestLibraryTask> tasks2= p.tasks.withType(TestLibraryTask)
-                for (TestLibraryTask task : tasks2) {
+                TaskCollection<DeviceProviderInstrumentTestLibraryTask> tasks2 = p.tasks.withType(DeviceProviderInstrumentTestLibraryTask)
+                for (DeviceProviderInstrumentTestLibraryTask task : tasks2) {
                     mergeReportsTask.addTask(task)
                 }
             }

@@ -303,7 +303,7 @@ public class AppPluginDslTest extends BaseTest {
 
         if (isTestVariant) {
             TestVariant testVariant = variant as TestVariant
-            assertNotNull(testVariant.instrumentTest)
+            assertNotNull(testVariant.connectedInstrumentTest)
             assertNotNull(testVariant.testedVariant)
         }
     }

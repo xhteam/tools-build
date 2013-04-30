@@ -120,7 +120,7 @@ public class LibraryPluginDslTest extends BaseTest {
             assertNull(variant.install)
         }
 
-        assertNotNull(variant.instrumentTest)
+        assertNotNull(variant.connectedInstrumentTest)
     }
 
     private static void checkLibraryTasks(@NonNull LibraryVariant variant) {

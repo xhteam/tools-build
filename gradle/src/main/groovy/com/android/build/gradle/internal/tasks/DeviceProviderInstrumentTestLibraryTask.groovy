@@ -17,8 +17,8 @@
 package com.android.build.gradle.internal.tasks
 
 /**
- * class to test library project. Exactly the same as TestFlavorTask but is needed to be gathered
- * by the reporting plugin.
+ * class to test library project. Exactly the same as DeviceProviderInstrumentTestTask but
+ * is needed to be gathered by the reporting plugin.
  */
-class TestLibraryTask extends TestFlavorTask {
+class DeviceProviderInstrumentTestLibraryTask extends DeviceProviderInstrumentTestTask {
 }
