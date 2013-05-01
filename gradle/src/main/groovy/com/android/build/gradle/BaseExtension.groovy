@@ -156,7 +156,7 @@ public abstract class BaseExtension {
     }
 
     void compileOptions(Action<CompileOptions> action) {
-        action.execute(testOptions)
+        action.execute(compileOptions)
     }
 
     void deviceProvider(DeviceProvider deviceProvider) {
