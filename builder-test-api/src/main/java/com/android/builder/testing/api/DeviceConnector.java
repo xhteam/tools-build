@@ -19,12 +19,15 @@ package com.android.builder.testing.api;
 import com.android.annotations.NonNull;
 import com.android.ddmlib.IShellEnabledDevice;
 import com.android.ddmlib.TimeoutException;
+import com.android.utils.ILogger;
+import com.google.common.annotations.Beta;
 
 import java.io.File;
 
 /**
  * A connector to a device to install/uninstall APKs, and run shell command.
  */
+@Beta
 public abstract class DeviceConnector implements IShellEnabledDevice {
 
     /**
@@ -32,14 +35,14 @@ public abstract class DeviceConnector implements IShellEnabledDevice {
      * @param timeOut the time out.
      * @throws TimeoutException
      */
-    public abstract void connect(int timeOut) throws TimeoutException;
+    public abstract void connect(int timeOut, ILogger logger) throws TimeoutException;
 
     /**
      * Disconnects from the device. No other action is called afterwards.
      * @param timeOut the time out.
      * @throws TimeoutException
      */
-    public abstract void disconnect(int timeOut) throws TimeoutException;
+    public abstract void disconnect(int timeOut, ILogger logger) throws TimeoutException;
 
     /**
      * Installs the given APK on the device.
@@ -47,7 +50,7 @@ public abstract class DeviceConnector implements IShellEnabledDevice {
      * @param timeout the time out.
      * @throws DeviceException
      */
-    public abstract void installPackage(@NonNull File apkFile, int timeout) throws DeviceException;
+    public abstract void installPackage(@NonNull File apkFile, int timeout, ILogger logger) throws DeviceException;
 
     /**
      * Uninstall the given package name from the device
@@ -55,5 +58,5 @@ public abstract class DeviceConnector implements IShellEnabledDevice {
      * @param timeout the time out
      * @throws DeviceException
      */
-    public abstract void uninstallPackage(@NonNull String packageName, int timeout) throws DeviceException;
+    public abstract void uninstallPackage(@NonNull String packageName, int timeout, ILogger logger) throws DeviceException;
 }

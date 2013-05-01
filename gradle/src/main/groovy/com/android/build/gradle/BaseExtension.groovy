@@ -195,12 +195,12 @@ public abstract class BaseExtension {
         return buildToolsRevision
     }
 
-    public File getSdkDir() {
-        return plugin.getSdkDir()
+    public File getAdbExe() {
+        return plugin.sdkParser.adb
     }
 
     public File getDefaultProguardFile(String name) {
-        return new File(plugin.sdkDir,
+        return new File(plugin.sdkDirectory,
                 SdkConstants.FD_TOOLS + File.separatorChar
                         + SdkConstants.FD_PROGUARD + File.separatorChar
                         + name);

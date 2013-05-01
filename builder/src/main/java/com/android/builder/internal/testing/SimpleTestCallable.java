@@ -70,16 +70,18 @@ public class SimpleTestCallable implements Callable<Boolean> {
     @Override
     public Boolean call() throws Exception {
         String deviceName = device.getName();
+        boolean isInstalled = false;
         try {
-            device.connect(timeout);
+            device.connect(timeout, logger);
 
             if (testedApk != null) {
                 logger.info("DeviceConnector '%s': installing %s", deviceName, testedApk);
-                device.installPackage(testedApk, timeout);
+                device.installPackage(testedApk, timeout, logger);
             }
 
             logger.info("DeviceConnector '%s': installing %s", deviceName, testApk);
-            device.installPackage(testApk, timeout);
+            device.installPackage(testApk, timeout, logger);
+            isInstalled = true;
 
             RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(
                     testPackageName,
@@ -97,14 +99,16 @@ public class SimpleTestCallable implements Callable<Boolean> {
 
             return runListener.getRunResult().hasFailedTests();
         } finally {
-            // uninstall the apps
-            uninstall(testApk, testPackageName, deviceName);
+            if (isInstalled) {
+                // uninstall the apps
+                uninstall(testApk, testPackageName, deviceName);
 
-            if (testedApk != null && testedPackageName != null) {
-                uninstall(testedApk, testedPackageName, deviceName);
+                if (testedApk != null && testedPackageName != null) {
+                    uninstall(testedApk, testedPackageName, deviceName);
+                }
             }
 
-            device.disconnect(timeout);
+            device.disconnect(timeout, logger);
         }
     }
 
@@ -114,7 +118,7 @@ public class SimpleTestCallable implements Callable<Boolean> {
             throws DeviceException {
         if (packageName != null) {
             logger.info("DeviceConnector '%s': uninstalling %s", deviceName, packageName);
-            device.uninstallPackage(packageName, timeout);
+            device.uninstallPackage(packageName, timeout, logger);
         } else {
             logger.info("DeviceConnector '%s': unable to uninstall %s: unable to get package name",
                     deviceName, apk);

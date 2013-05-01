@@ -71,11 +71,6 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
     }
 
     @Override
-    protected BaseExtension getAndroidExtension() {
-        return extension;
-    }
-
-    @Override
     void apply(Project project) {
         super.apply(project)
 
@@ -93,7 +88,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
         extension = project.extensions.create('android', AppExtension,
                 this, (ProjectInternal) project, instantiator,
                 buildTypeContainer, productFlavorContainer, signingConfigContainer)
-        setDefaultConfig(extension.defaultConfig, extension.sourceSetsContainer)
+        setBaseExtension(extension)
 
         // map the whenObjectAdded callbacks on the containers.
         signingConfigContainer.whenObjectAdded { SigningConfig signingConfig ->

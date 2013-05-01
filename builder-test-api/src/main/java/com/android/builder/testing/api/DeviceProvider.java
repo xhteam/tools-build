@@ -17,12 +17,14 @@
 package com.android.builder.testing.api;
 
 import com.android.annotations.NonNull;
+import com.google.common.annotations.Beta;
 
 import java.util.List;
 
 /**
  * Provides a list of remote or local devices.
  */
+@Beta
 public abstract class DeviceProvider {
 
     /**
@@ -40,6 +42,8 @@ public abstract class DeviceProvider {
      */
     public abstract void init() throws DeviceException;
 
+    public abstract void terminate() throws DeviceException;
+
     /**
      * Returns a list of DeviceConnector.
      * @return a non-null list (but could be empty.)
@@ -52,4 +56,12 @@ public abstract class DeviceProvider {
      * @return the time out.
      */
     public abstract int getTimeout();
+
+    /**
+     * Returns true if the provider is configured and able to run.
+     *
+     * @return if the provider is configured.
+     */
+    public abstract boolean isConfigured();
+
 }

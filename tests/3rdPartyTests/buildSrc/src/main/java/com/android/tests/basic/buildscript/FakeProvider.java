@@ -10,6 +10,7 @@ import java.util.List;
 public class FakeProvider extends DeviceProvider {
 
     private boolean initCalled = false;
+    private boolean terminateCalled = false;
     private List<FakeDevice> devices = Lists.newArrayList();
 
     @Override
@@ -32,6 +33,12 @@ public class FakeProvider extends DeviceProvider {
     }
 
     @Override
+    public void terminate() throws DeviceException {
+        System.out.println("TERMINATE CALLED");
+        terminateCalled = true;
+    }
+
+    @Override
     public int getTimeout() {
         return 0;
     }
@@ -39,6 +46,10 @@ public class FakeProvider extends DeviceProvider {
     public String isValid() {
         if (!initCalled) {
             return "init not called";
+        }
+
+        if (!terminateCalled) {
+            return "terminate not called";
         }
 
         for (FakeDevice device : devices) {
@@ -50,4 +61,10 @@ public class FakeProvider extends DeviceProvider {
 
         return null;
     }
+
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
 }

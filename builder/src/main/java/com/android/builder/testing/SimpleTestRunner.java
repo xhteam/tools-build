@@ -20,12 +20,14 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.internal.testing.SimpleTestCallable;
 import com.android.builder.testing.api.DeviceConnector;
+import com.android.builder.testing.api.TestException;
 import com.android.builder.testing.api.TestRunner;
 import com.android.ide.common.internal.WaitableExecutor;
 import com.android.utils.ILogger;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Basic {@link TestRunner} running tests on all devices.
@@ -44,7 +46,7 @@ public class SimpleTestRunner implements TestRunner {
             @NonNull  List<? extends DeviceConnector> deviceList,
                       int timeout,
             @NonNull  File resultsDir,
-            @NonNull  ILogger logger) {
+            @NonNull  ILogger logger) throws TestException {
 
         WaitableExecutor<Boolean> executor = new WaitableExecutor<Boolean>();
 
@@ -65,9 +67,10 @@ public class SimpleTestRunner implements TestRunner {
                 }
             }
             return true;
-
-        } catch (Exception e) {
-            return false;
+        } catch (InterruptedException e) {
+            throw new TestException(e);
+        } catch (ExecutionException e) {
+            throw new TestException(e);
         }
     }
 }

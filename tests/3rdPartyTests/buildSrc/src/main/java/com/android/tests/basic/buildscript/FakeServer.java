@@ -59,4 +59,10 @@ public class FakeServer extends TestServer {
 
         return null;
     }
+
+    @Override
+    public boolean isConfigured() {
+        return true;
+    }
+
 }

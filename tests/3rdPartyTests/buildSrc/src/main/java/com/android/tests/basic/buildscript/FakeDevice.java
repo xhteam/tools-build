@@ -7,6 +7,7 @@ import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.TimeoutException;
+import com.android.utils.ILogger;
 import com.google.common.collect.Lists;
 
 import java.io.File;
@@ -30,20 +31,20 @@ public class FakeDevice extends DeviceConnector {
     }
 
     @Override
-    public void connect(int timeOut) throws TimeoutException {
-        System.out.println(String.format("CONNECT(%S) CALLED", name));
+    public void connect(int timeOut, ILogger logger) throws TimeoutException {
+        logger.info("CONNECT(%S) CALLED", name);
         connectCalled = true;
     }
 
     @Override
-    public void disconnect(int timeOut) throws TimeoutException {
-        System.out.println(String.format("DISCONNECTED(%S) CALLED", name));
+    public void disconnect(int timeOut, ILogger logger) throws TimeoutException {
+        logger.info("DISCONNECTED(%S) CALLED", name);
         disconnectCalled = true;
     }
 
     @Override
-    public void installPackage(@NonNull File apkFile, int timeout) throws DeviceException {
-        System.out.println(String.format("INSTALL(%S) CALLED", name));
+    public void installPackage(@NonNull File apkFile, int timeout, ILogger logger) throws DeviceException {
+        logger.info("INSTALL(%S) CALLED", name);
 
         if (apkFile == null) {
             throw new NullPointerException("Null testApk");
@@ -69,8 +70,8 @@ public class FakeDevice extends DeviceConnector {
     }
 
     @Override
-    public void uninstallPackage(@NonNull String packageName, int timeout) throws DeviceException {
-        System.out.println(String.format("UNINSTALL(%S) CALLED", name));
+    public void uninstallPackage(@NonNull String packageName, int timeout, ILogger logger) throws DeviceException {
+        logger.info("UNINSTALL(%S) CALLED", name);
         uninstallCalled = true;
     }
 

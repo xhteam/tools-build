@@ -17,29 +17,15 @@
 package com.android.builder.testing.api;
 
 import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-import com.android.utils.ILogger;
 import com.google.common.annotations.Beta;
 
-import java.io.File;
-import java.util.List;
-
 /**
- * A test runner able to run tests on a list of {@link DeviceConnector}
+ * Exception thrown during test actions.
  */
 @Beta
-public interface TestRunner {
+public class TestException extends Exception {
 
-    boolean runTests(
-            @NonNull  String projectName,
-            @NonNull  String variantName,
-            @NonNull  File testApk,
-            @NonNull  String testPackageName,
-            @NonNull  String testInstrumentationRunner,
-            @Nullable File testedApk,
-            @Nullable String testedPackageName,
-            @NonNull  List<? extends DeviceConnector> deviceList,
-                      int timeout,
-            @NonNull  File resultsDir,
-            @NonNull  ILogger logger) throws TestException;
+    public TestException(@NonNull Throwable cause) {
+        super(cause);
+    }
 }

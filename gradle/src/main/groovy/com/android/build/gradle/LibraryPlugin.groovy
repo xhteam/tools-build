@@ -65,17 +65,12 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
     }
 
     @Override
-    protected BaseExtension getAndroidExtension() {
-        return extension;
-    }
-
-    @Override
     void apply(Project project) {
         super.apply(project)
 
         extension = project.extensions.create('android', LibraryExtension,
                 this, (ProjectInternal) project, instantiator)
-        setDefaultConfig(extension.defaultConfig, extension.sourceSetsContainer)
+        setBaseExtension(extension);
 
         // create the source sets for the build type.
         // the ones for the main product flavors are handled by the base plugin.

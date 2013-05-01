@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.android.build.gradle
 
-import com.android.SdkConstants
+package com.android.build.gradle
 import com.android.annotations.NonNull
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.ProductFlavorData
+import com.android.build.gradle.internal.Sdk
 import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.build.gradle.internal.dependency.DependencyChecker
 import com.android.build.gradle.internal.dependency.LibraryDependencyImpl
@@ -58,8 +58,6 @@ import com.android.build.gradle.tasks.RenderscriptCompile
 import com.android.build.gradle.tasks.ZipAlign
 import com.android.builder.AndroidBuilder
 import com.android.builder.DefaultProductFlavor
-import com.android.builder.DefaultSdkParser
-import com.android.builder.PlatformSdkParser
 import com.android.builder.SdkParser
 import com.android.builder.VariantConfiguration
 import com.android.builder.dependency.JarDependency
@@ -70,14 +68,13 @@ import com.android.builder.signing.SigningConfig
 import com.android.builder.testing.ConnectedDeviceProvider
 import com.android.builder.testing.api.DeviceProvider
 import com.android.builder.testing.api.TestServer
-import com.android.sdklib.repository.FullRevision
 import com.android.utils.ILogger
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.Lists
 import com.google.common.collect.Maps
 import com.google.common.collect.Multimap
+import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
-import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
@@ -117,7 +114,7 @@ public abstract class BasePlugin {
 
     public static final String INSTALL_GROUP = "Install"
 
-    protected static File TEST_SDK_DIR;
+    public static File TEST_SDK_DIR;
 
     protected Instantiator instantiator
     private ToolingModelBuilderRegistry registry
@@ -129,11 +126,8 @@ public abstract class BasePlugin {
     final Map<SigningConfig, ValidateSigningTask> validateSigningTaskMap = [:]
 
     protected Project project
-    protected SdkParser androidSdkParser
-    private boolean isSdkParserInitialized = false
-    private File androidSdkDir
-    private boolean isPlatformSdk = false
     private LoggerWrapper loggerWrapper
+    private Sdk sdk
 
     private boolean hasCreatedTasks = false
 
@@ -145,8 +139,6 @@ public abstract class BasePlugin {
     protected Task assembleTest
     protected Task deviceCheck
     protected Task connectedCheck
-
-    protected abstract BaseExtension getAndroidExtension()
 
     protected BasePlugin(Instantiator instantiator, ToolingModelBuilderRegistry registry) {
         this.instantiator = instantiator
@@ -160,7 +152,7 @@ public abstract class BasePlugin {
         this.project = project
 
         checkGradleVersion()
-        findSdkLocation()
+        sdk = new Sdk(project, logger)
 
         project.apply plugin: JavaBasePlugin
 
@@ -185,6 +177,16 @@ public abstract class BasePlugin {
         project.afterEvaluate {
             createAndroidTasks()
         }
+    }
+
+    protected void setBaseExtension(@NonNull BaseExtension extension) {
+        sdk.setExtension(extension)
+        mainSourceSet = extension.sourceSets.create(extension.defaultConfig.name)
+        testSourceSet = extension.sourceSets.create(INSTRUMENT_TEST)
+
+        defaultConfigData = new ProductFlavorData<DefaultProductFlavor>(
+                extension.defaultConfig, mainSourceSet,
+                testSourceSet, project, ConfigurationDependencies.ConfigType.DEFAULT)
     }
 
     private void checkGradleVersion() {
@@ -212,8 +214,6 @@ public abstract class BasePlugin {
                     "The 'java' plugin has been applied, but it is not compatible with the Android plugins.")
         }
 
-        loadSdk()
-
         if (hasCreatedTasks) {
             return
         }
@@ -223,46 +223,20 @@ public abstract class BasePlugin {
         createReportTasks()
     }
 
-    protected setDefaultConfig(DefaultProductFlavor defaultConfig,
-                               NamedDomainObjectContainer<AndroidSourceSet> sourceSets) {
-        mainSourceSet = sourceSets.create(defaultConfig.name)
-        testSourceSet = sourceSets.create(INSTRUMENT_TEST)
-
-        defaultConfigData = new ProductFlavorData<DefaultProductFlavor>(defaultConfig, mainSourceSet,
-                testSourceSet, project, ConfigurationDependencies.ConfigType.DEFAULT)
-    }
-
     ProductFlavorData getDefaultConfigData() {
         return defaultConfigData
     }
 
     SdkParser getSdkParser() {
-        return androidSdkParser
+        return sdk.parser
     }
 
-    public SdkParser initSdkParser() {
-        if (!isSdkParserInitialized) {
-            String target = androidExtension.getCompileSdkVersion()
-            if (target == null) {
-                throw new IllegalArgumentException("android.compileSdkVersion is missing!")
-            }
-
-            FullRevision buildToolsRevision = androidExtension.buildToolsRevision
-            if (buildToolsRevision == null) {
-                throw new IllegalArgumentException("android.buildToolsVersion is missing!")
-            }
-
-            sdkParser.initParser(target, buildToolsRevision, logger)
-
-            isSdkParserInitialized = true
-        }
-
-        return androidSdkParser
+    SdkParser getLoadedSdkParser() {
+        return sdk.loadParser()
     }
 
-    File getSdkDir() {
-        checkSdkLocation()
-        return androidSdkDir
+    File getSdkDirectory() {
+        return sdk.directory
     }
 
     ILogger getLogger() {
@@ -281,8 +255,8 @@ public abstract class BasePlugin {
         AndroidBuilder androidBuilder = builders.get(variantData)
 
         if (androidBuilder == null) {
-            initSdkParser()
-            androidBuilder = new AndroidBuilder(androidSdkParser, logger, verbose)
+            SdkParser parser = getLoadedSdkParser()
+            androidBuilder = new AndroidBuilder(parser, logger, verbose)
 
             builders.put(variantData, androidBuilder)
         }
@@ -290,79 +264,13 @@ public abstract class BasePlugin {
         return androidBuilder
     }
 
-    private void findSdkLocation() {
-        if (TEST_SDK_DIR != null) {
-            androidSdkDir = TEST_SDK_DIR
-            return
-        }
-
-        def rootDir = project.rootDir
-        def localProperties = new File(rootDir, SdkConstants.FN_LOCAL_PROPERTIES)
-        if (localProperties.exists()) {
-            Properties properties = new Properties()
-            localProperties.withInputStream { instr ->
-                properties.load(instr)
-            }
-            def sdkDirProp = properties.getProperty('sdk.dir')
-
-            if (sdkDirProp != null) {
-                androidSdkDir = new File(sdkDirProp)
-            } else {
-                sdkDirProp = properties.getProperty('android.dir')
-                if (sdkDirProp != null) {
-                    androidSdkDir = new File(rootDir, sdkDirProp)
-                    isPlatformSdk = true
-                } else {
-                    throw new RuntimeException(
-                            "No sdk.dir property defined in local.properties file.")
-                }
-            }
-        } else {
-            String envVar = System.getenv("ANDROID_HOME")
-            if (envVar != null) {
-                androidSdkDir = new File(envVar)
-            } else {
-                String property = System.getProperty("android.home")
-                if (property != null) {
-                    androidSdkDir = new File(property)
-                }
-            }
-        }
-    }
-
-    private void checkSdkLocation() {
-        // don't complain in test mode
-        if (TEST_SDK_DIR != null) {
-            return
-        }
-
-        if (androidSdkDir == null) {
-            throw new RuntimeException(
-                    "SDK location not found. Define location with sdk.dir in the local.properties file or with an ANDROID_HOME environment variable.")
-        }
-
-        if (!androidSdkDir.isDirectory()) {
-            throw new RuntimeException(
-                    "The SDK directory '$androidSdkDir.absolutePath' does not exist.")
-        }
-    }
-
-    private void loadSdk() {
-        checkSdkLocation()
-        //noinspection GroovyIfStatementWithIdenticalBranches
-        if (isPlatformSdk) {
-            androidSdkParser = new PlatformSdkParser(androidSdkDir.absolutePath)
-        } else {
-            androidSdkParser = new DefaultSdkParser(androidSdkDir.absolutePath)
-        }
-    }
 
     protected String getRuntimeJars() {
         return runtimeJarList.join(File.pathSeparator)
     }
 
     public List<String> getRuntimeJarList() {
-        SdkParser sdkParser = initSdkParser()
+        SdkParser sdkParser = getLoadedSdkParser()
         return AndroidBuilder.getBootClasspath(sdkParser);
     }
 
@@ -857,7 +765,7 @@ public abstract class BasePlugin {
                             DeviceProviderInstrumentTestTask,
                         testVariantData,
                         baseVariantData,
-                        new ConnectedDeviceProvider(androidSdkParser),
+                        new ConnectedDeviceProvider(getSdkParser()),
                         CONNECTED
                 )
 
@@ -865,9 +773,8 @@ public abstract class BasePlugin {
                 testVariantData.connectedTestTask = connectedTask
 
                 // now the providers.
-                // now return the other providers
                 for (DeviceProvider deviceProvider : providers) {
-                    def providerTask = createDeviceProviderInstrumentTestTask(
+                    DefaultTask providerTask = createDeviceProviderInstrumentTestTask(
                             hasFlavors ?
                                 "${deviceProvider.name}${INSTRUMENT_TEST.capitalize()}${baseVariantData.name}" :
                                 "${deviceProvider.name}${INSTRUMENT_TEST.capitalize()}",
@@ -883,11 +790,16 @@ public abstract class BasePlugin {
 
                     mainProviderTask.dependsOn providerTask
                     testVariantData.providerTestTaskList.add(providerTask)
+
+                    if (!deviceProvider.isConfigured()) {
+                        providerTask.enabled = false;
+                    }
                 }
 
                 // now the test servers
+                // don't use an auto loop as it'll break the closure inside.
                 for (TestServer testServer : servers) {
-                    def serverTask = project.tasks.create(
+                    DefaultTask serverTask = project.tasks.create(
                             hasFlavors ?
                                 "${testServer.name}${"upload".capitalize()}${baseVariantData.name}" :
                                 "${testServer.name}${"upload".capitalize()}",
@@ -904,6 +816,10 @@ public abstract class BasePlugin {
                     }
 
                     deviceCheck.dependsOn serverTask
+
+                    if (!testServer.isConfigured()) {
+                        serverTask.enabled = false;
+                    }
                 }
             }
         }
@@ -1133,7 +1049,7 @@ public abstract class BasePlugin {
                     project.file(
                             "$project.buildDir/apk/${project.archivesBaseName}-${variantData.baseName}.apk")
                 }
-                zipAlignTask.conventionMapping.zipAlignExe = { androidSdkParser.zipAlign }
+                zipAlignTask.conventionMapping.zipAlignExe = { getParser().zipAlign }
 
                 appTask = zipAlignTask
                 variantData.outputFile = project.file(
@@ -1146,7 +1062,7 @@ public abstract class BasePlugin {
             installTask.group = INSTALL_GROUP
             installTask.dependsOn appTask
             installTask.conventionMapping.packageFile = { appTask.outputFile }
-            installTask.conventionMapping.adbExe = { androidSdkParser.adb }
+            installTask.conventionMapping.adbExe = { getParser().adb }
 
             variantData.installTask = installTask
         }
@@ -1165,7 +1081,7 @@ public abstract class BasePlugin {
         uninstallTask.description = "Uninstalls the " + variantData.description
         uninstallTask.group = INSTALL_GROUP
         uninstallTask.variant = variantData
-        uninstallTask.conventionMapping.adbExe = { androidSdkParser.adb }
+        uninstallTask.conventionMapping.adbExe = { getParser().adb }
 
         variantData.uninstallTask = uninstallTask
         uninstallAll.dependsOn uninstallTask

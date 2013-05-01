@@ -18,12 +18,14 @@ package com.android.builder.testing.api;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.google.common.annotations.Beta;
 
 import java.io.File;
 
 /**
  * Base interface for Remote CI Servers.
  */
+@Beta
 public abstract class TestServer {
 
     /**
@@ -44,4 +46,11 @@ public abstract class TestServer {
      * @param testedApk the APK to be tested. This is optional in case the test apk is self-tested.
      */
     public abstract void uploadApks(@NonNull File testApk, @Nullable File testedApk);
+
+    /**
+     * Returns true if the server is configured and able to run.
+     *
+     * @return if the server is configured.
+     */
+    public abstract boolean isConfigured();
 }
