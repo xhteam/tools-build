@@ -34,8 +34,6 @@ class VariantImpl implements Variant, Serializable {
     @NonNull
     private final String name;
     @NonNull
-    private final List<String> bootClasspath;
-    @NonNull
     private final String assembleTaskName;
     @Nullable
     private final String assembleTestTaskName;
@@ -60,7 +58,6 @@ class VariantImpl implements Variant, Serializable {
     private final List<File> generatedTestResourceFolders;
 
     VariantImpl(@NonNull  String name,
-                @NonNull  List<String> bootClasspath,
                 @NonNull  String assembleTaskName,
                 @Nullable String assembleTestTaskName,
                 @NonNull  String buildTypeName,
@@ -74,7 +71,6 @@ class VariantImpl implements Variant, Serializable {
                 @NonNull  List<File> generatedResourceFolders,
                 @Nullable List<File> generatedTestResourceFolders) {
         this.name = name;
-        this.bootClasspath = bootClasspath;
         this.assembleTaskName = assembleTaskName;
         this.assembleTestTaskName = assembleTestTaskName;
         this.buildTypeName = buildTypeName;
@@ -93,12 +89,6 @@ class VariantImpl implements Variant, Serializable {
     @NonNull
     public String getName() {
         return name;
-    }
-
-    @NonNull
-    @Override
-    public List<String> getBootClasspath() {
-        return bootClasspath;
     }
 
     @NonNull

@@ -32,9 +32,6 @@ public interface Variant {
     String getName();
 
     @NonNull
-    List<String> getBootClasspath();
-
-    @NonNull
     File getOutputFile();
 
     boolean isSigned();

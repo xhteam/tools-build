@@ -18,6 +18,7 @@ package com.android.build.gradle.model;
 
 import com.android.annotations.NonNull;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -41,4 +42,10 @@ public interface AndroidProject {
 
     @NonNull
     Map<String, Variant> getVariants();
+
+    @NonNull
+    String getCompileTarget();
+
+    @NonNull
+    List<String> getBootClasspath();
 }

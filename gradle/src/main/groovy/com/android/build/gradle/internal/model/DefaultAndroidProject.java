@@ -24,6 +24,7 @@ import com.android.build.gradle.model.Variant;
 import com.google.common.collect.Maps;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -32,7 +33,12 @@ import java.util.Map;
 class DefaultAndroidProject implements AndroidProject, Serializable {
     private static final long serialVersionUID = 1L;
 
+    @NonNull
     private final String name;
+    @NonNull
+    private final String compileTarget;
+    @NonNull
+    private final List<String> bootClasspath;
     private final boolean isLibrary;
 
     private final Map<String, BuildTypeContainer> buildTypes = Maps.newHashMap();
@@ -41,8 +47,12 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
 
     private ProductFlavorContainer defaultConfig;
 
-    DefaultAndroidProject(@NonNull String name, boolean isLibrary) {
+    DefaultAndroidProject(@NonNull String name, @NonNull String compileTarget,
+                          @NonNull List<String> bootClasspath,
+                          boolean isLibrary) {
         this.name = name;
+        this.compileTarget = compileTarget;
+        this.bootClasspath = bootClasspath;
         this.isLibrary = isLibrary;
     }
 
@@ -105,5 +115,17 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     @Override
     public boolean isLibrary() {
         return isLibrary;
+    }
+
+    @NonNull
+    @Override
+    public String getCompileTarget() {
+        return compileTarget;
+    }
+
+    @NonNull
+    @Override
+    public List<String> getBootClasspath() {
+        return bootClasspath;
     }
 }
