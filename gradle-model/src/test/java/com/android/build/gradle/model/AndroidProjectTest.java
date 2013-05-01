@@ -49,6 +49,8 @@ public class AndroidProjectTest extends TestCase {
             assertNotNull("Model Object null-check", model);
             assertEquals("Model Name", "basic", model.getName());
             assertFalse("Library Project", model.isLibrary());
+            assertEquals("Compile Target", "android-15", model.getCompileTarget());
+            assertFalse("Non empty bootclasspath", model.getBootClasspath().isEmpty());
 
             ProductFlavorContainer defaultConfig = model.getDefaultConfig();
 

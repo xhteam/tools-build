@@ -130,6 +130,7 @@ public abstract class BasePlugin {
 
     protected Project project
     protected SdkParser androidSdkParser
+    private boolean isSdkParserInitialized = false
     private File androidSdkDir
     private boolean isPlatformSdk = false
     private LoggerWrapper loggerWrapper
@@ -239,6 +240,26 @@ public abstract class BasePlugin {
         return androidSdkParser
     }
 
+    public SdkParser initSdkParser() {
+        if (!isSdkParserInitialized) {
+            String target = androidExtension.getCompileSdkVersion()
+            if (target == null) {
+                throw new IllegalArgumentException("android.compileSdkVersion is missing!")
+            }
+
+            FullRevision buildToolsRevision = androidExtension.buildToolsRevision
+            if (buildToolsRevision == null) {
+                throw new IllegalArgumentException("android.buildToolsVersion is missing!")
+            }
+
+            sdkParser.initParser(target, buildToolsRevision, logger)
+
+            isSdkParserInitialized = true
+        }
+
+        return androidSdkParser
+    }
+
     File getSdkDir() {
         checkSdkLocation()
         return androidSdkDir
@@ -260,18 +281,8 @@ public abstract class BasePlugin {
         AndroidBuilder androidBuilder = builders.get(variantData)
 
         if (androidBuilder == null) {
-            String target = androidExtension.getCompileSdkVersion()
-            if (target == null) {
-                throw new IllegalArgumentException("android.compileSdkVersion is missing!")
-            }
-
-            FullRevision buildToolsRevision = androidExtension.buildToolsRevision
-            if (buildToolsRevision == null) {
-                throw new IllegalArgumentException("android.buildToolsVersion is missing!")
-            }
-
-            sdkParser.initParser(target, buildToolsRevision, logger)
-            androidBuilder = new AndroidBuilder(sdkParser, logger, verbose)
+            initSdkParser()
+            androidBuilder = new AndroidBuilder(androidSdkParser, logger, verbose)
 
             builders.put(variantData, androidBuilder)
         }
@@ -346,14 +357,13 @@ public abstract class BasePlugin {
         }
     }
 
-    protected String getRuntimeJars(BaseVariantData variantData) {
-        return getRuntimeJarList(variantData).join(File.pathSeparator)
+    protected String getRuntimeJars() {
+        return runtimeJarList.join(File.pathSeparator)
     }
 
-    public List<String> getRuntimeJarList(BaseVariantData variantData) {
-        AndroidBuilder androidBuilder = getAndroidBuilder(variantData)
-
-        return androidBuilder.runtimeClasspath
+    public List<String> getRuntimeJarList() {
+        SdkParser sdkParser = initSdkParser()
+        return AndroidBuilder.getBootClasspath(sdkParser);
     }
 
     protected void createProcessManifestTask(BaseVariantData variantData,
@@ -696,7 +706,7 @@ public abstract class BasePlugin {
         // setup the boot classpath just before the task actually runs since this will
         // force the sdk to be parsed.
         compileTask.doFirst {
-            compileTask.options.bootClasspath = getRuntimeJars(variantData)
+            compileTask.options.bootClasspath = getRuntimeJars()
         }
     }
 

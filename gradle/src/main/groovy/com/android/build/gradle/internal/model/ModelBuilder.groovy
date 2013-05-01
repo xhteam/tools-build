@@ -30,6 +30,7 @@ import com.android.build.gradle.model.AndroidProject
 import com.android.build.gradle.model.BuildTypeContainer
 import com.android.build.gradle.model.ProductFlavorContainer
 import com.android.builder.DefaultProductFlavor
+import com.android.builder.SdkParser
 import com.android.builder.model.SourceProvider
 import com.google.common.collect.Lists
 import org.gradle.api.Project
@@ -60,8 +61,14 @@ public class ModelBuilder implements ToolingModelBuilder {
             return null
         }
 
+
+        SdkParser sdkParser = basePlugin.initSdkParser()
+        List<String> bootClasspath = basePlugin.runtimeJarList;
+        String compileTarget = sdkParser.target.hashString()
+
         DefaultAndroidProject androidProject = new DefaultAndroidProject(project.name,
-                libPlugin != null).setDefaultConfig(createPFC(basePlugin.defaultConfigData))
+                compileTarget, bootClasspath, libPlugin != null)
+                    .setDefaultConfig(createPFC(basePlugin.defaultConfigData))
 
         if (appPlugin != null) {
             for (BuildTypeData btData : appPlugin.buildTypes.values()) {
@@ -78,7 +85,7 @@ public class ModelBuilder implements ToolingModelBuilder {
 
         for (BaseVariantData variantData : basePlugin.variantDataList) {
             if (!(variantData instanceof TestVariantData)) {
-                androidProject.addVariant(createVariant(variantData, basePlugin))
+                androidProject.addVariant(createVariant(variantData))
             }
         }
 
@@ -86,8 +93,7 @@ public class ModelBuilder implements ToolingModelBuilder {
     }
 
     @NonNull
-    private static VariantImpl createVariant(@NonNull BaseVariantData variantData,
-                                             @NonNull BasePlugin basePlugin) {
+    private static VariantImpl createVariant(@NonNull BaseVariantData variantData) {
         TestVariantData testVariantData = null
         if (variantData instanceof ApplicationVariantData ||
                 variantData instanceof LibraryVariantData) {
@@ -96,7 +102,6 @@ public class ModelBuilder implements ToolingModelBuilder {
 
         VariantImpl variant = new VariantImpl(
                 variantData.baseName,
-                basePlugin.getRuntimeJarList(variantData),
                 variantData.assembleTask.name,
                 testVariantData?.assembleTask?.name,
                 variantData.variantConfiguration.buildType.name,

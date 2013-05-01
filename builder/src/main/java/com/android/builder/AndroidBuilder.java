@@ -164,29 +164,32 @@ public class AndroidBuilder {
     }
 
     /**
-     * Returns the runtime classpath to be used during compilation.
+     * Helper method to get the boot classpath to be used during compilation.
      */
-    public List<String> getRuntimeClasspath() {
+    public static List<String> getBootClasspath(@NonNull SdkParser sdkParser) {
 
         List<String> classpath = Lists.newArrayList();
 
-        classpath.addAll(mTarget.getBootClasspath());
+        IAndroidTarget target = sdkParser.getTarget();
+
+        classpath.addAll(target.getBootClasspath());
 
         // add optional libraries if any
-        IOptionalLibrary[] libs = mTarget.getOptionalLibraries();
+        IAndroidTarget.IOptionalLibrary[] libs = target.getOptionalLibraries();
         if (libs != null) {
-            for (IOptionalLibrary lib : libs) {
+            for (IAndroidTarget.IOptionalLibrary lib : libs) {
                 classpath.add(lib.getJarPath());
             }
         }
 
         // add annotations.jar if needed.
-        if (mTarget.getVersion().getApiLevel() <= 15) {
-            classpath.add(mSdkParser.getAnnotationsJar());
+        if (target.getVersion().getApiLevel() <= 15) {
+            classpath.add(sdkParser.getAnnotationsJar());
         }
 
         return classpath;
     }
+
 
     /**
      * Returns an {@link AaptRunner} able to run aapt commands.
