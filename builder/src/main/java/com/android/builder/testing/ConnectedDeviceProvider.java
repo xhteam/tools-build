@@ -90,7 +90,17 @@ public class ConnectedDeviceProvider extends DeviceProvider {
     }
 
     @Override
+    public void terminate() throws DeviceException {
+        // nothing to be done here.
+    }
+
+    @Override
     public int getTimeout() {
         return 0;
+    }
+
+    @Override
+    public boolean isConfigured() {
+        return true;
     }
 }

@@ -73,15 +73,20 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
         TestRunner testRunner = new SimpleTestRunner();
         deviceProvider.init();
 
-        boolean success = testRunner.runTests(project.name, flavor,
-                testApk,
-                testVariantData.variantConfiguration.packageName,
-                testVariantData.variantConfiguration.instrumentationRunner,
-                testedApk,
-                testedVariantData.variantConfiguration.packageName,
-                deviceProvider.devices,
-                deviceProvider.getTimeout(),
-                resultsOutDir, plugin.logger);
+        boolean success;
+        try {
+            success = testRunner.runTests(project.name, flavor,
+                    testApk,
+                    testVariantData.variantConfiguration.packageName,
+                    testVariantData.variantConfiguration.instrumentationRunner,
+                    testedApk,
+                    testedVariantData.variantConfiguration.packageName,
+                    deviceProvider.devices,
+                    deviceProvider.getTimeout(),
+                    resultsOutDir, plugin.logger);
+        } finally {
+            deviceProvider.terminate();
+        }
 
         // run the report from the results.
         File reportOutDir = getReportsDir()

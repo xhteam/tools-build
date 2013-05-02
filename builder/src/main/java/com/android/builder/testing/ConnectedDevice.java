@@ -24,6 +24,7 @@ import com.android.ddmlib.IDevice;
 import com.android.ddmlib.IShellOutputReceiver;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.TimeoutException;
+import com.android.utils.ILogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -59,29 +60,31 @@ public class ConnectedDevice extends DeviceConnector {
     }
 
     @Override
-    public void connect(int timeout) throws TimeoutException {
+    public void connect(int timeout, ILogger logger) throws TimeoutException {
         // nothing to do here
     }
 
     @Override
-    public void disconnect(int timeout) throws TimeoutException {
+    public void disconnect(int timeout, ILogger logger) throws TimeoutException {
         // nothing to do here
     }
 
     @Override
-    public void installPackage(@NonNull File apkFile, int timeout) throws DeviceException {
+    public void installPackage(@NonNull File apkFile, int timeout, ILogger logger) throws DeviceException {
         try {
             iDevice.installPackage(apkFile.getAbsolutePath(), true /*reinstall*/);
         } catch (Exception e) {
+            logger.error(e, "Unable to install " + apkFile.getAbsolutePath());
             throw new DeviceException(e);
         }
     }
 
     @Override
-    public void uninstallPackage(@NonNull String packageName, int timeout) throws DeviceException {
+    public void uninstallPackage(@NonNull String packageName, int timeout, ILogger logger) throws DeviceException {
         try {
             iDevice.uninstallPackage(packageName);
         } catch (Exception e) {
+            logger.error(e, "Unable to uninstall " + packageName);
             throw new DeviceException(e);
         }
     }

@@ -17,10 +17,12 @@
 package com.android.builder.testing.api;
 
 import com.android.annotations.NonNull;
+import com.google.common.annotations.Beta;
 
 /**
  * Exception thrown during device actions.
  */
+@Beta
 public class DeviceException extends Exception {
 
     public DeviceException(@NonNull Throwable cause) {
