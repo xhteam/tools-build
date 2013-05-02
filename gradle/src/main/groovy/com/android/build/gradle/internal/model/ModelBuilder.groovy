@@ -62,7 +62,7 @@ public class ModelBuilder implements ToolingModelBuilder {
         }
 
 
-        SdkParser sdkParser = basePlugin.initSdkParser()
+        SdkParser sdkParser = basePlugin.getLoadedSdkParser()
         List<String> bootClasspath = basePlugin.runtimeJarList;
         String compileTarget = sdkParser.target.hashString()
 
