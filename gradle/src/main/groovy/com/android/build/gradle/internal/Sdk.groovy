@@ -74,6 +74,14 @@ public class Sdk {
             } else {
                 parser = new DefaultSdkParser(androidSdkDir.absolutePath)
             }
+
+            List<File> repositories = parser.repositories
+            for (File file : repositories) {
+                project.repositories.maven {
+                    url = file.toURI()
+                }
+            }
+
         }
 
         return parser
