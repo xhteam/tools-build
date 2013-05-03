@@ -112,4 +112,25 @@ public class FakeDevice extends DeviceConnector {
 
         return null;
     }
+
+    public int getApiLevel() {
+        return 99;
+    }
+
+    @NonNull
+    public String getAbi() {
+        return "fake";
+    }
+
+    public int getDensity() {
+        return 160;
+    }
+
+    public int getHeight() {
+        return 800;
+    }
+
+    public int getWidth() {
+        return 480;
+    }
 }

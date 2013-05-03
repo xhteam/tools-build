@@ -16,16 +16,11 @@
 package com.android.build.gradle.internal.tasks
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.test.report.TestReport
-import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.builder.testing.SimpleTestRunner
+import com.android.builder.testing.TestRunner
 import com.android.builder.testing.api.DeviceProvider
-import com.android.builder.testing.api.TestRunner
 import org.gradle.api.GradleException
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFile
-import org.gradle.api.tasks.Optional
-import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.gradle.logging.ConsoleRenderer
 /**
@@ -33,24 +28,15 @@ import org.gradle.logging.ConsoleRenderer
  */
 public class DeviceProviderInstrumentTestTask extends BaseTask implements AndroidTestTask {
 
-    @InputFile
     File testApp
-
-    @InputFile @Optional
     File testedApp
 
-    @OutputDirectory
     File reportsDir
-
-    @OutputDirectory
     File resultsDir
 
-    @Input
     String flavorName
 
     DeviceProvider deviceProvider
-
-    BaseVariantData testedVariantData
 
     boolean ignoreFailures
     boolean testFailed
@@ -58,7 +44,6 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
     @TaskAction
     protected void runTests() {
         assert variant instanceof TestVariantData
-        TestVariantData testVariantData = (TestVariantData) variant
 
         File resultsOutDir = getResultsDir()
 
@@ -73,14 +58,10 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
         TestRunner testRunner = new SimpleTestRunner();
         deviceProvider.init();
 
-        boolean success;
+        boolean success = false;
         try {
             success = testRunner.runTests(project.name, flavor,
-                    testApk,
-                    testVariantData.variantConfiguration.packageName,
-                    testVariantData.variantConfiguration.instrumentationRunner,
-                    testedApk,
-                    testedVariantData.variantConfiguration.packageName,
+                    testApk, testedApk, variant.variantConfiguration,
                     deviceProvider.devices,
                     deviceProvider.getTimeout(),
                     resultsOutDir, plugin.logger);

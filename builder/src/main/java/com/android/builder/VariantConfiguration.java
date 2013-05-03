@@ -19,11 +19,12 @@ package com.android.builder;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.annotations.VisibleForTesting;
-import com.android.builder.dependency.LibraryDependency;
 import com.android.builder.dependency.DependencyContainer;
 import com.android.builder.dependency.JarDependency;
+import com.android.builder.dependency.LibraryDependency;
 import com.android.builder.model.SourceProvider;
 import com.android.builder.signing.SigningConfig;
+import com.android.builder.testing.TestData;
 import com.android.ide.common.res2.AssetSet;
 import com.android.ide.common.res2.ResourceSet;
 import com.google.common.collect.Lists;
@@ -40,7 +41,7 @@ import static com.google.common.base.Preconditions.checkState;
 /**
  * A Variant configuration.
  */
-public class VariantConfiguration {
+public class VariantConfiguration implements TestData {
 
     private static final ManifestParser sManifestParser = new DefaultManifestParser();
 
@@ -357,6 +358,7 @@ public class VariantConfiguration {
      * could be overridden through the product flavors and/or the build Type.
      * @return the package
      */
+    @Override
     @Nullable
     public String getPackageName() {
         String packageName;
@@ -378,6 +380,7 @@ public class VariantConfiguration {
         return packageName;
     }
 
+    @Override
     @Nullable
     public String getTestedPackageName() {
         if (mType == Type.TEST) {
@@ -446,7 +449,8 @@ public class VariantConfiguration {
      * variant is a test, the one to use to test the tested variant.
      * @return the instrumentation test runner name
      */
-    @Nullable
+    @Override
+    @NonNull
     public String getInstrumentationRunner() {
         VariantConfiguration config = this;
         if (mType == Type.TEST) {
@@ -481,6 +485,7 @@ public class VariantConfiguration {
      * from the flavor(s) (if present).
      * @return the minSdkVersion
      */
+    @Override
     public int getMinSdkVersion() {
         if (mTestedConfig != null) {
             return mTestedConfig.getMinSdkVersion();
@@ -859,5 +864,13 @@ public class VariantConfiguration {
                         "Main Manifest missing from " + manifest.getAbsolutePath());
             }
         }
+    }
+
+
+    @Nullable
+    @Override
+    public Set<String> getSupportedAbis() {
+        // no ndk support yet, so return null
+        return null;
     }
 }

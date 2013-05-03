@@ -18,6 +18,7 @@ package com.android.builder.internal.testing;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.builder.testing.TestData;
 import com.android.builder.testing.api.DeviceConnector;
 import com.android.builder.testing.api.DeviceException;
 import com.android.ddmlib.testrunner.RemoteAndroidTestRunner;
@@ -32,37 +33,41 @@ import java.util.concurrent.Callable;
  */
 public class SimpleTestCallable implements Callable<Boolean> {
 
+    @NonNull
     private final String projectName;
+    @NonNull
     private final DeviceConnector device;
+    @NonNull
     private final String flavorName;
+    @NonNull
+    private final TestData testData;
+    @NonNull
     private final File resultsDir;
+    @NonNull
     private final File testApk;
-    private final String testPackageName;
-    private final String testInstrumentationRunner;
+    @Nullable
     private final File testedApk;
-    private final String testedPackageName;
     private final int timeout;
+    @NonNull
     private final ILogger logger;
 
-    public SimpleTestCallable(@NonNull DeviceConnector device, @NonNull String projectName,
-                     @NonNull  String flavorName,
-                     @NonNull  File testApk,
-                     @NonNull  String testPackageName,
-                     @NonNull  String testInstrumentationRunner,
-                     @Nullable File testedApk,
-                     @Nullable String testedPackageName,
-                     @NonNull  File resultsDir,
-                               int timeout,
-                     @NonNull  ILogger logger) {
+    public SimpleTestCallable(
+            @NonNull  DeviceConnector device,
+            @NonNull  String projectName,
+            @NonNull  String flavorName,
+            @NonNull  File testApk,
+            @Nullable File testedApk,
+            @NonNull  TestData testData,
+            @NonNull  File resultsDir,
+                      int timeout,
+            @NonNull  ILogger logger) {
         this.projectName = projectName;
         this.device = device;
         this.flavorName = flavorName;
         this.resultsDir = resultsDir;
         this.testApk = testApk;
-        this.testPackageName = testPackageName;
-        this.testInstrumentationRunner = testInstrumentationRunner;
         this.testedApk = testedApk;
-        this.testedPackageName = testedPackageName;
+        this.testData = testData;
         this.timeout = timeout;
         this.logger = logger;
     }
@@ -84,8 +89,8 @@ public class SimpleTestCallable implements Callable<Boolean> {
             isInstalled = true;
 
             RemoteAndroidTestRunner runner = new RemoteAndroidTestRunner(
-                    testPackageName,
-                    testInstrumentationRunner,
+                    testData.getPackageName(),
+                    testData.getInstrumentationRunner(),
                     device);
 
             runner.setRunName(deviceName);
@@ -101,10 +106,12 @@ public class SimpleTestCallable implements Callable<Boolean> {
         } finally {
             if (isInstalled) {
                 // uninstall the apps
-                uninstall(testApk, testPackageName, deviceName);
+                // This should really not be null, because if it was the build
+                // would have broken before.
+                uninstall(testApk, testData.getPackageName(), deviceName);
 
-                if (testedApk != null && testedPackageName != null) {
-                    uninstall(testedApk, testedPackageName, deviceName);
+                if (testedApk != null) {
+                   uninstall(testedApk, testData.getTestedPackageName(), deviceName);
                 }
             }
 
@@ -112,8 +119,7 @@ public class SimpleTestCallable implements Callable<Boolean> {
         }
     }
 
-    private void uninstall(@NonNull File apk,
-                           @NonNull String packageName,
+    private void uninstall(@NonNull File apkFile, @Nullable String packageName,
                            @NonNull String deviceName)
             throws DeviceException {
         if (packageName != null) {
@@ -121,7 +127,7 @@ public class SimpleTestCallable implements Callable<Boolean> {
             device.uninstallPackage(packageName, timeout, logger);
         } else {
             logger.info("DeviceConnector '%s': unable to uninstall %s: unable to get package name",
-                    deviceName, apk);
+                    deviceName, apkFile);
         }
     }
 }

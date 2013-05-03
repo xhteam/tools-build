@@ -21,7 +21,6 @@ import com.android.annotations.Nullable;
 import com.android.builder.internal.testing.SimpleTestCallable;
 import com.android.builder.testing.api.DeviceConnector;
 import com.android.builder.testing.api.TestException;
-import com.android.builder.testing.api.TestRunner;
 import com.android.ide.common.internal.WaitableExecutor;
 import com.android.utils.ILogger;
 
@@ -39,10 +38,8 @@ public class SimpleTestRunner implements TestRunner {
             @NonNull  String projectName,
             @NonNull  String variantName,
             @NonNull  File testApk,
-            @NonNull  String testPackageName,
-            @NonNull  String testInstrumentationRunner,
             @Nullable File testedApk,
-            @Nullable String testedPackageName,
+            @NonNull  TestData testData,
             @NonNull  List<? extends DeviceConnector> deviceList,
                       int timeout,
             @NonNull  File resultsDir,
@@ -50,11 +47,22 @@ public class SimpleTestRunner implements TestRunner {
 
         WaitableExecutor<Boolean> executor = new WaitableExecutor<Boolean>();
 
+        int minSdkVersion = testData.getMinSdkVersion();
         for (DeviceConnector device : deviceList) {
-            executor.execute(new SimpleTestCallable(device, projectName, variantName,
-                    testApk, testPackageName, testInstrumentationRunner,
-                    testedApk, testedPackageName,
-                    resultsDir, timeout, logger));
+            int deviceApiLevel = device.getApiLevel();
+            if (minSdkVersion <= deviceApiLevel) {
+                executor.execute(new SimpleTestCallable(device, projectName, variantName,
+                        testApk, testedApk, testData,
+                        resultsDir, timeout, logger));
+            } else {
+                if (deviceApiLevel == 0) {
+                    logger.info("Skipping device '%s' for '%s:%s': Unknown API Level",
+                            device.getName(), projectName, variantName);
+                } else {
+                    logger.info("Skipping device '%s' for '%s:%s'",
+                            device.getName(), projectName, variantName);
+                }
+            }
         }
 
         try {

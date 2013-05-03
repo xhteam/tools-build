@@ -59,4 +59,15 @@ public abstract class DeviceConnector implements IShellEnabledDevice {
      * @throws DeviceException
      */
     public abstract void uninstallPackage(@NonNull String packageName, int timeout, ILogger logger) throws DeviceException;
+
+    public abstract int getApiLevel();
+
+    @NonNull
+    public abstract String getAbi();
+
+    public abstract int getDensity();
+
+    public abstract int getHeight();
+
+    public abstract int getWidth();
 }

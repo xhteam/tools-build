@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-package com.android.builder.testing.api;
+package com.android.builder.testing;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.builder.testing.api.DeviceConnector;
+import com.android.builder.testing.api.TestException;
 import com.android.utils.ILogger;
 import com.google.common.annotations.Beta;
 
@@ -34,10 +36,8 @@ public interface TestRunner {
             @NonNull  String projectName,
             @NonNull  String variantName,
             @NonNull  File testApk,
-            @NonNull  String testPackageName,
-            @NonNull  String testInstrumentationRunner,
             @Nullable File testedApk,
-            @Nullable String testedPackageName,
+            @NonNull  TestData testData,
             @NonNull  List<? extends DeviceConnector> deviceList,
                       int timeout,
             @NonNull  File resultsDir,
