@@ -1049,7 +1049,7 @@ public abstract class BasePlugin {
                     project.file(
                             "$project.buildDir/apk/${project.archivesBaseName}-${variantData.baseName}.apk")
                 }
-                zipAlignTask.conventionMapping.zipAlignExe = { getParser().zipAlign }
+                zipAlignTask.conventionMapping.zipAlignExe = { getSdkParser().zipAlign }
 
                 appTask = zipAlignTask
                 variantData.outputFile = project.file(
@@ -1062,7 +1062,7 @@ public abstract class BasePlugin {
             installTask.group = INSTALL_GROUP
             installTask.dependsOn appTask
             installTask.conventionMapping.packageFile = { appTask.outputFile }
-            installTask.conventionMapping.adbExe = { getParser().adb }
+            installTask.conventionMapping.adbExe = { getSdkParser().adb }
 
             variantData.installTask = installTask
         }
@@ -1081,7 +1081,7 @@ public abstract class BasePlugin {
         uninstallTask.description = "Uninstalls the " + variantData.description
         uninstallTask.group = INSTALL_GROUP
         uninstallTask.variant = variantData
-        uninstallTask.conventionMapping.adbExe = { getParser().adb }
+        uninstallTask.conventionMapping.adbExe = { getSdkParser().adb }
 
         variantData.uninstallTask = uninstallTask
         uninstallAll.dependsOn uninstallTask

@@ -38,13 +38,13 @@ public class Sdk {
     private final Project project
     @NonNull
     private final ILogger logger
+    @NonNull
+    private SdkParser parser
 
-    private BaseExtension extension
-
-    protected SdkParser parser
     private boolean isSdkParserInitialized = false
     private File androidSdkDir
     private boolean isPlatformSdk = false
+    private BaseExtension extension
 
     public Sdk(@NonNull Project project, @NonNull ILogger logger) {
         this.project = project
@@ -55,6 +55,12 @@ public class Sdk {
 
     public void setExtension(@NonNull BaseExtension extension) {
         this.extension = extension
+        parser = initParser()
+    }
+
+
+    public SdkParser getParser() {
+        return parser
     }
 
     /**
@@ -65,23 +71,23 @@ public class Sdk {
      * @see #loadParser()
      */
     @NonNull
-    public SdkParser getParser() {
-        if (parser == null) {
-            checkLocation()
-            //noinspection GroovyIfStatementWithIdenticalBranches
-            if (isPlatformSdk) {
-                parser = new PlatformSdkParser(androidSdkDir.absolutePath)
-            } else {
-                parser = new DefaultSdkParser(androidSdkDir.absolutePath)
-            }
+    private SdkParser initParser() {
+        checkLocation()
 
-            List<File> repositories = parser.repositories
-            for (File file : repositories) {
-                project.repositories.maven {
-                    url = file.toURI()
-                }
-            }
+        SdkParser parser;
 
+        //noinspection GroovyIfStatementWithIdenticalBranches
+        if (isPlatformSdk) {
+            parser = new PlatformSdkParser(androidSdkDir.absolutePath)
+        } else {
+            parser = new DefaultSdkParser(androidSdkDir.absolutePath)
+        }
+
+        List<File> repositories = parser.repositories
+        for (File file : repositories) {
+            project.repositories.maven {
+                url = file.toURI()
+            }
         }
 
         return parser
