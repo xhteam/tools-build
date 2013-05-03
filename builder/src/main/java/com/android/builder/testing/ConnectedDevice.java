@@ -96,4 +96,40 @@ public class ConnectedDevice extends DeviceConnector {
                                     ShellCommandUnresponsiveException, IOException {
         iDevice.executeShellCommand(command, receiver, maxTimeToOutputResponse);
     }
+
+    @Override
+    public int getApiLevel() {
+        String sdkVersion = iDevice.getProperty(IDevice.PROP_BUILD_API_LEVEL);
+        if (sdkVersion != null) {
+            try {
+                return Integer.valueOf(sdkVersion);
+            } catch (NumberFormatException e) {
+
+            }
+        }
+
+        // can't get it, return 0.
+        return 0;
+    }
+
+    @NonNull
+    @Override
+    public String getAbi() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public int getDensity() {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public int getHeight() {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
+    public int getWidth() {
+        return 0;  //To change body of implemented methods use File | Settings | File Templates.
+    }
 }
