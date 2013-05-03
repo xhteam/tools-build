@@ -168,6 +168,7 @@ public class DefaultSdkParser implements SdkParser {
         return mAdb;
     }
 
+    @NonNull
     @Override
     public List<File> getRepositories() {
         List<File> repositories = Lists.newArrayList();
