@@ -1,10 +1,16 @@
 0.4
 
+* System requirements:
+   - Gradle 1.6+
+   - Android Build Tools 16.0.2+
+* Rename deviceCheck into connectedDevice
+* API for 3rd party Device Providers and Test Servers to run and deploy tests. API is @Beta
 * Support for ProGuard 4.9
    - enable with BuildType.runProguard
    - add proguard config files with BuiltType.proguardFile or ProductFlavor.proguardFile
    - default proguard files accessible through android.getDefaultProguardFile(name) with name
      being 'proguard-android.txt' or 'proguard-android-optimize.txt'
+* Implements Gradle 1.6 custom model for IDE Tooling support
 * Fixes:
    - Fix support for subfolders in assets/
    - Fix cases where Android Libraries have local Jars dependencies
