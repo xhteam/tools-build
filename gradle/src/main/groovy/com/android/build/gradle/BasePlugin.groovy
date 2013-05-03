@@ -946,7 +946,7 @@ public abstract class BasePlugin {
                 }
 
                 // libraryJars: the runtime jars
-                for (String runtimeJar : getRuntimeJarList(variantData)) {
+                for (String runtimeJar : getRuntimeJarList()) {
                     proguardTask.libraryjars(runtimeJar)
                 }
 
