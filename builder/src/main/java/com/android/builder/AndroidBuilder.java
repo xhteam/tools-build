@@ -47,7 +47,6 @@ import com.android.manifmerger.ManifestMerger;
 import com.android.manifmerger.MergerLog;
 import com.android.sdklib.BuildToolInfo;
 import com.android.sdklib.IAndroidTarget;
-import com.android.sdklib.IAndroidTarget.IOptionalLibrary;
 import com.android.sdklib.repository.FullRevision;
 import com.android.utils.ILogger;
 import com.google.common.collect.ArrayListMultimap;
@@ -86,12 +85,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * {@link #convertByteCode(Iterable, Iterable, File, String, DexOptions, boolean)}
  * {@link #packageApk(String, String, java.util.List, String, String, boolean, com.android.builder.signing.SigningConfig, String)}
  *
- * Java compilation is not handled but the builder provides the runtime classpath with
- * {@link #getRuntimeClasspath()}.
+ * Java compilation is not handled but the builder provides the bootclasspath with
+ * {@link #getBootClasspath(SdkParser)}.
  */
 public class AndroidBuilder {
 
-    private static final FullRevision MIN_PLATFORM_TOOLS_REV = new FullRevision(16, 0, 2);
+    private static final FullRevision MIN_BUILD_TOOLS_REV = new FullRevision(16, 0, 0);
 
     private static final DependencyFileProcessor sNoOpDependencyFileProcessor = new DependencyFileProcessor() {
         @Override
@@ -132,16 +131,13 @@ public class AndroidBuilder {
         mVerboseExec = verboseExec;
         mCmdLineRunner = new CommandLineRunner(mLogger);
 
-        FullRevision platformToolsRevision = mSdkParser.getPlatformToolsRevision();
-        if (platformToolsRevision == null) {
-            throw new IllegalArgumentException(
-                    "The SDK Platform Tools revision could not be found. Make sure the component is installed.");
-        }
-        if (platformToolsRevision.compareTo(MIN_PLATFORM_TOOLS_REV) < 0) {
-            throw new IllegalArgumentException(String.format(
-                    "The SDK Platform Tools revision (%1$s) is too low. Minimum required is %2$s",
-                    platformToolsRevision, MIN_PLATFORM_TOOLS_REV));
+        BuildToolInfo buildToolInfo = mSdkParser.getBuildTools();
+        FullRevision buildToolsRevision = buildToolInfo.getRevision();
 
+        if (buildToolsRevision.compareTo(MIN_BUILD_TOOLS_REV) < 0) {
+            throw new IllegalArgumentException(String.format(
+                    "The SDK Build Tools revision (%1$s) is too low. Minimum required is %2$s",
+                    buildToolsRevision, MIN_BUILD_TOOLS_REV));
         }
 
         mTarget = mSdkParser.getTarget();
