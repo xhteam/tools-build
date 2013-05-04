@@ -26,7 +26,6 @@ import com.android.utils.ILogger;
 
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Basic {@link TestRunner} running tests on all devices.
@@ -43,7 +42,7 @@ public class SimpleTestRunner implements TestRunner {
             @NonNull  List<? extends DeviceConnector> deviceList,
                       int timeout,
             @NonNull  File resultsDir,
-            @NonNull  ILogger logger) throws TestException {
+            @NonNull  ILogger logger) throws TestException, InterruptedException {
 
         WaitableExecutor<Boolean> executor = new WaitableExecutor<Boolean>();
 
@@ -65,20 +64,21 @@ public class SimpleTestRunner implements TestRunner {
             }
         }
 
-        try {
-            List<Boolean> results = executor.waitForTasks();
+        List<WaitableExecutor.TaskResult<Boolean>> results = executor.waitForAllTasks();
 
-            // check if one test failed.
-            for (Boolean b : results) {
-                if (b) {
-                    return false;
-                }
+        boolean success = true;
+
+        // check if one test failed or if there was an exception.
+        for (WaitableExecutor.TaskResult<Boolean> result : results) {
+            if (result.value != null) {
+                // true means there are failed tests!
+                success &= !result.value;
+            } else {
+                success = false;
+                logger.error(result.exception, null);
             }
-            return true;
-        } catch (InterruptedException e) {
-            throw new TestException(e);
-        } catch (ExecutionException e) {
-            throw new TestException(e);
         }
+
+        return success;
     }
 }
