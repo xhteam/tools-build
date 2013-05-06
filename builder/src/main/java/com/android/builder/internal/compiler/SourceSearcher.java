@@ -59,7 +59,18 @@ public class SourceSearcher {
         }
 
         if (mExecutor != null) {
-            mExecutor.waitForTasks();
+            try {
+                mExecutor.waitForTasksWithQuickFail();
+            } catch (InterruptedException e) {
+                // if this thread was cancelled we need to cancel the rest of the executor tasks.
+                mExecutor.cancelAllTasks();
+                throw e;
+            } catch (ExecutionException e) {
+                // if a task fail, we also want to cancel the rest of the tasks.
+                mExecutor.cancelAllTasks();
+                // and return the first error
+                throw e;
+            }
         }
     }
 

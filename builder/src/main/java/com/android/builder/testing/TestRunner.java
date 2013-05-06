@@ -32,6 +32,22 @@ import java.util.List;
 @Beta
 public interface TestRunner {
 
+    /**
+     * Returns true if the tests succeeded.
+     *
+     * @param projectName
+     * @param variantName
+     * @param testApk
+     * @param testedApk
+     * @param testData
+     * @param deviceList
+     * @param timeout
+     * @param resultsDir
+     * @param logger
+     * @return
+     * @throws TestException
+     * @throws InterruptedException
+     */
     boolean runTests(
             @NonNull  String projectName,
             @NonNull  String variantName,
@@ -41,5 +57,5 @@ public interface TestRunner {
             @NonNull  List<? extends DeviceConnector> deviceList,
                       int timeout,
             @NonNull  File resultsDir,
-            @NonNull  ILogger logger) throws TestException;
+            @NonNull  ILogger logger) throws TestException, InterruptedException;
 }
