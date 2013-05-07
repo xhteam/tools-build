@@ -214,6 +214,14 @@ public abstract class BasePlugin {
                     "The 'java' plugin has been applied, but it is not compatible with the Android plugins.")
         }
 
+        // don't do anything if the project was not initialized.
+        // Unless TEST_SDK_DIR is set in which case this is unit tests and we don't return.
+        // This is because project don't get evaluated in the unit test setup.
+        // See AppPluginDslTest
+        if (!project.state.executed && TEST_SDK_DIR == null) {
+            return
+        }
+
         if (hasCreatedTasks) {
             return
         }
