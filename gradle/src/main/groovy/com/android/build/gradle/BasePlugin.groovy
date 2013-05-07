@@ -109,7 +109,7 @@ import static com.android.builder.BuilderConstants.INSTRUMENT_TEST
  * Base class for all Android plugins
  */
 public abstract class BasePlugin {
-    public static final String GRADLE_MIN_VERSION = "1.6-rc-1"
+    public static final String GRADLE_MIN_VERSION = "1.6"
     public static final String[] GRADLE_SUPPORTED_VERSIONS = [ GRADLE_MIN_VERSION ]
 
     public static final String INSTALL_GROUP = "Install"
@@ -859,7 +859,6 @@ public abstract class BasePlugin {
 
         testTask.plugin = this
         testTask.variant = variantData
-        testTask.testedVariantData = testedVariantData
         testTask.flavorName = variantData.flavorName
         testTask.deviceProvider = deviceProvider
 
