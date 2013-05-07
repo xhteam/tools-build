@@ -41,6 +41,7 @@ public interface TestRunner {
      * @param testedApk
      * @param testData
      * @param deviceList
+     * @param maxThreads the max number of threads to run in parallel. 0 means unlimited.
      * @param timeout
      * @param resultsDir
      * @param logger
@@ -55,6 +56,7 @@ public interface TestRunner {
             @Nullable File testedApk,
             @NonNull  TestData testData,
             @NonNull  List<? extends DeviceConnector> deviceList,
+                      int maxThreads,
                       int timeout,
             @NonNull  File resultsDir,
             @NonNull  ILogger logger) throws TestException, InterruptedException;

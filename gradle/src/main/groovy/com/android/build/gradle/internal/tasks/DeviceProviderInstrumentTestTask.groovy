@@ -63,6 +63,7 @@ public class DeviceProviderInstrumentTestTask extends BaseTask implements Androi
             success = testRunner.runTests(project.name, flavor,
                     testApk, testedApk, variant.variantConfiguration,
                     deviceProvider.devices,
+                    deviceProvider.getMaxThreads(),
                     deviceProvider.getTimeout(),
                     resultsOutDir, plugin.logger);
         } finally {

@@ -64,4 +64,7 @@ public abstract class DeviceProvider {
      */
     public abstract boolean isConfigured();
 
+    public int getMaxThreads() {
+        return 0;
+    }
 }

@@ -30,6 +30,7 @@ import com.android.builder.DefaultProductFlavor
 import com.android.builder.testing.api.DeviceProvider
 import com.android.builder.testing.api.TestServer
 import com.android.sdklib.repository.FullRevision
+import com.android.utils.ILogger
 import com.google.common.collect.Lists
 import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
@@ -197,6 +198,10 @@ public abstract class BaseExtension {
 
     public File getAdbExe() {
         return plugin.sdkParser.adb
+    }
+
+    public ILogger getLogger() {
+        return plugin.logger
     }
 
     public File getDefaultProguardFile(String name) {

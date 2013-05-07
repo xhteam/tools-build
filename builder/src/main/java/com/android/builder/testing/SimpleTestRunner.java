@@ -40,11 +40,12 @@ public class SimpleTestRunner implements TestRunner {
             @Nullable File testedApk,
             @NonNull  TestData testData,
             @NonNull  List<? extends DeviceConnector> deviceList,
+                      int maxThreads,
                       int timeout,
             @NonNull  File resultsDir,
             @NonNull  ILogger logger) throws TestException, InterruptedException {
 
-        WaitableExecutor<Boolean> executor = new WaitableExecutor<Boolean>();
+        WaitableExecutor<Boolean> executor = new WaitableExecutor<Boolean>(maxThreads);
 
         int minSdkVersion = testData.getMinSdkVersion();
         for (DeviceConnector device : deviceList) {
