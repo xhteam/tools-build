@@ -65,10 +65,10 @@ class LoggerWrapper implements ILogger {
     @Override
     void verbose(String s, Object... objects) {
         if (objects == null || objects.length == 0) {
-            logger.log(LogLevel.INFO, s)
+            logger.log(LogLevel.DEBUG, s)
 
         } else {
-            logger.log(LogLevel.INFO, String.format(s, objects))
+            logger.log(LogLevel.DEBUG, String.format(s, objects))
         }
     }
 }

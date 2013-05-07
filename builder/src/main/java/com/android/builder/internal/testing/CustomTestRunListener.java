@@ -104,7 +104,10 @@ public class CustomTestRunListener extends XmlTestRunListener {
 
         mFailedTests.add(test);
 
-        super.testFailed(status, test, trace);
+        // Force test to be a failure and not an error to go around a limitation of
+        // Gradle's reporting that handle errors like success!
+        // TODO: support ERROR test failures.
+        super.testFailed(TestFailure.FAILURE, test, trace);
     }
 
     @Override
