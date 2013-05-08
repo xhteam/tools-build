@@ -78,6 +78,8 @@ def getVersion() {
 
 version = getVersion()
 archivesBaseName = 'gradle'
+jar.manifest.attributes("Plugin-Version": version)
+
 
 task publishLocal(type: Upload) {
     configuration = configurations.archives

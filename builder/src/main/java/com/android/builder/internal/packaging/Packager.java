@@ -18,6 +18,7 @@ package com.android.builder.internal.packaging;
 
 import com.android.SdkConstants;
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.builder.internal.packaging.JavaResourceProcessor.IArchiveBuilder;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
@@ -33,10 +34,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
 /**
@@ -213,7 +217,7 @@ public final class Packager implements IArchiveBuilder {
      * An optional debug keystore can be provided. If set, it is expected that the store password
      * is 'android' and the key alias and password are 'androiddebugkey' and 'android'.
      *
-     * An optional {@link PrintStream} can also be provided for verbose output. If null, there will
+     * An optional {@link ILogger} can also be provided for verbose output. If null, there will
      * be no output.
      *
      * @param apkLocation the file to create
@@ -228,6 +232,7 @@ public final class Packager implements IArchiveBuilder {
             @NonNull String resLocation,
             @NonNull String dexLocation,
             CertificateInfo certificateInfo,
+            @Nullable String createdBy,
             ILogger logger) throws PackagerException {
 
         try {
@@ -248,7 +253,9 @@ public final class Packager implements IArchiveBuilder {
             mBuilder = new SignedJarBuilder(
                     new FileOutputStream(apkFile, false /* append */),
                     certificateInfo != null ? certificateInfo.getKey() : null,
-                    certificateInfo != null ? certificateInfo.getCertificate() : null);
+                    certificateInfo != null ? certificateInfo.getCertificate() : null,
+                    getLocalVersion(),
+                    createdBy);
 
             mLogger.verbose("Packaging %s", apkFile.getName());
 
@@ -556,4 +563,26 @@ public final class Packager implements IArchiveBuilder {
             throw new FileNotFoundException(String.format("%s does not exist", file));
         }
     }
+
+    private String getLocalVersion() {
+        Class clazz = Packager.class;
+        String className = clazz.getSimpleName() + ".class";
+        String classPath = clazz.getResource(className).toString();
+        if (!classPath.startsWith("jar")) {
+            // Class not from JAR, unlikely
+            return null;
+        }
+        try {
+            String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
+                    "/META-INF/MANIFEST.MF";
+            Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+            Attributes attr = manifest.getMainAttributes();
+            return attr.getValue("Builder-Version");
+        } catch (MalformedURLException ignored) {
+        } catch (IOException ignored) {
+        }
+
+        return null;
+    }
+
 }

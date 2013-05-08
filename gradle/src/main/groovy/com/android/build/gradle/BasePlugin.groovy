@@ -15,6 +15,7 @@
  */
 
 package com.android.build.gradle
+
 import com.android.annotations.NonNull
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.BadPluginException
@@ -96,6 +97,9 @@ import org.gradle.tooling.provider.model.ToolingModelBuilderRegistry
 import org.gradle.util.GUtil
 import proguard.gradle.ProGuardTask
 
+import java.util.jar.Attributes
+import java.util.jar.Manifest
+
 import static com.android.builder.BuilderConstants.CONNECTED
 import static com.android.builder.BuilderConstants.DEVICE
 import static com.android.builder.BuilderConstants.EXT_LIB_ARCHIVE
@@ -105,6 +109,7 @@ import static com.android.builder.BuilderConstants.FD_INSTRUMENT_RESULTS
 import static com.android.builder.BuilderConstants.FD_INSTRUMENT_TESTS
 import static com.android.builder.BuilderConstants.FD_REPORTS
 import static com.android.builder.BuilderConstants.INSTRUMENT_TEST
+
 /**
  * Base class for all Android plugins
  */
@@ -128,6 +133,7 @@ public abstract class BasePlugin {
     protected Project project
     private LoggerWrapper loggerWrapper
     private Sdk sdk
+    private String creator
 
     private boolean hasCreatedTasks = false
 
@@ -143,6 +149,12 @@ public abstract class BasePlugin {
     protected BasePlugin(Instantiator instantiator, ToolingModelBuilderRegistry registry) {
         this.instantiator = instantiator
         this.registry = registry
+        String pluginVersion = getLocalVersion()
+        if (pluginVersion != null) {
+            creator = "Android Gradle " + pluginVersion
+        } else  {
+            creator = "Android Gradle"
+        }
     }
 
     protected abstract BaseExtension getExtension()
@@ -264,7 +276,7 @@ public abstract class BasePlugin {
 
         if (androidBuilder == null) {
             SdkParser parser = getLoadedSdkParser()
-            androidBuilder = new AndroidBuilder(parser, logger, verbose)
+            androidBuilder = new AndroidBuilder(parser, creator, logger, verbose)
 
             builders.put(variantData, androidBuilder)
         }
@@ -1368,6 +1380,21 @@ public abstract class BasePlugin {
         }
 
         return list
+    }
+
+    private static String getLocalVersion() {
+        Class clazz = BasePlugin.class
+        String className = clazz.getSimpleName() + ".class"
+        String classPath = clazz.getResource(className).toString()
+        if (!classPath.startsWith("jar")) {
+            // Class not from JAR, unlikely
+            return null
+        }
+        String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
+                "/META-INF/MANIFEST.MF";
+        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+        Attributes attr = manifest.getMainAttributes();
+        return attr.getValue("Plugin-Version");
     }
 }
 

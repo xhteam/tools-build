@@ -29,7 +29,7 @@ import com.android.build.gradle.tasks.RenderscriptCompile;
 import com.android.builder.BuilderConstants;
 import com.android.builder.DefaultProductFlavor;
 import com.android.builder.VariantConfiguration;
-import org.gradle.api.DefaultTask;
+import org.gradle.api.Task;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.compile.JavaCompile;
 
@@ -58,7 +58,7 @@ public abstract class BaseVariantData {
 
     public File outputFile;
 
-    public DefaultTask assembleTask;
+    public Task assembleTask;
 
     public BaseVariantData(@NonNull VariantConfiguration variantConfiguration) {
         this.variantConfiguration = variantConfiguration;
