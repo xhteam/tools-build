@@ -74,7 +74,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * build steps.
  *
  * To use:
- * create a builder with {@link #AndroidBuilder(SdkParser, ILogger, boolean)}
+ * create a builder with {@link #AndroidBuilder(SdkParser, String, ILogger, boolean)}
  *
  * then build steps can be done with
  * {@link #generateBuildConfig(String, boolean, java.util.List, String)}
@@ -108,6 +108,7 @@ public class AndroidBuilder {
     private final IAndroidTarget mTarget;
     @NonNull
     private final BuildToolInfo mBuildTools;
+    private String mCreatedBy;
 
     /**
      * Creates an AndroidBuilder
@@ -124,8 +125,10 @@ public class AndroidBuilder {
      */
     public AndroidBuilder(
             @NonNull SdkParser sdkParser,
+            @Nullable String createdBy,
             @NonNull ILogger logger,
             boolean verboseExec) {
+        mCreatedBy = createdBy;
         mSdkParser = checkNotNull(sdkParser);
         mLogger = checkNotNull(logger);
         mVerboseExec = verboseExec;
@@ -1018,7 +1021,7 @@ public class AndroidBuilder {
         try {
             Packager packager = new Packager(
                     outApkLocation, androidResPkgLocation, classesDexLocation,
-                    certificateInfo, mLogger);
+                    certificateInfo, mCreatedBy, mLogger);
 
             packager.setJniDebugMode(jniDebugBuild);
 

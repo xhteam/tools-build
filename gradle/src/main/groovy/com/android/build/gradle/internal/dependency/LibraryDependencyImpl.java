@@ -26,8 +26,11 @@ import java.io.File;
 import java.util.List;
 
 public class LibraryDependencyImpl extends LibraryBundle {
-    final List<LibraryDependency> dependencies;
-    final File bundle;
+
+    @NonNull
+    private final List<LibraryDependency> dependencies;
+    @NonNull
+    private final File bundle;
 
     public LibraryDependencyImpl(@NonNull File explodedBundle,
                                  @NonNull List<LibraryDependency> dependencies,
@@ -36,6 +39,11 @@ public class LibraryDependencyImpl extends LibraryBundle {
         super(explodedBundle, name);
         this.dependencies = dependencies;
         this.bundle = bundle;
+    }
+
+    @NonNull
+    public File getBundle() {
+        return bundle;
     }
 
     @NonNull

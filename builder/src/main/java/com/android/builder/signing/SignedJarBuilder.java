@@ -16,6 +16,8 @@
 
 package com.android.builder.signing;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.builder.signing.SignedJarBuilder.IZipEntryFilter.ZipAbortException;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -99,7 +101,6 @@ public class SignedJarBuilder {
     private PrivateKey mKey;
     private X509Certificate mCertificate;
     private Manifest mManifest;
-    //private Base64 mBase64;
     private MessageDigest mMessageDigest;
 
     private byte[] mBuffer = new byte[4096];
@@ -156,7 +157,11 @@ public class SignedJarBuilder {
      * @throws IOException
      * @throws NoSuchAlgorithmException
      */
-    public SignedJarBuilder(OutputStream out, PrivateKey key, X509Certificate certificate)
+    public SignedJarBuilder(@NonNull OutputStream out,
+                            @Nullable PrivateKey key,
+                            @Nullable X509Certificate certificate,
+                            @Nullable String builtBy,
+                            @Nullable String createdBy)
             throws IOException, NoSuchAlgorithmException {
         mOutputJar = new JarOutputStream(new BufferedOutputStream(out));
         mOutputJar.setLevel(9);
@@ -167,9 +172,13 @@ public class SignedJarBuilder {
             mManifest = new Manifest();
             Attributes main = mManifest.getMainAttributes();
             main.putValue("Manifest-Version", "1.0");
-            main.putValue("Created-By", "1.0 (Android)");
+            if (builtBy != null) {
+                main.putValue("Built-By", builtBy);
+            }
+            if (createdBy != null) {
+                main.putValue("Created-By", createdBy);
+            }
 
-            //mBase64 = new Base64();
             mMessageDigest = MessageDigest.getInstance(DIGEST_ALGORITHM);
         }
     }
