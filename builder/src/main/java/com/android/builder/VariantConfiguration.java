@@ -785,6 +785,12 @@ public class VariantConfiguration implements TestData {
             if (libJar.exists()) {
                 jars.add(libJar);
             }
+            for (JarDependency jarDependency : libraryDependency.getLocalDependencies()) {
+                File jar = jarDependency.getJarFile();
+                if (jar.isFile()) {
+                    jars.add(jar);
+                }
+            }
         }
 
         return jars;
