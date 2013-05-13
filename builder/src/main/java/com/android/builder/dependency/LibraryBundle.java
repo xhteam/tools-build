@@ -35,8 +35,6 @@ public abstract class LibraryBundle implements LibraryDependency {
 
     private final String mName;
     private final File mBundleFolder;
-    private List<File> mLocalJars;
-    private List<JarDependency> mLocalDependencies;
 
     /**
      * Creates the bundle dependency with an optional name
@@ -88,37 +86,29 @@ public abstract class LibraryBundle implements LibraryDependency {
     @Override
     @NonNull
     public List<JarDependency> getLocalDependencies() {
-        synchronized (this) {
-            if (mLocalDependencies == null) {
-                List<File> jars = getLocalJars();
-                mLocalDependencies = Lists.newArrayListWithCapacity(jars.size());
-                for (File jar : jars) {
-                    mLocalDependencies.add(new JarDependency(jar));
-                }
-            }
-
-            return mLocalDependencies;
+        List<File> jars = getLocalJars();
+        List<JarDependency> localDependencies = Lists.newArrayListWithCapacity(jars.size());
+        for (File jar : jars) {
+            localDependencies.add(new JarDependency(jar));
         }
+
+        return localDependencies;
     }
 
     @NonNull
     @Override
     public List<File> getLocalJars() {
-        synchronized (this) {
-            if (mLocalJars == null) {
-                mLocalJars = Lists.newArrayList();
-                File[] jarList = new File(mBundleFolder, SdkConstants.LIBS_FOLDER).listFiles();
-                if (jarList != null) {
-                    for (File jars : jarList) {
-                        if (jars.isFile() && jars.getName().endsWith(".jar")) {
-                            mLocalJars.add(jars);
-                        }
-                    }
+        List<File> localJars = Lists.newArrayList();
+        File[] jarList = new File(mBundleFolder, SdkConstants.LIBS_FOLDER).listFiles();
+        if (jarList != null) {
+            for (File jars : jarList) {
+                if (jars.isFile() && jars.getName().endsWith(".jar")) {
+                    localJars.add(jars);
                 }
             }
-
-            return mLocalJars;
         }
+
+        return localJars;
     }
 
     @Override
