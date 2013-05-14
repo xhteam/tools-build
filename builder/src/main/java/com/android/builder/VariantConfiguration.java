@@ -749,8 +749,8 @@ public class VariantConfiguration implements TestData {
 
         for (LibraryDependency lib : mFlatLibraries) {
             classpath.add(lib.getJarFile());
-            for (JarDependency jarDependency : lib.getLocalDependencies()) {
-                classpath.add(jarDependency.getJarFile());
+            for (File jarFile : lib.getLocalJars()) {
+                classpath.add(jarFile);
             }
         }
 
@@ -785,10 +785,9 @@ public class VariantConfiguration implements TestData {
             if (libJar.exists()) {
                 jars.add(libJar);
             }
-            for (JarDependency jarDependency : libraryDependency.getLocalDependencies()) {
-                File jar = jarDependency.getJarFile();
-                if (jar.isFile()) {
-                    jars.add(jar);
+            for (File jarFile : libraryDependency.getLocalJars()) {
+                if (jarFile.isFile()) {
+                    jars.add(jarFile);
                 }
             }
         }
