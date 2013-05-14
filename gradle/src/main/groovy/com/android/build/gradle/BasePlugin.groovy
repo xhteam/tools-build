@@ -607,9 +607,13 @@ public abstract class BasePlugin {
         compileTask.source = sourceList.toArray()
 
         if (testedVariantData != null) {
-            compileTask.classpath = project.files({config.compileClasspath}) + testedVariantData.javaCompileTask.classpath + testedVariantData.javaCompileTask.outputs.files
+            compileTask.conventionMapping.classpath =  {
+                project.files(config.compileClasspath) + testedVariantData.javaCompileTask.classpath + testedVariantData.javaCompileTask.outputs.files
+            }
         } else {
-            compileTask.classpath = project.files({config.compileClasspath})
+            compileTask.conventionMapping.classpath =  {
+                project.files(config.compileClasspath)
+            }
         }
 
         // TODO - dependency information for the compile classpath is being lost.
@@ -634,14 +638,6 @@ public abstract class BasePlugin {
         // setup the boot classpath just before the task actually runs since this will
         // force the sdk to be parsed.
         compileTask.doFirst {
-            // reset it again to make sure all the local jar from libraries are included.
-            // TODO: FIXME!
-            if (testedVariantData != null) {
-                compileTask.classpath = project.files({config.compileClasspath}) + testedVariantData.javaCompileTask.classpath + testedVariantData.javaCompileTask.outputs.files
-            } else {
-                compileTask.classpath = project.files({config.compileClasspath})
-            }
-
             compileTask.options.bootClasspath = getRuntimeJars()
         }
     }
