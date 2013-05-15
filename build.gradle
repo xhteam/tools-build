@@ -60,7 +60,11 @@ subprojects {
     }
 
     group = 'com.android.tools.build'
-    project.ext.baseAndroidVersion = "22.0-SNAPSHOT"
+    project.ext.baseAndroidVersion = "22.0"
+    if (!project.has("release")) {
+        project.ext.baseAndroidVersion = project.ext.baseAndroidVersion + "-SNAPSHOT"
+    }
+
 }
 
 task prepareRepo(type: Copy) {
