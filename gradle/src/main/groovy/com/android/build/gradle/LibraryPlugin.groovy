@@ -213,6 +213,8 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         packageName = packageName.replace('.', '/');
         jar.exclude(packageName + "/R.class")
         jar.exclude(packageName + "/R\$*.class")
+        jar.exclude(packageName + "/Manifest.class")
+        jar.exclude(packageName + "/Manifest\$*.class")
         jar.exclude(packageName + "/BuildConfig.class")
 
         // package the aidl files into the bundle folder
