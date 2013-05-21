@@ -340,7 +340,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
         // first the tested variant.
         ApplicationVariantImpl applicationVariant = instantiator.newInstance(
                 ApplicationVariantImpl.class, testedVariantData)
-        extension.applicationVariants.add(applicationVariant)
+        extension.addApplicationVariant(applicationVariant)
 
         // now the test variant
         TestVariant testVariant = instantiator.newInstance(
@@ -447,7 +447,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
         // first the tested variant.
         ApplicationVariantImpl applicationVariant = instantiator.newInstance(
                 ApplicationVariantImpl.class, testedVariantData)
-        extension.applicationVariants.add(applicationVariant)
+        extension.addApplicationVariant(applicationVariant)
 
         // now the test variant
         TestVariant testVariant = instantiator.newInstance(
