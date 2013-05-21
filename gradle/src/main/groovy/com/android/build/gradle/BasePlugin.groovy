@@ -187,7 +187,7 @@ public abstract class BasePlugin {
         connectedCheck.group = JavaBasePlugin.VERIFICATION_GROUP
 
         project.afterEvaluate {
-            createAndroidTasks()
+            createAndroidTasks(false)
         }
     }
 
@@ -219,7 +219,7 @@ public abstract class BasePlugin {
         }
     }
 
-    final void createAndroidTasks() {
+    final void createAndroidTasks(boolean force) {
         // get current plugins and look for the default Java plugin.
         if (project.plugins.hasPlugin(JavaPlugin.class)) {
             throw new BadPluginException(
@@ -230,7 +230,7 @@ public abstract class BasePlugin {
         // Unless TEST_SDK_DIR is set in which case this is unit tests and we don't return.
         // This is because project don't get evaluated in the unit test setup.
         // See AppPluginDslTest
-        if (!project.state.executed && TEST_SDK_DIR == null) {
+        if (!force && !project.state.executed && TEST_SDK_DIR == null) {
             return
         }
 
@@ -242,6 +242,18 @@ public abstract class BasePlugin {
         doCreateAndroidTasks()
         createReportTasks()
     }
+
+    void checkTasksAlreadyCreated() {
+        if (hasCreatedTasks) {
+            throw new GradleException(
+                    "Android tasks have already been created.\n" +
+                    "This happens when calling android.applicationVariants,\n" +
+                    "android.libraryVariants or android.testVariants.\n" +
+                    "Once these methods are called, it is not possible to\n" +
+                    "continue configuring the model.")
+        }
+    }
+
 
     ProductFlavorData getDefaultConfigData() {
         return defaultConfigData

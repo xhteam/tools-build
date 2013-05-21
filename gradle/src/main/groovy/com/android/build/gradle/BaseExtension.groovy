@@ -113,26 +113,32 @@ public abstract class BaseExtension {
     }
 
     void setCompileSdkVersion(int apiLevel) {
+        plugin.checkTasksAlreadyCreated();
         compileSdkVersion(apiLevel)
     }
 
     void compileSdkVersion(String target) {
+        plugin.checkTasksAlreadyCreated();
         this.target = target
     }
 
     void setCompileSdkVersion(String target) {
+        plugin.checkTasksAlreadyCreated();
         compileSdkVersion(target)
     }
 
     void buildToolsVersion(String version) {
+        plugin.checkTasksAlreadyCreated();
         buildToolsRevision = FullRevision.parseRevision(version)
     }
 
     void setBuildToolsVersion(String version) {
+        plugin.checkTasksAlreadyCreated();
         buildToolsVersion(version)
     }
 
     void sourceSets(Action<NamedDomainObjectContainer<AndroidSourceSet>> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(sourceSetsContainer)
     }
 
@@ -141,26 +147,32 @@ public abstract class BaseExtension {
     }
 
     void defaultConfig(Action<DefaultProductFlavor> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(defaultConfig)
     }
 
     void aaptOptions(Action<AaptOptionsImpl> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(aaptOptions)
     }
 
     void dexOptions(Action<DexOptionsImpl> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(dexOptions)
     }
 
     void testOptions(Action<TestOptions> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(testOptions)
     }
 
     void compileOptions(Action<CompileOptions> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(compileOptions)
     }
 
     void deviceProvider(DeviceProvider deviceProvider) {
+        plugin.checkTasksAlreadyCreated();
         deviceProviderList.add(deviceProvider)
     }
 
@@ -170,6 +182,7 @@ public abstract class BaseExtension {
     }
 
     void testServer(TestServer testServer) {
+        plugin.checkTasksAlreadyCreated();
         testServerList.add(testServer)
     }
 
@@ -180,7 +193,7 @@ public abstract class BaseExtension {
 
     @NonNull
     public DefaultDomainObjectSet<TestVariant> getTestVariants() {
-        plugin.createAndroidTasks()
+        plugin.createAndroidTasks(true /*force*/)
         return testVariantList
     }
 

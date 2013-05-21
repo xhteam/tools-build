@@ -49,23 +49,27 @@ public class AppExtension extends BaseExtension {
     }
 
     void buildTypes(Action<? super NamedDomainObjectContainer<DefaultBuildType>> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(buildTypes)
     }
 
     void productFlavors(Action<? super NamedDomainObjectContainer<DefaultProductFlavor>> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(productFlavors)
     }
 
     void signingConfigs(Action<? super NamedDomainObjectContainer<SigningConfig>> action) {
+        plugin.checkTasksAlreadyCreated();
         action.execute(signingConfigs)
     }
 
     public void flavorGroups(String... groups) {
+        plugin.checkTasksAlreadyCreated();
         flavorGroupList = Arrays.asList(groups)
     }
 
     public DefaultDomainObjectSet<ApplicationVariant> getApplicationVariants() {
-        plugin.createAndroidTasks()
+        plugin.createAndroidTasks(true /*force*/)
         return applicationVariantList
     }
 
