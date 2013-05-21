@@ -65,4 +65,7 @@ public interface Variant {
 
     @Nullable
     List<File> getGeneratedTestResourceFolders();
+
+    @NonNull
+    File getClassesFolder();
 }

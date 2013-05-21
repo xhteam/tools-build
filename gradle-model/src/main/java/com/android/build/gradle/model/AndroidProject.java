@@ -27,6 +27,9 @@ import java.util.Map;
 public interface AndroidProject {
 
     @NonNull
+    String getModelVersion();
+
+    @NonNull
     String getName();
 
     boolean isLibrary();
