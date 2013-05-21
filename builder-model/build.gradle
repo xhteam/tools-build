@@ -18,6 +18,8 @@ def getVersion() {
 version = getVersion()
 archivesBaseName = 'builder-model'
 
+jar.manifest.attributes("Model-Version": "$version")
+
 task publishLocal(type: Upload) {
     configuration = configurations.archives
     repositories {
