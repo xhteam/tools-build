@@ -771,7 +771,7 @@ public class VariantConfiguration implements TestData {
      */
     @NonNull
     public List<File> getPackagedJars() {
-        List<File> jars = Lists.newArrayListWithCapacity(mJars.size() + mFlatLibraries.size());
+        Set<File> jars = Sets.newHashSetWithExpectedSize(mJars.size() + mFlatLibraries.size());
 
         for (JarDependency jar : mJars) {
             File jarFile = jar.getJarFile();
@@ -792,7 +792,7 @@ public class VariantConfiguration implements TestData {
             }
         }
 
-        return jars;
+        return Lists.newArrayList(jars);
     }
 
     @NonNull
