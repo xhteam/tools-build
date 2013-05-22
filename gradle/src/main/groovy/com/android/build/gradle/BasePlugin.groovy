@@ -977,7 +977,7 @@ public abstract class BasePlugin {
 
                 // injar: the dependencies
                 for (File inJar : variantConfig.packagedJars) {
-                    proguardTask.injars(inJar)
+                    proguardTask.injars(inJar, filter: '!META-INF/MANIFEST.MF')
                 }
 
                 // libraryJars: the runtime jars
