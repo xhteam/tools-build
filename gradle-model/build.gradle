@@ -44,6 +44,8 @@ test.dependsOn ':gradle:publishLocal'
 version = getVersion()
 archivesBaseName = 'gradle-model'
 
+jar.manifest.attributes("Model-Version": "$version")
+
 task publishLocal(type: Upload) {
     configuration = configurations.archives
     repositories {

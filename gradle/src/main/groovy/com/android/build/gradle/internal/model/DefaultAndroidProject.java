@@ -34,6 +34,8 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     private static final long serialVersionUID = 1L;
 
     @NonNull
+    private final String modelVersion;
+    @NonNull
     private final String name;
     @NonNull
     private final String compileTarget;
@@ -47,9 +49,11 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
 
     private ProductFlavorContainer defaultConfig;
 
-    DefaultAndroidProject(@NonNull String name, @NonNull String compileTarget,
+    DefaultAndroidProject(@NonNull String modelVersion,
+                          @NonNull String name, @NonNull String compileTarget,
                           @NonNull List<String> bootClasspath,
                           boolean isLibrary) {
+        this.modelVersion = modelVersion;
         this.name = name;
         this.compileTarget = compileTarget;
         this.bootClasspath = bootClasspath;
@@ -80,6 +84,12 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     DefaultAndroidProject addVariant(@NonNull VariantImpl variant) {
         variants.put(variant.getName(), variant);
         return this;
+    }
+
+    @NonNull
+    @Override
+    public String getModelVersion() {
+        return modelVersion;
     }
 
     @Override

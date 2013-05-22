@@ -56,6 +56,8 @@ class VariantImpl implements Variant, Serializable {
     private final List<File> generatedResourceFolders;
     @Nullable
     private final List<File> generatedTestResourceFolders;
+    @NonNull
+    private final File classesFolder;
 
     VariantImpl(@NonNull  String name,
                 @NonNull  String assembleTaskName,
@@ -69,7 +71,8 @@ class VariantImpl implements Variant, Serializable {
                 @NonNull  List<File> generatedSourceFolders,
                 @Nullable List<File> generatedTestSourceFolders,
                 @NonNull  List<File> generatedResourceFolders,
-                @Nullable List<File> generatedTestResourceFolders) {
+                @Nullable List<File> generatedTestResourceFolders,
+                @NonNull  File classesFolder) {
         this.name = name;
         this.assembleTaskName = assembleTaskName;
         this.assembleTestTaskName = assembleTestTaskName;
@@ -83,6 +86,7 @@ class VariantImpl implements Variant, Serializable {
         this.generatedTestSourceFolders = generatedTestSourceFolders;
         this.generatedResourceFolders = generatedResourceFolders;
         this.generatedTestResourceFolders = generatedTestResourceFolders;
+        this.classesFolder = classesFolder;
     }
 
     @Override
@@ -160,5 +164,11 @@ class VariantImpl implements Variant, Serializable {
     @Override
     public List<File> getGeneratedTestResourceFolders() {
         return generatedTestResourceFolders;
+    }
+
+    @NonNull
+    @Override
+    public File getClassesFolder() {
+        return classesFolder;
     }
 }

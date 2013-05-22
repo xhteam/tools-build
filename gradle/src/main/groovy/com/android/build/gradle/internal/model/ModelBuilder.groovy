@@ -36,6 +36,10 @@ import com.google.common.collect.Lists
 import org.gradle.api.Project
 import org.gradle.api.plugins.UnknownPluginException
 import org.gradle.tooling.provider.model.ToolingModelBuilder
+
+import java.util.jar.Attributes
+import java.util.jar.Manifest
+
 /**
  * Builder for the custom Android model.
  */
@@ -66,8 +70,8 @@ public class ModelBuilder implements ToolingModelBuilder {
         List<String> bootClasspath = basePlugin.runtimeJarList;
         String compileTarget = sdkParser.target.hashString()
 
-        DefaultAndroidProject androidProject = new DefaultAndroidProject(project.name,
-                compileTarget, bootClasspath, libPlugin != null)
+        DefaultAndroidProject androidProject = new DefaultAndroidProject(getModelVersion(),
+                project.name, compileTarget, bootClasspath, libPlugin != null)
                     .setDefaultConfig(createPFC(basePlugin.defaultConfigData))
 
         if (appPlugin != null) {
@@ -92,6 +96,28 @@ public class ModelBuilder implements ToolingModelBuilder {
         return androidProject
     }
 
+
+    @NonNull
+    private static String getModelVersion() {
+        Class clazz = AndroidProject.class
+        String className = clazz.getSimpleName() + ".class"
+        String classPath = clazz.getResource(className).toString()
+        if (!classPath.startsWith("jar")) {
+            // Class not from JAR, unlikely
+            return "unknown"
+        }
+        String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
+                "/META-INF/MANIFEST.MF";
+        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
+        Attributes attr = manifest.getMainAttributes();
+        String version = attr.getValue("Model-Version");
+        if (version != null) {
+            return version;
+        }
+
+        return "unknown"
+    }
+
     @NonNull
     private static VariantImpl createVariant(@NonNull BaseVariantData variantData) {
         TestVariantData testVariantData = null
@@ -113,7 +139,8 @@ public class ModelBuilder implements ToolingModelBuilder {
                 getGeneratedSourceFolders(variantData),
                 getGeneratedSourceFolders(testVariantData),
                 getGeneratedResourceFolders(variantData),
-                getGeneratedResourceFolders(testVariantData))
+                getGeneratedResourceFolders(testVariantData),
+                variantData.javaCompileTask.destinationDir)
 
         return variant;
     }
