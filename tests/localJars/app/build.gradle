@@ -7,5 +7,4 @@ android {
 
 dependencies {
     compile project(':library')
-    compile files("$rootDir/android-support-v4.jar")
 }
