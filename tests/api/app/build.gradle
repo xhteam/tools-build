@@ -23,3 +23,11 @@ android.applicationVariants.each { variant ->
     variant.dex.dependsOn jarTask
     variant.dex.sourceFiles = files(jarTask.archivePath).files
 }
+
+if (android.applicationVariants.size() != 2) {
+    throw new GradleException("Wrong number of app variants!")
+}
+
+if (android.testVariants.size() != 1) {
+    throw new GradleException("Wrong number of test variants!")
+}

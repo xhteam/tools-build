@@ -1204,7 +1204,7 @@ public abstract class BasePlugin {
                 List<ConfigurationDependencies> configDepList = reverseMap.get(androidDependency)
                 if (configDepList != null && !configDepList.isEmpty()) {
                     for (ConfigurationDependencies configDependencies: configDepList) {
-                        prepareLibraryTask.dependsOn configDependencies.configuration.buildDependencies
+                        prepareLibraryTask.dependsOn configDependencies.compileConfiguration.buildDependencies
                     }
                 }
 
@@ -1219,8 +1219,7 @@ public abstract class BasePlugin {
             Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
             Multimap<LibraryDependency, ConfigurationDependencies> reverseMap) {
 
-        // TODO support package configuration
-        def compileClasspath = configDependencies.configuration
+        Configuration compileClasspath = configDependencies.compileConfiguration
 
         // TODO - shouldn't need to do this - fix this in Gradle
         ensureConfigured(compileClasspath)
@@ -1244,8 +1243,30 @@ public abstract class BasePlugin {
                     !(dep instanceof ProjectDependency)) {
                 Set<File> files = ((SelfResolvingDependency) dep).resolve()
                 for (File f : files) {
+                    // TODO: support compile only dependencies.
                     localJars << new JarDependency(f)
                 }
+            }
+        }
+
+        // handle package dependencies. We'll refuse aar libs only in package but not
+        // in compile and remove all dependencies already in compile to get package-only jar
+        // files.
+        Configuration packageClasspath = configDependencies.packageConfiguration
+        Set<File> compileFiles = compileClasspath.files
+        Set<File> packageFiles = packageClasspath.files
+
+        for (File f : packageFiles) {
+            if (compileFiles.contains(f)) {
+                continue
+            }
+
+            if (f.getName().toLowerCase().endsWith(".jar")) {
+                jars.add(new JarDependency(f, false /*compiled*/, true /*packaged*/))
+            } else {
+                throw new RuntimeException("Package-only dependency '" +
+                        f.absolutePath +
+                        "' is not supported")
             }
         }
 
@@ -1256,6 +1277,7 @@ public abstract class BasePlugin {
         // TODO - filter bundles out of source set classpath
 
         configureBuild(configDependencies)
+
     }
 
     def ensureConfigured(Configuration config) {
@@ -1312,7 +1334,7 @@ public abstract class BasePlugin {
                     bundlesForThisModule << adep
                     reverseMap.put(adep, configDependencies)
                 } else {
-                    // TODO - need the correct values for the boolean flags
+                    // TODO: support compile only dependencies.
                     jars << new JarDependency(artifact.file)
                 }
             }
@@ -1330,8 +1352,6 @@ public abstract class BasePlugin {
     }
 
     private void configureBuild(ConfigurationDependencies configurationDependencies) {
-        def configuration = configurationDependencies.configuration
-
         addDependsOnTaskInOtherProjects(
                 project.getTasks().getByName(JavaBasePlugin.BUILD_NEEDED_TASK_NAME), true,
                 JavaBasePlugin.BUILD_NEEDED_TASK_NAME, "compile");
