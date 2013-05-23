@@ -128,9 +128,9 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     @NonNull
     public String getPackageConfigurationName() {
         if (name.equals(SourceSet.MAIN_SOURCE_SET_NAME)) {
-            return "package";
+            return "apk";
         } else {
-            return String.format("%sPackage", name);
+            return String.format("%sApk", name);
         }
     }
 

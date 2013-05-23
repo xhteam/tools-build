@@ -53,8 +53,12 @@ public class ConfigurationDependencies implements DependencyContainer {
     @NonNull
     private final List<JarDependency> localJars = []
 
-    public Configuration getConfiguration() {
+    public Configuration getCompileConfiguration() {
         return project.configurations[sourceSet.compileConfigurationName]
+    }
+
+    public Configuration getPackageConfiguration() {
+        return project.configurations[sourceSet.packageConfigurationName]
     }
 
     public String getConfigBaseName() {
