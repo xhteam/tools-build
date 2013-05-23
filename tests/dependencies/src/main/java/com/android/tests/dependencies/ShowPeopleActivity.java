@@ -1,13 +1,11 @@
-package org.gradle.sample;
+package com.android.tests.dependencies;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.content.Intent;
 import android.widget.TextView;
 import com.google.common.collect.Lists;
 
 import java.lang.String;
-import java.util.Arrays;
 
 public class ShowPeopleActivity extends Activity {
     @Override

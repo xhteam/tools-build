@@ -16,3 +16,7 @@ android.libraryVariants.each { variant ->
     // now make the package task depend on it
     variant.packageLibrary.dependsOn copyBlahTask
 }
+
+if (android.libraryVariants.size() != 2) {
+    throw new GradleException("Wrong number of app variants!")
+}

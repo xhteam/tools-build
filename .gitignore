@@ -4,6 +4,7 @@ local.properties
 *.ipr
 *.iws
 .gradle
+.idea
 /build
 tests/*/build
 tests/api/*/build
@@ -11,6 +12,7 @@ tests/applibtest/*/build
 tests/assets/*/build
 tests/attrOrder/*/build
 tests/3rdPartyTests/*/build
+tests/dependencies/jarProject/build
 tests/flavorlib/*/build
 tests/flavorlibWithFailedTests/*/build
 tests/libsTest/*/build

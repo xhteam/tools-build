@@ -42,6 +42,10 @@ public class JarDependency {
         this(jarFile, true, true, true);
     }
 
+    public JarDependency(@NonNull File jarFile, boolean compiled, boolean packaged) {
+        this(jarFile, compiled, packaged, true);
+    }
+
     @NonNull
     public File getJarFile() {
         return mJarFile;
