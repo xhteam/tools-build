@@ -1,4 +1,4 @@
-package org.gradle.sample;
+package com.android.tests.dependencies;
 
 public interface BuildType {
     String getBuildType();

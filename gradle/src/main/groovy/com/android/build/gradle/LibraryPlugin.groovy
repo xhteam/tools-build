@@ -34,6 +34,7 @@ import com.android.builder.dependency.LibraryBundle
 import com.android.builder.dependency.LibraryDependency
 import com.android.builder.dependency.ManifestDependency
 import com.android.builder.model.AndroidLibrary
+import com.google.common.collect.Lists
 import com.google.common.collect.Sets
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -113,7 +114,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
     @Override
     protected void doCreateAndroidTasks() {
         // resolve dependencies for all config
-        List<ConfigurationDependencies> dependencies = []
+        List<ConfigurationDependencies> dependencies = Lists.newArrayListWithCapacity(2)
         dependencies.add(debugBuildTypeData)
         dependencies.add(releaseBuildTypeData)
         resolveDependencies(dependencies)

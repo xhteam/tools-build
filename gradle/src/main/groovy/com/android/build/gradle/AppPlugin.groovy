@@ -38,6 +38,7 @@ import com.android.builder.VariantConfiguration
 import com.android.builder.signing.SigningConfig
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
+import com.google.common.collect.Lists
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -190,7 +191,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
     @Override
     protected void doCreateAndroidTasks() {
         // resolve dependencies for all config
-        List<ConfigurationDependencies> dependencies = []
+        List<ConfigurationDependencies> dependencies = Lists.newArrayListWithCapacity(
+                buildTypes.size() + productFlavors.size())
         dependencies.addAll(buildTypes.values())
         dependencies.addAll(productFlavors.values())
         resolveDependencies(dependencies)

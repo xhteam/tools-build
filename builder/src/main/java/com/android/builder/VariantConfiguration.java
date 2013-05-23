@@ -144,9 +144,12 @@ public class VariantConfiguration implements TestData {
      * @param debugName an optional debug name
      */
     public VariantConfiguration(
-            @NonNull DefaultProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
-            @NonNull DefaultBuildType buildType, SourceProvider buildTypeSourceProvider,
-            @NonNull Type type, @Nullable VariantConfiguration testedConfig,
+            @NonNull DefaultProductFlavor defaultConfig,
+            @NonNull SourceProvider defaultSourceProvider,
+            @NonNull DefaultBuildType buildType,
+            @NonNull SourceProvider buildTypeSourceProvider,
+            @NonNull Type type,
+            @Nullable VariantConfiguration testedConfig,
             @Nullable String debugName) {
         mDefaultConfig = checkNotNull(defaultConfig);
         mDefaultSourceProvider = checkNotNull(defaultSourceProvider);
