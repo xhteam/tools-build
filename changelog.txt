@@ -1,3 +1,14 @@
+0.5.0:
+
+0.4.1:
+
+* Renamed 'package' scope to 'apk'
+    - variants are 'debugApk', 'releaseApk', 'flavor1Apk', etc...
+    - Now properly supported at build to allow package-only dependencies.
+* Only Jar dependencies can be package-only. Library projects must be added to the compile scope.
+* Fixed [application|library|test]Variants API (always returned empty on 0.4)
+* Fixed issue in Proguard where it would complain about duplicate Manifests.
+
 0.4
 
 * System requirements:
@@ -16,6 +27,8 @@
    - Fix cases where Android Libraries have local Jars dependencies
    - Fix renaming of package through DSL to ensure resources are compiled in the new namespace
    - Fix DSL to add getSourceSets on the "android" extension.
+   - DSL to query variants has changed to applicationVariants and libraryVariants (depending on the plugin)
+     Also both plugin have testVariants (tests are not included in the default collection).
 
 0.3
 
