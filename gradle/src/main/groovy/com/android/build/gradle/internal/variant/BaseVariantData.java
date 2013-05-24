@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.variant;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.build.gradle.internal.StringHelper;
+import com.android.build.gradle.internal.dependency.VariantDependencies;
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask;
 import com.android.build.gradle.tasks.AidlCompile;
 import com.android.build.gradle.tasks.GenerateBuildConfig;
@@ -42,6 +43,7 @@ public abstract class BaseVariantData {
 
     private String name;
     private final VariantConfiguration variantConfiguration;
+    private VariantDependencies variantDependency;
 
     public PrepareDependenciesTask prepareDependenciesTask;
 
@@ -71,6 +73,15 @@ public abstract class BaseVariantData {
     @NonNull
     public VariantConfiguration getVariantConfiguration() {
         return variantConfiguration;
+    }
+
+    public void setVariantDependency(@NonNull VariantDependencies variantDependency) {
+        this.variantDependency = variantDependency;
+    }
+
+    @NonNull
+    public VariantDependencies getVariantDependency() {
+        return variantDependency;
     }
 
     @NonNull

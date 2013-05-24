@@ -140,7 +140,10 @@ public class ModelBuilder implements ToolingModelBuilder {
                 getGeneratedSourceFolders(testVariantData),
                 getGeneratedResourceFolders(variantData),
                 getGeneratedResourceFolders(testVariantData),
-                variantData.javaCompileTask.destinationDir)
+                variantData.javaCompileTask.destinationDir,
+                DependenciesImpl.cloneDependencies(variantData.variantDependency),
+                DependenciesImpl.cloneDependencies(testVariantData?.variantDependency),
+        )
 
         return variant;
     }
@@ -191,9 +194,7 @@ public class ModelBuilder implements ToolingModelBuilder {
         return new ProductFlavorContainerImpl(
                 ProductFlavorImpl.cloneFlavor(productFlavorData.productFlavor),
                 SourceProviderImpl.cloneProvider((SourceProvider) productFlavorData.sourceSet),
-                DependenciesImpl.cloneConfigDependencies(productFlavorData),
-                SourceProviderImpl.cloneProvider((SourceProvider) productFlavorData.testSourceSet),
-                DependenciesImpl.cloneConfigDependencies(productFlavorData.testConfigDependencies))
+                SourceProviderImpl.cloneProvider((SourceProvider) productFlavorData.testSourceSet))
     }
 
     /**
@@ -205,9 +206,7 @@ public class ModelBuilder implements ToolingModelBuilder {
     private static BuildTypeContainer createBTC(@NonNull BuildTypeData buildTypeData) {
         return new BuildTypeContainerImpl(
                 BuildTypeImpl.cloneBuildType(buildTypeData.buildType),
-                SourceProviderImpl.cloneProvider((SourceProvider) buildTypeData.sourceSet),
-                DependenciesImpl.cloneConfigDependencies(buildTypeData),
-        )
+                SourceProviderImpl.cloneProvider((SourceProvider) buildTypeData.sourceSet))
     }
 
     /**

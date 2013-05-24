@@ -30,7 +30,7 @@ public class LibraryVariantData extends BaseVariantData implements TestedVariant
     @Nullable
     private TestVariantData testVariantData = null;
 
-    public LibraryVariantData(VariantConfiguration config) {
+    public LibraryVariantData(@NonNull VariantConfiguration config) {
         super(config);
     }
 

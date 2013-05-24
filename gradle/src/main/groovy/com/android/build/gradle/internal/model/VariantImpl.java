@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.build.gradle.model.Dependencies;
 import com.android.build.gradle.model.Variant;
 import com.android.builder.model.ProductFlavor;
 
@@ -58,6 +59,10 @@ class VariantImpl implements Variant, Serializable {
     private final List<File> generatedTestResourceFolders;
     @NonNull
     private final File classesFolder;
+    @NonNull
+    private final Dependencies dependencies;
+    @NonNull
+    private final Dependencies testDependencies;
 
     VariantImpl(@NonNull  String name,
                 @NonNull  String assembleTaskName,
@@ -72,7 +77,9 @@ class VariantImpl implements Variant, Serializable {
                 @Nullable List<File> generatedTestSourceFolders,
                 @NonNull  List<File> generatedResourceFolders,
                 @Nullable List<File> generatedTestResourceFolders,
-                @NonNull  File classesFolder) {
+                @NonNull  File classesFolder,
+                @NonNull  Dependencies dependencies,
+                @NonNull  Dependencies testDependencies) {
         this.name = name;
         this.assembleTaskName = assembleTaskName;
         this.assembleTestTaskName = assembleTestTaskName;
@@ -87,6 +94,8 @@ class VariantImpl implements Variant, Serializable {
         this.generatedResourceFolders = generatedResourceFolders;
         this.generatedTestResourceFolders = generatedTestResourceFolders;
         this.classesFolder = classesFolder;
+        this.dependencies = dependencies;
+        this.testDependencies = testDependencies;
     }
 
     @Override
@@ -170,5 +179,17 @@ class VariantImpl implements Variant, Serializable {
     @Override
     public File getClassesFolder() {
         return classesFolder;
+    }
+
+    @NonNull
+    @Override
+    public Dependencies getDependencies() {
+        return dependencies;
+    }
+
+    @NonNull
+    @Override
+    public Dependencies getTestDependencies() {
+        return testDependencies;
     }
 }

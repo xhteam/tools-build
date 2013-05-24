@@ -29,9 +29,18 @@ public class TestVariantData extends ApkVariantData {
 
     public DeviceProviderInstrumentTestTask connectedTestTask;
     public final List<DeviceProviderInstrumentTestTask> providerTestTaskList = Lists.newArrayList();
+    @NonNull
+    private final TestedVariantData testedVariantData;
 
-    public TestVariantData(@NonNull VariantConfiguration config) {
+    public TestVariantData(@NonNull VariantConfiguration config,
+                           @NonNull TestedVariantData testedVariantData) {
         super(config);
+        this.testedVariantData = testedVariantData;
+    }
+
+    @NonNull
+    public TestedVariantData getTestedVariantData() {
+        return testedVariantData;
     }
 
     @NonNull

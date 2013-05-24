@@ -29,6 +29,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -92,10 +93,10 @@ public class AndroidProjectTest extends TestCase {
             assertNull("Release test output file null-check", releaseVariant.getOutputTestFile());
             assertFalse("Release signed check", releaseVariant.isSigned());
 
-            Dependencies dependencies = model.getDefaultConfig().getDependencies();
+            Dependencies dependencies = model.getVariants().get("debug").getDependencies();
             assertNotNull(dependencies);
-            assertTrue(dependencies.getJars().isEmpty());
-            assertTrue(dependencies.getLibraries().isEmpty());
+            assertFalse(dependencies.getJars().isEmpty());
+            assertFalse(dependencies.getLibraries().isEmpty());
             assertTrue(dependencies.getProjectDependenciesPath().isEmpty());
 
         } finally {
@@ -222,7 +223,7 @@ public class AndroidProjectTest extends TestCase {
                     assertEquals("Library Project", "lib".equals(name), androidProject.isLibrary());
 
                     if (!"lib".equals(name)) {
-                        Dependencies dependencies = androidProject.getDefaultConfig().getDependencies();
+                        Dependencies dependencies = androidProject.getVariants().get("debug").getDependencies();
                         assertNotNull(dependencies);
 
                         List<AndroidLibrary> libs = dependencies.getLibraries();
@@ -275,14 +276,15 @@ public class AndroidProjectTest extends TestCase {
                         assertEquals("Model Name", name, androidProject.getName());
                         assertFalse("Library Project", androidProject.isLibrary());
 
-                        Dependencies dependencies = androidProject.getDefaultConfig().getDependencies();
-                        assertNotNull(dependencies);
-                        assertTrue(dependencies.getLibraries().isEmpty());
+                        Map<String, Variant> variants = androidProject.getVariants();
 
                         ProductFlavorContainer flavor1 = androidProject.getProductFlavors().get("flavor1");
                         assertNotNull(flavor1);
 
-                        dependencies = flavor1.getDependencies();
+                        Variant flavor1Debug = variants.get("flavor1-debug");
+                        assertNotNull(flavor1Debug);
+
+                        Dependencies dependencies = flavor1Debug.getDependencies();
                         assertNotNull(dependencies);
                         List<AndroidLibrary> libs = dependencies.getLibraries();
                         assertNotNull(libs);
@@ -295,7 +297,10 @@ public class AndroidProjectTest extends TestCase {
                         ProductFlavorContainer flavor2 = androidProject.getProductFlavors().get("flavor2");
                         assertNotNull(flavor2);
 
-                        dependencies = flavor2.getDependencies();
+                        Variant flavor2Debug = variants.get("flavor2-debug");
+                        assertNotNull(flavor2Debug);
+
+                        dependencies = flavor2Debug.getDependencies();
                         assertNotNull(dependencies);
                         libs = dependencies.getLibraries();
                         assertNotNull(libs);

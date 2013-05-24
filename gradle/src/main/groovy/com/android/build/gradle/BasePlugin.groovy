@@ -17,16 +17,18 @@
 package com.android.build.gradle
 
 import com.android.annotations.NonNull
+import com.android.annotations.Nullable
 import com.android.build.gradle.api.AndroidSourceSet
 import com.android.build.gradle.internal.BadPluginException
 import com.android.build.gradle.internal.LoggerWrapper
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.Sdk
-import com.android.build.gradle.internal.dependency.ConfigurationDependencies
+import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.dependency.DependencyChecker
 import com.android.build.gradle.internal.dependency.LibraryDependencyImpl
 import com.android.build.gradle.internal.dependency.ManifestDependencyImpl
 import com.android.build.gradle.internal.dependency.SymbolFileProviderImpl
+import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.model.ModelBuilder
 import com.android.build.gradle.internal.tasks.AndroidReportTask
@@ -42,6 +44,7 @@ import com.android.build.gradle.internal.tasks.UninstallTask
 import com.android.build.gradle.internal.tasks.ValidateSigningTask
 import com.android.build.gradle.internal.test.report.ReportType
 import com.android.build.gradle.internal.variant.ApkVariantData
+import com.android.build.gradle.internal.variant.ApplicationVariantData
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.LibraryVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
@@ -138,8 +141,8 @@ public abstract class BasePlugin {
     private boolean hasCreatedTasks = false
 
     private ProductFlavorData<DefaultProductFlavor> defaultConfigData
-    protected AndroidSourceSet mainSourceSet
-    protected AndroidSourceSet testSourceSet
+    protected DefaultAndroidSourceSet mainSourceSet
+    protected DefaultAndroidSourceSet testSourceSet
 
     protected Task uninstallAll
     protected Task assembleTest
@@ -193,12 +196,12 @@ public abstract class BasePlugin {
 
     protected void setBaseExtension(@NonNull BaseExtension extension) {
         sdk.setExtension(extension)
-        mainSourceSet = extension.sourceSets.create(extension.defaultConfig.name)
-        testSourceSet = extension.sourceSets.create(INSTRUMENT_TEST)
+        mainSourceSet = (DefaultAndroidSourceSet) extension.sourceSets.create(extension.defaultConfig.name)
+        testSourceSet = (DefaultAndroidSourceSet) extension.sourceSets.create(INSTRUMENT_TEST)
 
         defaultConfigData = new ProductFlavorData<DefaultProductFlavor>(
                 extension.defaultConfig, mainSourceSet,
-                testSourceSet, project, ConfigurationDependencies.ConfigType.DEFAULT)
+                testSourceSet, project)
     }
 
     private void checkGradleVersion() {
@@ -618,7 +621,10 @@ public abstract class BasePlugin {
         }
         compileTask.source = sourceList.toArray()
 
-        if (testedVariantData != null) {
+        // if the tested variant is an app, add its classpath. For the libraries,
+        // it's done automatically since the classpath includes the library output as a normal
+        // dependency.
+        if (testedVariantData instanceof ApplicationVariantData) {
             compileTask.conventionMapping.classpath =  {
                 project.files(config.compileClasspath) + testedVariantData.javaCompileTask.classpath + testedVariantData.javaCompileTask.outputs.files
             }
@@ -662,8 +668,7 @@ public abstract class BasePlugin {
      * @param configDependencies the list of config dependencies
      */
     protected void createTestApkTasks(@NonNull TestVariantData variantData,
-                                      @NonNull BaseVariantData testedVariantData,
-                                      @NonNull List<ConfigurationDependencies> configDependencies) {
+                                      @NonNull BaseVariantData testedVariantData) {
         // The test app is signed with the same info as the tested app so there's no need
         // to test both.
         if (!variantData.isSigned()) {
@@ -671,7 +676,7 @@ public abstract class BasePlugin {
                     "Tested Variant '${testedVariantData.name}' is not configured to create a signed APK.")
         }
 
-        createPrepareDependenciesTask(variantData, configDependencies)
+        createPrepareDependenciesTask(variantData)
 
         // Add a task to process the manifest
         createProcessTestManifestTask(variantData, "manifests")
@@ -713,7 +718,6 @@ public abstract class BasePlugin {
             assembleTest.dependsOn variantData.assembleTask
         }
     }
-
 
     protected void createCheckTasks(boolean hasFlavors, boolean isLibraryTest) {
         List<AndroidReportTask> reportTasks = Lists.newArrayListWithExpectedSize(2)
@@ -939,7 +943,8 @@ public abstract class BasePlugin {
      * @param assembleTask an optional assembleTask to be used. If null a new one is created. The
      *                assembleTask is always set in the Variant.
      */
-    protected void addPackageTasks(ApkVariantData variantData, Task assembleTask) {
+    protected void addPackageTasks(@NonNull ApkVariantData variantData,
+                                   @Nullable Task assembleTask) {
 
         VariantConfiguration variantConfig = variantData.variantConfiguration
 
@@ -1136,9 +1141,13 @@ public abstract class BasePlugin {
         signingReportTask.setGroup("Android")
     }
 
-    protected void createPrepareDependenciesTask(
-            @NonNull BaseVariantData variantData,
-            @NonNull List<ConfigurationDependencies> configDependenciesList) {
+
+    //----------------------------------------------------------------------------------------------
+    //------------------------------ START DEPENDENCY STUFF ----------------------------------------
+    //----------------------------------------------------------------------------------------------
+
+
+    protected void createPrepareDependenciesTask(@NonNull BaseVariantData variantData) {
         def prepareDependenciesTask = project.tasks.create("prepare${variantData.name}Dependencies",
                 PrepareDependenciesTask)
         variantData.prepareDependenciesTask = prepareDependenciesTask
@@ -1148,12 +1157,11 @@ public abstract class BasePlugin {
 
         // for all libraries required by the configurations of this variant, make this task
         // depend on all the tasks preparing these libraries.
-        for (ConfigurationDependencies configDependencies : configDependenciesList) {
-            prepareDependenciesTask.addChecker(configDependencies.checker)
+        VariantDependencies configurationDependencies = variantData.variantDependency
+        prepareDependenciesTask.addChecker(configurationDependencies.checker)
 
-            for (LibraryDependencyImpl lib : configDependencies.libraries) {
-                addDependencyToPrepareTask(prepareDependenciesTask, lib)
-            }
+        for (LibraryDependencyImpl lib : configurationDependencies.libraries) {
+            addDependencyToPrepareTask(prepareDependenciesTask, lib)
         }
     }
 
@@ -1169,64 +1177,56 @@ public abstract class BasePlugin {
         }
     }
 
-    def resolveDependencies(List<ConfigurationDependencies> configs) {
+    def resolveDependencies(VariantDependencies variantDeps) {
         Map<ModuleVersionIdentifier, List<LibraryDependencyImpl>> modules = [:]
         Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts = [:]
-        Multimap<LibraryDependency, ConfigurationDependencies> reverseMap = ArrayListMultimap.create()
+        Multimap<LibraryDependency, VariantDependencies> reverseMap = ArrayListMultimap.create()
 
-        // start with the default config and its test
-        resolveDependencyForConfig(defaultConfigData, modules, artifacts, reverseMap)
-        resolveDependencyForConfig(defaultConfigData.testConfigDependencies, modules, artifacts,
-                reverseMap)
-
-        // and then loop on all the other configs
-        for (ConfigurationDependencies config : configs) {
-            resolveDependencyForConfig(config, modules, artifacts, reverseMap)
-            if (config.testConfigDependencies != null) {
-                resolveDependencyForConfig(config.testConfigDependencies, modules, artifacts,
-                        reverseMap)
-            }
-        }
+        resolveDependencyForConfig(variantDeps, modules, artifacts, reverseMap)
 
         modules.values().each { List list ->
+
             if (!list.isEmpty()) {
                 // get the first item only
                 LibraryDependencyImpl androidDependency = (LibraryDependencyImpl) list.get(0)
 
                 String bundleName = GUtil.toCamelCase(androidDependency.name.replaceAll("\\:", " "))
 
-                def prepareLibraryTask = project.tasks.create("prepare${bundleName}Library",
-                        PrepareLibraryTask)
-                prepareLibraryTask.description = "Prepare ${androidDependency.name}"
-                prepareLibraryTask.bundle = androidDependency.bundle
-                prepareLibraryTask.explodedDir = androidDependency.bundleFolder
+                def prepareLibraryTask = prepareTaskMap.get(androidDependency)
+                if (prepareLibraryTask == null) {
+                    prepareLibraryTask = project.tasks.create("prepare${bundleName}Library",
+                            PrepareLibraryTask)
+                    prepareLibraryTask.description = "Prepare ${androidDependency.name}"
+                    prepareLibraryTask.bundle = androidDependency.bundle
+                    prepareLibraryTask.explodedDir = androidDependency.bundleFolder
+
+                    prepareTaskMap.put(androidDependency, prepareLibraryTask)
+                }
 
                 // Use the reverse map to find all the configurations that included this android
                 // library so that we can make sure they are built.
-                List<ConfigurationDependencies> configDepList = reverseMap.get(androidDependency)
+                List<VariantDependencies> configDepList = reverseMap.get(androidDependency)
                 if (configDepList != null && !configDepList.isEmpty()) {
-                    for (ConfigurationDependencies configDependencies: configDepList) {
+                    for (VariantDependencies configDependencies: configDepList) {
                         prepareLibraryTask.dependsOn configDependencies.compileConfiguration.buildDependencies
                     }
                 }
-
-                prepareTaskMap.put(androidDependency, prepareLibraryTask)
             }
         }
     }
 
     def resolveDependencyForConfig(
-            ConfigurationDependencies configDependencies,
+            VariantDependencies variantDeps,
             Map<ModuleVersionIdentifier, List<LibraryDependencyImpl>> modules,
             Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
-            Multimap<LibraryDependency, ConfigurationDependencies> reverseMap) {
+            Multimap<LibraryDependency, VariantDependencies> reverseMap) {
 
-        Configuration compileClasspath = configDependencies.compileConfiguration
+        Configuration compileClasspath = variantDeps.compileConfiguration
 
         // TODO - shouldn't need to do this - fix this in Gradle
         ensureConfigured(compileClasspath)
 
-        configDependencies.checker = new DependencyChecker(configDependencies, logger)
+        variantDeps.checker = new DependencyChecker(variantDeps, logger)
 
         // TODO - defer downloading until required -- This is hard to do as we need the info to build the variant config.
         List<LibraryDependencyImpl> bundles = []
@@ -1234,7 +1234,7 @@ public abstract class BasePlugin {
         List<JarDependency> localJars = []
         collectArtifacts(compileClasspath, artifacts)
         compileClasspath.incoming.resolutionResult.root.dependencies.each { ResolvedDependencyResult dep ->
-            addDependency(dep.selected, configDependencies, bundles, jars, modules,
+            addDependency(dep.selected, variantDeps, bundles, jars, modules,
                     artifacts, reverseMap)
         }
 
@@ -1254,7 +1254,7 @@ public abstract class BasePlugin {
         // handle package dependencies. We'll refuse aar libs only in package but not
         // in compile and remove all dependencies already in compile to get package-only jar
         // files.
-        Configuration packageClasspath = configDependencies.packageConfiguration
+        Configuration packageClasspath = variantDeps.packageConfiguration
         Set<File> compileFiles = compileClasspath.files
         Set<File> packageFiles = packageClasspath.files
 
@@ -1272,14 +1272,13 @@ public abstract class BasePlugin {
             }
         }
 
-        configDependencies.addLibraries(bundles)
-        configDependencies.addJars(jars)
-        configDependencies.addLocalJars(localJars)
+        variantDeps.addLibraries(bundles)
+        variantDeps.addJars(jars)
+        variantDeps.addLocalJars(localJars)
 
         // TODO - filter bundles out of source set classpath
 
-        configureBuild(configDependencies)
-
+        configureBuild(variantDeps)
     }
 
     def ensureConfigured(Configuration config) {
@@ -1303,12 +1302,12 @@ public abstract class BasePlugin {
     }
 
     def addDependency(ResolvedModuleVersionResult moduleVersion,
-                      ConfigurationDependencies configDependencies,
+                      VariantDependencies configDependencies,
                       Collection<LibraryDependencyImpl> bundles,
                       List<JarDependency> jars,
                       Map<ModuleVersionIdentifier, List<LibraryDependencyImpl>> modules,
                       Map<ModuleVersionIdentifier, List<ResolvedArtifact>> artifacts,
-                      Multimap<LibraryDependency, ConfigurationDependencies> reverseMap) {
+                      Multimap<LibraryDependency, VariantDependencies> reverseMap) {
         def id = moduleVersion.id
         if (configDependencies.checker.excluded(id)) {
             return
@@ -1353,7 +1352,7 @@ public abstract class BasePlugin {
         bundles.addAll(bundlesForThisModule)
     }
 
-    private void configureBuild(ConfigurationDependencies configurationDependencies) {
+    private void configureBuild(VariantDependencies configurationDependencies) {
         addDependsOnTaskInOtherProjects(
                 project.getTasks().getByName(JavaBasePlugin.BUILD_NEEDED_TASK_NAME), true,
                 JavaBasePlugin.BUILD_NEEDED_TASK_NAME, "compile");
@@ -1383,6 +1382,10 @@ public abstract class BasePlugin {
         task.dependsOn(configuration.getTaskDependencyFromProjectDependency(
                 useDependedOn, otherProjectTaskName));
     }
+
+    //----------------------------------------------------------------------------------------------
+    //------------------------------- END DEPENDENCY STUFF -----------------------------------------
+    //----------------------------------------------------------------------------------------------
 
     protected static File getOptionalDir(File dir) {
         if (dir.isDirectory()) {
@@ -1435,4 +1438,3 @@ public abstract class BasePlugin {
         return attr.getValue("Plugin-Version");
     }
 }
-

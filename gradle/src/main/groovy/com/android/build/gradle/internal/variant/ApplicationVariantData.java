@@ -31,7 +31,7 @@ public class ApplicationVariantData extends ApkVariantData implements TestedVari
         super(config);
     }
 
-   @NonNull
+    @NonNull
     @Override
     protected String computeName() {
         return getVariantConfiguration().hasFlavors() ?

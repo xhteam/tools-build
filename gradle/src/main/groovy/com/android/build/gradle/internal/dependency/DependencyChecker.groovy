@@ -23,12 +23,12 @@ import org.gradle.api.artifacts.ModuleVersionIdentifier
  */
 public class DependencyChecker {
 
-    final ConfigurationDependencies configurationDependencies
+    final VariantDependencies configurationDependencies
     final logger
     final List<Integer> foundAndroidApis = []
     final List<String> foundBouncyCastle = []
 
-    DependencyChecker(ConfigurationDependencies configurationDependencies, ILogger logger) {
+    DependencyChecker(VariantDependencies configurationDependencies, ILogger logger) {
         this.configurationDependencies = configurationDependencies
         this.logger = logger;
     }
@@ -49,7 +49,7 @@ public class DependencyChecker {
 
             logger.warning(
                     "WARNING: Dependency %s is ignored for %s as it may be conflicting with the internal version provided by Android.\n" +
-                    "         In case of problem, please repackage with jarjar to change the class packages",
+                    "         In case of problem, please repackage it with jarjar to change the class packages",
                     id, getConfigName())
             return true;
         }
@@ -79,17 +79,17 @@ public class DependencyChecker {
 
     public String getConfigName() {
         switch (configurationDependencies.type) {
-            case ConfigurationDependencies.ConfigType.DEFAULT:
+            case VariantDependencies.ConfigType.DEFAULT:
                 if (configurationDependencies.sourceSet.name.equals("test")) {
                     return "the default test configuration"
                 }
 
                 return "the default configuration"
-            case ConfigurationDependencies.ConfigType.FLAVOR:
+            case VariantDependencies.ConfigType.FLAVOR:
                 return "Flavor ${configurationDependencies.sourceSet.name.capitalize()}"
-            case ConfigurationDependencies.ConfigType.BUILDTYPE:
+            case VariantDependencies.ConfigType.BUILDTYPE:
                 return "Build Type ${configurationDependencies.sourceSet.name.capitalize()}"
-            case ConfigurationDependencies.ConfigType.KEYSTORE:
+            case VariantDependencies.ConfigType.KEYSTORE:
                 return "Signing SigningConfig ${configurationDependencies.sourceSet.name.capitalize()}"
         }
     }

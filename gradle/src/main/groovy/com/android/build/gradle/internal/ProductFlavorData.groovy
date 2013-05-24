@@ -15,41 +15,35 @@
  */
 
 package com.android.build.gradle.internal
-import com.android.build.gradle.api.AndroidSourceSet
+
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
-import com.android.build.gradle.internal.dependency.ConfigurationDependencies
 import com.android.builder.DefaultProductFlavor
 import org.gradle.api.Project
 import org.gradle.api.Task
+
 /**
  * Class containing a ProductFlavor and associated data (sourcesets)
  */
-public class ProductFlavorData<T extends DefaultProductFlavor> extends ConfigurationDependencies {
+public class ProductFlavorData<T extends DefaultProductFlavor> {
 
     final T productFlavor
 
+    final DefaultAndroidSourceSet sourceSet
     final DefaultAndroidSourceSet testSourceSet
+    final ConfigurationProvider mainProvider
+    final ConfigurationProvider testProvider
 
     Task assembleTask
 
     ProductFlavorData(T productFlavor,
-                      AndroidSourceSet sourceSet, AndroidSourceSet testSourceSet,
-                      Project project, ConfigType type) {
-        super(project, sourceSet, type)
-
-        this.productFlavor = productFlavor
-        this.testSourceSet = testSourceSet
-
-        setTestConfigDependencies(
-                new ConfigurationDependencies(project, testSourceSet, type))
-    }
-
-    ProductFlavorData(T productFlavor,
-                      AndroidSourceSet sourceSet, AndroidSourceSet testSourceSet,
+                      DefaultAndroidSourceSet sourceSet, DefaultAndroidSourceSet testSourceSet,
                       Project project) {
-        this(productFlavor, sourceSet, testSourceSet, project, ConfigType.FLAVOR)
+        this.productFlavor = productFlavor
+        this.sourceSet = sourceSet
+        this.testSourceSet = testSourceSet
+        mainProvider = new ConfigurationProviderImpl(project, sourceSet)
+        testProvider = new ConfigurationProviderImpl(project, testSourceSet)
     }
-
 
     public static String getFlavoredName(ProductFlavorData[] flavorDataArray, boolean capitalized) {
         StringBuilder builder = new StringBuilder()

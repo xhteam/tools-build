@@ -95,7 +95,8 @@ public class ConnectedDevice extends DeviceConnector {
                                     int maxTimeToOutputResponse)
                                     throws TimeoutException, AdbCommandRejectedException,
                                     ShellCommandUnresponsiveException, IOException {
-        iDevice.executeShellCommand(command, receiver, maxTimeToOutputResponse);
+        iDevice.executeShellCommand(command, receiver, maxTimeToOutputResponse,
+                TimeUnit.MILLISECONDS);
     }
 
     @Override

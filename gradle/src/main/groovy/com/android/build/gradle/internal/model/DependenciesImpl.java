@@ -17,8 +17,9 @@
 package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
-import com.android.build.gradle.internal.dependency.ConfigurationDependencies;
+import com.android.annotations.Nullable;
 import com.android.build.gradle.internal.dependency.LibraryDependencyImpl;
+import com.android.build.gradle.internal.dependency.VariantDependencies;
 import com.android.build.gradle.model.Dependencies;
 import com.android.builder.dependency.JarDependency;
 import com.android.builder.dependency.LibraryDependency;
@@ -41,24 +42,32 @@ public class DependenciesImpl implements Dependencies, Serializable {
     private final List<File> jars;
 
     @NonNull
-    static DependenciesImpl cloneConfigDependencies(
-            @NonNull ConfigurationDependencies configDependencies) {
+    static DependenciesImpl cloneDependencies(
+            @Nullable VariantDependencies variantDependencies) {
 
-        List<LibraryDependencyImpl> libs = configDependencies.getLibraries();
-        List<AndroidLibrary> libraries = Lists.newArrayListWithCapacity(libs.size());
-        for (LibraryDependencyImpl libImpl : libs) {
-            libraries.add(new AndroidLibraryImpl(libImpl, getChildrenDependencies(libImpl)));
-        }
+        List<AndroidLibrary> libraries;
+        List<File> jars;
 
-        List<JarDependency> jarDeps = configDependencies.getJarDependencies();
-        List<JarDependency> localDeps = configDependencies.getLocalDependencies();
+        if (variantDependencies != null) {
+            List<LibraryDependencyImpl> libs = variantDependencies.getLibraries();
+            libraries = Lists.newArrayListWithCapacity(libs.size());
+            for (LibraryDependencyImpl libImpl : libs) {
+                libraries.add(new AndroidLibraryImpl(libImpl, getChildrenDependencies(libImpl)));
+            }
 
-        List<File> jars = Lists.newArrayListWithCapacity(jarDeps.size() + localDeps.size());
-        for (JarDependency jarDep : jarDeps) {
-            jars.add(jarDep.getJarFile());
-        }
-        for (JarDependency jarDep : localDeps) {
-            jars.add(jarDep.getJarFile());
+            List<JarDependency> jarDeps = variantDependencies.getJarDependencies();
+            List<JarDependency> localDeps = variantDependencies.getLocalDependencies();
+
+            jars = Lists.newArrayListWithCapacity(jarDeps.size() + localDeps.size());
+            for (JarDependency jarDep : jarDeps) {
+                jars.add(jarDep.getJarFile());
+            }
+            for (JarDependency jarDep : localDeps) {
+                jars.add(jarDep.getJarFile());
+            }
+        } else {
+            libraries = Collections.emptyList();
+            jars = Collections.emptyList();
         }
 
         return new DependenciesImpl(libraries, jars);

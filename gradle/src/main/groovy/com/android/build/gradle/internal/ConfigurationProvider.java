@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.model;
+package com.android.build.gradle.internal;
 
 import com.android.annotations.NonNull;
-import com.android.builder.model.BuildType;
-import com.android.builder.model.SourceProvider;
+import org.gradle.api.artifacts.Configuration;
 
-public interface BuildTypeContainer {
+/**
+ * Provides the compile and package configuration.
+ */
+public interface ConfigurationProvider {
 
     @NonNull
-    BuildType getBuildType();
+    Configuration getCompileConfiguration();
 
     @NonNull
-    SourceProvider getSourceProvider();
+    Configuration getPackageConfiguration();
 }
