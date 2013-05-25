@@ -62,6 +62,7 @@ public class PlatformSdkParser implements SdkParser {
                     new File(getHostToolsFolder(), SdkConstants.FN_RENDERSCRIPT),
                     new File(mPlatformRootFolder, "prebuilts/sdk/renderscript/include"),
                     new File(mPlatformRootFolder, "prebuilts/sdk/renderscript/clang-include"));
+            mInitialized = true;
         }
     }
 
