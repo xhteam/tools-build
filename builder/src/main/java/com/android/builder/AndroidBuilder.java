@@ -472,7 +472,7 @@ public class AndroidBuilder {
         if (!merger.process(output, input,
                 subManifests.toArray(new File[subManifests.size()]),
                 injectionMap, packageOverride)) {
-            throw new RuntimeException();
+            throw new RuntimeException("Manifest merging failed. See console for more info.");
         }
     }
 
