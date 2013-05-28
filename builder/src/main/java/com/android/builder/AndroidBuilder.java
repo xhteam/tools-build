@@ -594,7 +594,7 @@ public class AndroidBuilder {
         // AAPT options
         String ignoreAssets = options.getIgnoreAssets();
         if (ignoreAssets != null) {
-            command.add("---ignore-assets");
+            command.add("--ignore-assets");
             command.add(ignoreAssets);
         }
 
