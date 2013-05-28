@@ -18,6 +18,7 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.builder.testing.api.TestServer
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
@@ -33,10 +34,13 @@ public class TestServerTask extends DefaultTask {
     @InputFile @Optional
     File testedApk
 
+    @Input
+    String variantName
+
     TestServer testServer
 
     @TaskAction
     void sendToServer() {
-        testServer.uploadApks(getTestApk(), getTestedApk())
+        testServer.uploadApks(getVariantName(), getTestApk(), getTestedApk())
     }
 }
