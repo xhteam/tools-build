@@ -40,12 +40,12 @@ public abstract class TestServer {
     /**
      * Uploads the APKs to the server.
      *
-     * TODO: add more details
-     *
+     * @param variantName the name of the variant being tested.
      * @param testApk the APK containing the tests.
      * @param testedApk the APK to be tested. This is optional in case the test apk is self-tested.
      */
-    public abstract void uploadApks(@NonNull File testApk, @Nullable File testedApk);
+    public abstract void uploadApks(@NonNull String variantName,
+                                    @NonNull File testApk, @Nullable File testedApk);
 
     /**
      * Returns true if the server is configured and able to run.
