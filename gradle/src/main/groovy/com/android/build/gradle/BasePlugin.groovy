@@ -851,6 +851,8 @@ public abstract class BasePlugin {
                         serverTask.conventionMapping.testedApk = { baseVariantData.outputFile }
                     }
 
+                    serverTask.conventionMapping.variantName = { baseVariantData.name }
+
                     deviceCheck.dependsOn serverTask
 
                     if (!testServer.isConfigured()) {
