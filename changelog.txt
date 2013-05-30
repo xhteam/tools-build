@@ -1,5 +1,14 @@
 0.5.0:
 
+0.4.2
+
+* Fixed incremental support for resource merging.
+* Fixed issue where all pngs would be processed in parallel with no limit
+  on the number of thread used, leading to failure to run aapt.
+* Fixed ignoreAsset support in aaptOptions
+* Added more logging on failure to merge manifests.
+* Added flavor names to the TestServer API.
+
 0.4.1:
 
 * Renamed 'package' scope to 'apk'
