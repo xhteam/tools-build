@@ -74,7 +74,7 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
 
     /**
      * Setup call back used once before calling multiple
-     * {@link #compileSingleFile(java.io.File, java.lang.Object, com.android.builder.compiling.DependencyFileProcessor)}
+     * {@link #compileSingleFile(File, Object, DependencyFileProcessor)}
      * during incremental compilation. The result object is passed back to the compileSingleFile
      * method
      *
@@ -120,7 +120,7 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
 
         void waitForTasks() {
             if (executor != null) {
-                executor.waitForTasks()
+                executor.waitForAllTasks()
             }
         }
     }
