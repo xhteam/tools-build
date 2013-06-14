@@ -70,13 +70,19 @@ public class ProcessAndroidResources extends IncrementalTask {
 
     @Override
     protected void doFullTaskAction() {
+        // we have to clean the source folder output in case the package name changed.
+        File srcOut = getSourceOutputDir()
+        if (srcOut != null) {
+            emptyFolder(srcOut)
+        }
+
         getBuilder().processResources(
                 getManifestFile(),
                 getResDir(),
                 getAssetsDir(),
                 getLibraries(),
                 getPackageForR(),
-                getSourceOutputDir()?.absolutePath,
+                srcOut?.absolutePath,
                 getTextSymbolOutputDir()?.absolutePath,
                 getPackageOutputFile()?.absolutePath,
                 getProguardOutputFile()?.absolutePath,
@@ -84,5 +90,4 @@ public class ProcessAndroidResources extends IncrementalTask {
                 getDebuggable(),
                 getAaptOptions())
     }
-
 }
