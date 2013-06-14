@@ -13,6 +13,8 @@ import com.google.common.collect.Lists;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 
 public class FakeDevice extends DeviceConnector {
 
@@ -83,6 +85,14 @@ public class FakeDevice extends DeviceConnector {
     @Override
     public void executeShellCommand(String command, IShellOutputReceiver receiver,
                                     int maxTimeToOutputResponse)
+            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
+            IOException {
+        throw new UnsupportedOperationException("Wrong executeShellCommand");
+    }
+
+    @Override
+    public void executeShellCommand(String command, IShellOutputReceiver receiver,
+                                    long maxTimeToOutputResponse, TimeUnit maxTimeUnits)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
             IOException {
         System.out.println(String.format("EXECSHELL(%S) CALLED", name));
