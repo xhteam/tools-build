@@ -28,6 +28,7 @@ import com.android.utils.ILogger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Local device connected to with ddmlib. This is a wrapper around {@link IDevice}.
@@ -95,6 +96,14 @@ public class ConnectedDevice extends DeviceConnector {
                                     throws TimeoutException, AdbCommandRejectedException,
                                     ShellCommandUnresponsiveException, IOException {
         iDevice.executeShellCommand(command, receiver, maxTimeToOutputResponse);
+    }
+
+    @Override
+    public void executeShellCommand(String command, IShellOutputReceiver receiver,
+                                    long maxTimeToOutputResponse, TimeUnit maxTimeUnits)
+                                    throws TimeoutException, AdbCommandRejectedException,
+                                    ShellCommandUnresponsiveException, IOException {
+        iDevice.executeShellCommand(command, receiver, maxTimeToOutputResponse, maxTimeUnits);
     }
 
     @Override
