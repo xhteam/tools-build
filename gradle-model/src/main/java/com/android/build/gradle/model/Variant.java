@@ -32,6 +32,9 @@ public interface Variant {
     String getName();
 
     @NonNull
+    String getDisplayName();
+
+    @NonNull
     File getOutputFile();
 
     boolean isSigned();

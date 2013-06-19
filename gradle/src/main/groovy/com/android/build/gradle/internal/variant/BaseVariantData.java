@@ -30,6 +30,7 @@ import com.android.build.gradle.tasks.RenderscriptCompile;
 import com.android.builder.BuilderConstants;
 import com.android.builder.DefaultProductFlavor;
 import com.android.builder.VariantConfiguration;
+import groovy.lang.Closure;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.Copy;
 import org.gradle.api.tasks.compile.JavaCompile;
@@ -58,7 +59,7 @@ public abstract class BaseVariantData {
     public JavaCompile javaCompileTask;
     public Copy processJavaResources;
 
-    public File outputFile;
+    private Object outputFile;
 
     public Task assembleTask;
 
@@ -139,5 +140,21 @@ public abstract class BaseVariantData {
 
     public boolean getRunProguard() {
         return false;
+    }
+
+    public void setOutputFile(Object file) {
+        outputFile = file;
+    }
+
+    public File getOutputFile() {
+        if (outputFile instanceof File) {
+            return (File) outputFile;
+        } else if (outputFile instanceof Closure) {
+            Closure c = (Closure) outputFile;
+            return (File) c.call();
+        }
+
+        assert false;
+        return null;
     }
 }
