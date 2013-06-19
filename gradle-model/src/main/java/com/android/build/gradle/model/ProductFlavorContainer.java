@@ -29,11 +29,5 @@ public interface ProductFlavorContainer {
     SourceProvider getSourceProvider();
 
     @NonNull
-    Dependencies getDependencies();
-
-    @NonNull
     SourceProvider getTestSourceProvider();
-
-    @NonNull
-    Dependencies getTestDependencies();
 }

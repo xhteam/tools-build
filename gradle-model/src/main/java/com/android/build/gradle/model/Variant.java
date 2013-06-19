@@ -68,4 +68,10 @@ public interface Variant {
 
     @NonNull
     File getClassesFolder();
+
+    @NonNull
+    Dependencies getDependencies();
+
+    @NonNull
+    Dependencies getTestDependencies();
 }

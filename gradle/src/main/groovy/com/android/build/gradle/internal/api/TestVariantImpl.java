@@ -49,12 +49,10 @@ public class TestVariantImpl implements TestVariant {
     @NonNull
     private final TestVariantData variantData;
     @NonNull
-    private final BaseVariant testedVariant;
+    private BaseVariant testedVariant;
 
-    public TestVariantImpl(@NonNull TestVariantData variantData,
-                           @NonNull BaseVariant testedVariant) {
+    public TestVariantImpl(@NonNull TestVariantData variantData) {
         this.variantData = variantData;
-        this.testedVariant = testedVariant;
     }
 
     @Override
@@ -114,6 +112,10 @@ public class TestVariantImpl implements TestVariant {
     @NonNull
     public BaseVariant getTestedVariant() {
         return testedVariant;
+    }
+
+    public void setTestedVariant(@NonNull BaseVariant testedVariant) {
+        this.testedVariant = testedVariant;
     }
 
     @Override

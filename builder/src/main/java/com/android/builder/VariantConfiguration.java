@@ -194,18 +194,16 @@ public class VariantConfiguration implements TestData {
     /**
      * Sets the dependencies
      *
-     * @param containers a list of DependencyContainer.
+     * @param container a DependencyContainer.
      * @return the config object
      */
     @NonNull
-    public VariantConfiguration setDependencies(
-            @NonNull List<? extends DependencyContainer> containers) {
+    public VariantConfiguration setDependencies(@NonNull DependencyContainer container) {
 
-        for (DependencyContainer container : containers) {
-            mDirectLibraries.addAll(container.getAndroidDependencies());
-            mJars.addAll(container.getJarDependencies());
-            mJars.addAll(container.getLocalDependencies());
-        }
+        mDirectLibraries.addAll(container.getAndroidDependencies());
+        mJars.addAll(container.getJarDependencies());
+        mJars.addAll(container.getLocalDependencies());
+
         resolveIndirectLibraryDependencies(mDirectLibraries, mFlatLibraries);
 
         for (LibraryDependency libraryDependency : mFlatLibraries) {

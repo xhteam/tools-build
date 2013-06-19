@@ -17,13 +17,14 @@
 package com.android.build.gradle
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
-import com.android.build.gradle.api.ApplicationVariant
-import com.android.build.gradle.api.TestVariant
+import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.internal.BuildTypeData
+import com.android.build.gradle.internal.ConfigurationProvider
 import com.android.build.gradle.internal.ProductFlavorData
 import com.android.build.gradle.internal.api.ApplicationVariantImpl
+import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
 import com.android.build.gradle.internal.api.TestVariantImpl
-import com.android.build.gradle.internal.dependency.ConfigurationDependencies
+import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.BuildTypeDsl
 import com.android.build.gradle.internal.dsl.BuildTypeFactory
 import com.android.build.gradle.internal.dsl.GroupableProductFlavor
@@ -32,13 +33,14 @@ import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.dsl.SigningConfigFactory
 import com.android.build.gradle.internal.test.PluginHolder
 import com.android.build.gradle.internal.variant.ApplicationVariantData
+import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.builder.DefaultBuildType
 import com.android.builder.VariantConfiguration
 import com.android.builder.signing.SigningConfig
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
-import com.google.common.collect.Lists
+import com.google.common.collect.Maps
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -158,9 +160,9 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
             throw new RuntimeException("ProductFlavor names cannot collide with BuildType names")
         }
 
-        def mainSourceSet = extension.sourceSetsContainer.create(productFlavor.name)
+        def mainSourceSet = (DefaultAndroidSourceSet) extension.sourceSetsContainer.create(productFlavor.name)
         String testName = "${INSTRUMENT_TEST}${productFlavor.name.capitalize()}"
-        def testSourceSet = extension.sourceSetsContainer.create(testName)
+        def testSourceSet = (DefaultAndroidSourceSet) extension.sourceSetsContainer.create(testName)
 
         ProductFlavorData<GroupableProductFlavor> productFlavorData =
                 new ProductFlavorData<GroupableProductFlavor>(
@@ -190,14 +192,6 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
      */
     @Override
     protected void doCreateAndroidTasks() {
-        // resolve dependencies for all config
-        List<ConfigurationDependencies> dependencies = Lists.newArrayListWithCapacity(
-                buildTypes.size() + productFlavors.size())
-        dependencies.addAll(buildTypes.values())
-        dependencies.addAll(productFlavors.values())
-        resolveDependencies(dependencies)
-
-        // now create the tasks.
         if (productFlavors.isEmpty()) {
             createTasksForDefaultBuild()
         } else {
@@ -237,6 +231,9 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
 
         // create the test tasks.
         createCheckTasks(!productFlavors.isEmpty(), false /*isLibrary*/)
+
+        // Create the variant API objects after the tasks have been created!
+        createApiObjects()
     }
 
     /**
@@ -278,7 +275,6 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
      * <type>.
      */
     private createTasksForDefaultBuild() {
-
         BuildTypeData testData = buildTypes[extension.testBuildType]
         if (testData == null) {
             throw new RuntimeException("Test Build Type '$extension.testBuildType' does not exist.")
@@ -289,68 +285,109 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
         ProductFlavorData defaultConfigData = getDefaultConfigData();
 
         for (BuildTypeData buildTypeData : buildTypes.values()) {
-            /// add the container of dependencies
-            // the order of the libraries is important. In descending order:
-            // build types, flavors, defaultConfig.
-            List<ConfigurationDependencies> configDependencies = []
-            configDependencies.add(buildTypeData)
-            // no flavors, just add the default config
-            configDependencies.add(defaultConfigData)
-
             def variantConfig = new VariantConfiguration(
                     defaultConfigData.productFlavor, defaultConfigData.sourceSet,
                     buildTypeData.buildType, buildTypeData.sourceSet, project.name)
 
-            variantConfig.setDependencies(configDependencies)
-
             // create the variant and get its internal storage object.
-            ApplicationVariantData appVariantData = createApplicationVariant(variantConfig,
-                    buildTypeData.assembleTask, configDependencies)
+            ApplicationVariantData appVariantData = new ApplicationVariantData(variantConfig)
+            VariantDependencies variantDep = VariantDependencies.compute(
+                    project, appVariantData.name, buildTypeData, defaultConfigData.mainProvider)
+            appVariantData.setVariantDependency(variantDep)
+
             variantDataList.add(appVariantData)
 
             if (buildTypeData == testData) {
                 testedVariantData = appVariantData
-            } else {
-                // create the API object for this variant.
-                ApplicationVariant applicationVariant = instantiator.newInstance(
-                        ApplicationVariantImpl.class, appVariantData)
-                extension.addApplicationVariant(applicationVariant)
             }
         }
 
         assert testedVariantData != null
 
+        // handle the test variant
         def testVariantConfig = new VariantConfiguration(
                 defaultConfigData.productFlavor, defaultConfigData.testSourceSet,
                 testData.buildType, null,
                 VariantConfiguration.Type.TEST, testedVariantData.variantConfiguration,
                 project.name)
 
-        // dependencies for the test variant
-        List<ConfigurationDependencies> testConfigDependencies = []
-        testConfigDependencies.add(defaultConfigData.testConfigDependencies)
-
-        testVariantConfig.setDependencies(testConfigDependencies)
-
         // create the internal storage for this variant.
-        def testVariantData = new TestVariantData(testVariantConfig)
+        def testVariantData = new TestVariantData(testVariantConfig, testedVariantData)
         variantDataList.add(testVariantData)
+        // link the testVariant to the tested variant in the other direction
         testedVariantData.setTestVariantData(testVariantData);
-        createTestApkTasks(testVariantData, testedVariantData, testConfigDependencies)
 
-        // and now create the API objects for the test variant and the tested variant.
-        // first the tested variant.
-        ApplicationVariantImpl applicationVariant = instantiator.newInstance(
-                ApplicationVariantImpl.class, testedVariantData)
-        extension.addApplicationVariant(applicationVariant)
+        // dependencies for the test variant
+        VariantDependencies variantDep = VariantDependencies.compute(
+                project, testVariantData.name, defaultConfigData.testProvider)
+        testVariantData.setVariantDependency(variantDep)
 
-        // now the test variant
-        TestVariant testVariant = instantiator.newInstance(
-                TestVariantImpl.class, testVariantData, applicationVariant)
-        extension.addTestVariant(testVariant)
+        // now loop on the VariantDependency and resolve them, and create the tasks
+        // for each variant
+        for (BaseVariantData variantData : variantDataList) {
+            resolveDependencies(variantData.variantDependency)
+            variantData.variantConfiguration.setDependencies(variantData.variantDependency)
 
-        // finally wire the test variant inside the tested variant
-        applicationVariant.setTestVariant(testVariant)
+            if (variantData instanceof ApplicationVariantData) {
+                createApplicationVariant(
+                        (ApplicationVariantData) variantData,
+                        buildTypes[variantData.variantConfiguration.buildType.name].assembleTask)
+
+            } else if (variantData instanceof TestVariantData) {
+                testVariantData = (TestVariantData) variantData
+                createTestApkTasks(testVariantData,
+                        (BaseVariantData) testVariantData.testedVariantData)
+            }
+        }
+    }
+
+    protected void createApiObjects() {
+        // we always want to have the test/tested objects created at the same time
+        // so that dynamic closure call on add can have referenced objects created.
+        // This means some objects are created before they are processed from the loop,
+        // so we store whether we have processed them or not.
+        Map<BaseVariantData, BaseVariant> map = Maps.newHashMap()
+        for (BaseVariantData variantData : variantDataList) {
+            if (map.get(variantData) != null) {
+                continue
+            }
+
+            if (variantData instanceof ApplicationVariantData) {
+                ApplicationVariantData appVariantData = (ApplicationVariantData) variantData
+                createVariantApiObjects(map, appVariantData, appVariantData.testVariantData)
+
+            } else if (variantData instanceof TestVariantData) {
+                TestVariantData testVariantData = (TestVariantData) variantData
+                createVariantApiObjects(map,
+                        (ApplicationVariantData) testVariantData.testedVariantData,
+                        testVariantData)
+            }
+        }
+    }
+
+    private void createVariantApiObjects(@NonNull Map<BaseVariantData, BaseVariant> map,
+                                         @NonNull ApplicationVariantData appVariantData,
+                                         @Nullable TestVariantData testVariantData) {
+        ApplicationVariantImpl appVariant = instantiator.newInstance(
+                ApplicationVariantImpl.class, appVariantData)
+
+        TestVariantImpl testVariant = null;
+        if (testVariantData != null) {
+            testVariant = instantiator.newInstance(TestVariantImpl.class, testVariantData)
+        }
+
+        if (appVariant != null && testVariant != null) {
+            appVariant.setTestVariant(testVariant)
+            testVariant.setTestedVariant(appVariant)
+        }
+
+        extension.addApplicationVariant(appVariant)
+        map.put(appVariantData, appVariant)
+
+        if (testVariant != null) {
+            extension.addTestVariant(testVariant)
+            map.put(testVariantData, testVariant)
+        }
     }
 
     /**
@@ -365,17 +402,22 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
             throw new RuntimeException("Test Build Type '$extension.testBuildType' does not exist.")
         }
 
+        // because this method is called multiple times, we need to keep track
+        // of the variantData only for this call.
+        final List<BaseVariantData> localVariantDataList = []
+
         ApplicationVariantData testedVariantData = null
 
         // assembleTask for this flavor(group)
-        def assembleTask
+        def assembleTask = createAssembleTask(flavorDataList)
+        project.tasks.assemble.dependsOn assembleTask
 
         for (BuildTypeData buildTypeData : buildTypes.values()) {
             /// add the container of dependencies
             // the order of the libraries is important. In descending order:
             // build types, flavors, defaultConfig.
-            List<ConfigurationDependencies> configDependencies = []
-            configDependencies.add(buildTypeData)
+            List<ConfigurationProvider> variantProviders = []
+            variantProviders.add(buildTypeData)
 
             VariantConfiguration variantConfig = new VariantConfiguration(
                     extension.defaultConfig, getDefaultConfigData().sourceSet,
@@ -383,40 +425,29 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
 
             for (ProductFlavorData data : flavorDataList) {
                 variantConfig.addProductFlavor(data.productFlavor, data.sourceSet)
-                configDependencies.add(data)
+                variantProviders.add(data.mainProvider)
             }
 
             // now add the defaultConfig
-            configDependencies.add(defaultConfigData)
-
-            variantConfig.setDependencies(configDependencies)
+            variantProviders.add(defaultConfigData.mainProvider)
 
             // create the variant and get its internal storage object.
-            ApplicationVariantData appVariantData = createApplicationVariant(variantConfig,
-                    null, configDependencies)
-            variantDataList.add(appVariantData)
+            ApplicationVariantData appVariantData = new ApplicationVariantData(variantConfig)
+            VariantDependencies variantDep = VariantDependencies.compute(
+                    project, appVariantData.name,
+                    variantProviders.toArray(new ConfigurationProvider[variantProviders.size()]))
+            appVariantData.setVariantDependency(variantDep)
 
-            buildTypeData.assembleTask.dependsOn appVariantData.assembleTask
-
-            if (assembleTask == null) {
-                // create the task based on the name of the flavors.
-                assembleTask = createAssembleTask(flavorDataList)
-                project.tasks.assemble.dependsOn assembleTask
-            }
-            assembleTask.dependsOn appVariantData.assembleTask
+            localVariantDataList.add(appVariantData)
 
             if (buildTypeData == testData) {
                 testedVariantData = appVariantData
-            } else {
-                // create the API object for this variant.
-                ApplicationVariant applicationVariant = instantiator.newInstance(
-                        ApplicationVariantImpl.class, appVariantData)
-                extension.addApplicationVariant(applicationVariant)
             }
         }
 
         assert testedVariantData != null
 
+        // handle test variant
         VariantConfiguration testVariantConfig = new VariantConfiguration(
                 extension.defaultConfig, getDefaultConfigData().testSourceSet,
                 testData.buildType, null,
@@ -426,38 +457,49 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
         /// add the container of dependencies
         // the order of the libraries is important. In descending order:
         // flavors, defaultConfig. No build type for tests
-        List<ConfigurationDependencies> testConfigDependencies = []
+        List<ConfigurationProvider> testVariantProviders = []
 
         for (ProductFlavorData data : flavorDataList) {
             testVariantConfig.addProductFlavor(data.productFlavor, data.testSourceSet)
-            testConfigDependencies.add(data.testConfigDependencies)
+            testVariantProviders.add(data.testProvider)
         }
 
         // now add the default config
-        testConfigDependencies.add(defaultConfigData.testConfigDependencies)
-
-        testVariantConfig.setDependencies(testConfigDependencies)
+        testVariantProviders.add(defaultConfigData.testProvider)
 
         // create the internal storage for this variant.
-        TestVariantData testVariantData = new TestVariantData(testVariantConfig)
-        variantDataList.add(testVariantData)
+        TestVariantData testVariantData = new TestVariantData(testVariantConfig, testedVariantData)
+        localVariantDataList.add(testVariantData)
+        // link the testVariant to the tested variant in the other direction
         testedVariantData.setTestVariantData(testVariantData);
-        createTestApkTasks(testVariantData, testedVariantData, testConfigDependencies)
 
+        // dependencies for the test variant
+        VariantDependencies variantDep = VariantDependencies.compute(
+                project, testVariantData.name,
+                testVariantProviders.toArray(new ConfigurationProvider[testVariantProviders.size()]))
+        testVariantData.setVariantDependency(variantDep)
 
-        // and now create the API objects for the test variant and the tested variant.
-        // first the tested variant.
-        ApplicationVariantImpl applicationVariant = instantiator.newInstance(
-                ApplicationVariantImpl.class, testedVariantData)
-        extension.addApplicationVariant(applicationVariant)
+        // now loop on the VariantDependency and resolve them, and create the tasks
+        // for each variant
+        for (BaseVariantData variantData : localVariantDataList) {
+            resolveDependencies(variantData.variantDependency)
+            variantData.variantConfiguration.setDependencies(variantData.variantDependency)
 
-        // now the test variant
-        TestVariant testVariant = instantiator.newInstance(
-                TestVariantImpl.class, testVariantData, applicationVariant)
-        extension.addTestVariant(testVariant)
+            if (variantData instanceof ApplicationVariantData) {
+                BuildTypeData buildTypeData = buildTypes[variantData.variantConfiguration.buildType.name]
+                createApplicationVariant((ApplicationVariantData) variantData, null)
 
-        // finally wire the test variant inside the tested variant
-        applicationVariant.setTestVariant(testVariant)
+                buildTypeData.assembleTask.dependsOn variantData.assembleTask
+                assembleTask.dependsOn variantData.assembleTask
+
+            } else if (variantData instanceof TestVariantData) {
+                testVariantData = (TestVariantData) variantData
+                createTestApkTasks(testVariantData,
+                        (BaseVariantData) testVariantData.testedVariantData)
+            }
+
+            variantDataList.add(variantData)
+        }
     }
 
     private Task createAssembleTask(ProductFlavorData[] flavorDataList) {
@@ -478,14 +520,11 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
      * @return
      */
     @NonNull
-    private ApplicationVariantData createApplicationVariant(
-            @NonNull VariantConfiguration variantConfig,
-            @Nullable Task assembleTask,
-            @NonNull List<ConfigurationDependencies> configDependencies) {
+    private void createApplicationVariant(
+            @NonNull ApplicationVariantData variant,
+            @Nullable Task assembleTask) {
 
-        ApplicationVariantData variant = new ApplicationVariantData(variantConfig)
-
-        createPrepareDependenciesTask(variant, configDependencies)
+        createPrepareDependenciesTask(variant)
 
         // Add a task to process the manifest(s)
         createProcessManifestTask(variant, "manifests")
@@ -514,7 +553,5 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
         createCompileTask(variant, null/*testedVariant*/)
 
         addPackageTasks(variant, assembleTask)
-
-        return variant;
     }
 }

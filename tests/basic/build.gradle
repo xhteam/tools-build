@@ -8,6 +8,19 @@ buildscript {
 }
 apply plugin: 'android'
 
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:13.0.0'
+    debugCompile 'com.android.support:support-v13:13.0.0'
+
+    compile 'com.google.guava:guava:11.0.2'
+    releaseCompile 'com.google.guava:guava:13.0'
+    compile 'com.google.android.gms:play-services:3.1.36'
+}
+
 android {
     compileSdkVersion 15
     buildToolsVersion "17.0"

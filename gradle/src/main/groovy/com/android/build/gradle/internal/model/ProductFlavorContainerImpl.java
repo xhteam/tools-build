@@ -17,7 +17,6 @@
 package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
-import com.android.build.gradle.model.Dependencies;
 import com.android.build.gradle.model.ProductFlavorContainer;
 import com.android.builder.model.ProductFlavor;
 import com.android.builder.model.SourceProvider;
@@ -34,23 +33,15 @@ class ProductFlavorContainerImpl implements ProductFlavorContainer, Serializable
     @NonNull
     private final SourceProvider sourceProvider;
     @NonNull
-    private final DependenciesImpl dependencies;
-    @NonNull
     private final SourceProvider testSourceProvider;
-    @NonNull
-    private final DependenciesImpl testDependencies;
 
     ProductFlavorContainerImpl(@NonNull ProductFlavorImpl productFlavor,
                                @NonNull SourceProviderImpl sourceProvider,
-                               @NonNull DependenciesImpl dependencies,
-                               @NonNull SourceProviderImpl testSourceProvider,
-                               @NonNull DependenciesImpl testDependencies) {
+                               @NonNull SourceProviderImpl testSourceProvider) {
 
         this.productFlavor = productFlavor;
         this.sourceProvider = sourceProvider;
-        this.dependencies = dependencies;
         this.testSourceProvider = testSourceProvider;
-        this.testDependencies = testDependencies;
     }
 
     @NonNull
@@ -67,19 +58,7 @@ class ProductFlavorContainerImpl implements ProductFlavorContainer, Serializable
 
     @NonNull
     @Override
-    public Dependencies getDependencies() {
-        return dependencies;
-    }
-
-    @NonNull
-    @Override
     public SourceProvider getTestSourceProvider() {
         return testSourceProvider;
-    }
-
-    @NonNull
-    @Override
-    public Dependencies getTestDependencies() {
-        return testDependencies;
     }
 }

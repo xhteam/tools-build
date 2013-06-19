@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,44 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.android.build.gradle.internal
+
 import com.android.annotations.NonNull
 import com.android.build.gradle.internal.api.DefaultAndroidSourceSet
-import com.android.builder.DefaultBuildType
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.gradle.api.artifacts.Configuration
+
 /**
- * Class containing a BuildType and associated data (Sourceset for instance).
  */
-class BuildTypeData implements ConfigurationProvider {
+public class ConfigurationProviderImpl implements ConfigurationProvider {
 
-    final DefaultBuildType buildType
-    final DefaultAndroidSourceSet sourceSet
     private final Project project
+    private final DefaultAndroidSourceSet sourceSet
 
-    final Task assembleTask
-
-    BuildTypeData(DefaultBuildType buildType, DefaultAndroidSourceSet sourceSet, Project project) {
-
-        this.buildType = buildType
-        this.sourceSet = sourceSet
+    public ConfigurationProviderImpl(Project project, DefaultAndroidSourceSet sourceSet) {
         this.project = project
-
-        assembleTask = project.tasks.create("assemble${buildType.name.capitalize()}")
-        assembleTask.description = "Assembles all ${buildType.name.capitalize()} builds"
-        assembleTask.group = "Build"
+        this.sourceSet = sourceSet
     }
 
     @Override
     @NonNull
-    Configuration getCompileConfiguration() {
+    public Configuration getCompileConfiguration() {
         return project.configurations.getByName(sourceSet.compileConfigurationName)
     }
 
     @Override
     @NonNull
-    Configuration getPackageConfiguration() {
+    public Configuration getPackageConfiguration() {
         return project.configurations.getByName(sourceSet.packageConfigurationName)
     }
 }
