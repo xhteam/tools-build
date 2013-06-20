@@ -35,6 +35,8 @@ class VariantImpl implements Variant, Serializable {
     @NonNull
     private final String name;
     @NonNull
+    private final String displayName;
+    @NonNull
     private final String assembleTaskName;
     @Nullable
     private final String assembleTestTaskName;
@@ -65,6 +67,7 @@ class VariantImpl implements Variant, Serializable {
     private final Dependencies testDependencies;
 
     VariantImpl(@NonNull  String name,
+                @NonNull  String displayName,
                 @NonNull  String assembleTaskName,
                 @Nullable String assembleTestTaskName,
                 @NonNull  String buildTypeName,
@@ -81,6 +84,7 @@ class VariantImpl implements Variant, Serializable {
                 @NonNull  Dependencies dependencies,
                 @NonNull  Dependencies testDependencies) {
         this.name = name;
+        this.displayName = displayName;
         this.assembleTaskName = assembleTaskName;
         this.assembleTestTaskName = assembleTestTaskName;
         this.buildTypeName = buildTypeName;
@@ -102,6 +106,12 @@ class VariantImpl implements Variant, Serializable {
     @NonNull
     public String getName() {
         return name;
+    }
+
+    @Override
+    @NonNull
+    public String getDisplayName() {
+        return displayName;
     }
 
     @NonNull

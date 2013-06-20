@@ -36,6 +36,7 @@ import com.android.build.gradle.internal.tasks.DependencyReportTask
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestLibraryTask
 import com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask
 import com.android.build.gradle.internal.tasks.InstallTask
+import com.android.build.gradle.internal.tasks.OutputFileTask
 import com.android.build.gradle.internal.tasks.PrepareDependenciesTask
 import com.android.build.gradle.internal.tasks.PrepareLibraryTask
 import com.android.build.gradle.internal.tasks.SigningReportTask
@@ -1076,8 +1077,8 @@ public abstract class BasePlugin {
             project.file("$project.buildDir/apk/${apkName}")
         }
 
-        def appTask = packageApp
-        variantData.outputFile = project.file("$project.buildDir/apk/${apkName}")
+        Task appTask = packageApp
+        OutputFileTask outputFileTask = packageApp
 
         if (signedApk) {
             if (variantData.zipAlign) {
@@ -1094,6 +1095,7 @@ public abstract class BasePlugin {
                 zipAlignTask.conventionMapping.zipAlignExe = { getSdkParser().zipAlign }
 
                 appTask = zipAlignTask
+                outputFileTask = zipAlignTask
                 variantData.outputFile = project.file(
                         "$project.buildDir/apk/${project.archivesBaseName}-${variantData.baseName}.apk")
             }
@@ -1103,7 +1105,7 @@ public abstract class BasePlugin {
             installTask.description = "Installs the " + variantData.description
             installTask.group = INSTALL_GROUP
             installTask.dependsOn appTask
-            installTask.conventionMapping.packageFile = { appTask.outputFile }
+            installTask.conventionMapping.packageFile = { outputFileTask.outputFile }
             installTask.conventionMapping.adbExe = { getSdkParser().adb }
 
             variantData.installTask = installTask
@@ -1117,6 +1119,8 @@ public abstract class BasePlugin {
         }
         assembleTask.dependsOn appTask
         variantData.assembleTask = assembleTask
+
+        variantData.outputFile = { outputFileTask.outputFile }
 
         // add an uninstall task
         def uninstallTask = project.tasks.create("uninstall${variantData.name}", UninstallTask)

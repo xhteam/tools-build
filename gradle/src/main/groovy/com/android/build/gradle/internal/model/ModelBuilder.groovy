@@ -127,6 +127,7 @@ public class ModelBuilder implements ToolingModelBuilder {
         }
 
         VariantImpl variant = new VariantImpl(
+                variantData.name,
                 variantData.baseName,
                 variantData.assembleTask.name,
                 testVariantData?.assembleTask?.name,

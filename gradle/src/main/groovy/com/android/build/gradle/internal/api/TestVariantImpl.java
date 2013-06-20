@@ -100,12 +100,16 @@ public class TestVariantImpl implements TestVariant {
     @Override
     @NonNull
     public File getOutputFile() {
-        return variantData.packageApplicationTask.getOutputFile();
+        return variantData.getOutputFile();
     }
 
     @Override
     public void setOutputFile(@NonNull File outputFile) {
-        variantData.packageApplicationTask.setOutputFile(outputFile);
+        if (variantData.zipAlignTask != null) {
+            variantData.zipAlignTask.setOutputFile(outputFile);
+        } else {
+            variantData.packageApplicationTask.setOutputFile(outputFile);
+        }
     }
 
     @Override

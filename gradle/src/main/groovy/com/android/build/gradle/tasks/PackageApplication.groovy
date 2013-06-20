@@ -17,6 +17,7 @@ package com.android.build.gradle.tasks
 
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.tasks.IncrementalTask
+import com.android.build.gradle.internal.tasks.OutputFileTask
 import com.android.builder.packaging.DuplicateFileException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputDirectory
@@ -27,7 +28,7 @@ import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.tooling.BuildException
 
-public class PackageApplication extends IncrementalTask {
+public class PackageApplication extends IncrementalTask implements OutputFileTask {
 
     // ----- PUBLIC TASK API -----
 

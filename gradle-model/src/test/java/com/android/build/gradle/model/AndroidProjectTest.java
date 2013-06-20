@@ -69,7 +69,7 @@ public class AndroidProjectTest extends TestCase {
             assertEquals("Variant Count", 2 , variants.size());
 
             // debug variant
-            Variant debugVariant = variants.get("debug");
+            Variant debugVariant = variants.get("Debug");
             assertNotNull("Debug Variant null-check", debugVariant);
             new ProductFlavorTester(debugVariant.getMergedFlavor(), "Debug Merged Flavor")
                     .setVersionCode(12)
@@ -85,7 +85,7 @@ public class AndroidProjectTest extends TestCase {
             assertTrue("Debug signed check", debugVariant.isSigned());
 
             // release variant, not tested.
-            Variant releaseVariant = variants.get("release");
+            Variant releaseVariant = variants.get("Release");
             assertNotNull("Release Variant null-check", releaseVariant);
 
             assertNull("Release assemble test task null-check",
@@ -93,7 +93,7 @@ public class AndroidProjectTest extends TestCase {
             assertNull("Release test output file null-check", releaseVariant.getOutputTestFile());
             assertFalse("Release signed check", releaseVariant.isSigned());
 
-            Dependencies dependencies = model.getVariants().get("debug").getDependencies();
+            Dependencies dependencies = model.getVariants().get("Debug").getDependencies();
             assertNotNull(dependencies);
             assertFalse(dependencies.getJars().isEmpty());
             assertFalse(dependencies.getLibraries().isEmpty());
@@ -151,6 +151,37 @@ public class AndroidProjectTest extends TestCase {
         }
     }
 
+    public void testRenamedApk() {
+        // Configure the connector and create the connection
+        GradleConnector connector = GradleConnector.newConnector();
+
+        File projectDir = new File(getTestDir(), "renamedApk");
+        connector.forProjectDirectory(projectDir);
+
+        ProjectConnection connection = connector.connect();
+        try {
+            // Load the custom model for the project
+            AndroidProject model = connection.getModel(AndroidProject.class);
+            assertNotNull("Model Object null-check", model);
+            assertEquals("Model Name", "renamedApk", model.getName());
+
+            Map<String, Variant> variants = model.getVariants();
+            assertEquals("Variant Count", 2 , variants.size());
+
+            File buildDir = new File(projectDir, "build");
+
+            for (Variant variant : variants.values()) {
+                assertEquals("Output file for " + variant.getName(),
+                        new File(buildDir, variant.getName() + ".apk"),
+                        variant.getOutputFile());
+            }
+
+        } finally {
+            // Clean up
+            connection.close();
+        }
+    }
+
     public void testFlavors() {
         // Configure the connector and create the connection
         GradleConnector connector = GradleConnector.newConnector();
@@ -181,11 +212,11 @@ public class AndroidProjectTest extends TestCase {
             Map<String, Variant> variants = model.getVariants();
             assertEquals("Variant Count", 8 , variants.size());
 
-            Variant f1faDebugVariant = variants.get("f1fa-debug");
-            assertNotNull("f1fa-debug Variant null-check", f1faDebugVariant);
-            new ProductFlavorTester(f1faDebugVariant.getMergedFlavor(), "f1fa-debug Merged Flavor")
+            Variant f1faDebugVariant = variants.get("F1FaDebug");
+            assertNotNull("F1faDebug Variant null-check", f1faDebugVariant);
+            new ProductFlavorTester(f1faDebugVariant.getMergedFlavor(), "F1faDebug Merged Flavor")
                     .test();
-            new VariantTester(f1faDebugVariant, projectDir, "f1fa/debug").test();
+            new VariantTester(f1faDebugVariant, projectDir, "flavors-f1fa-debug-unaligned.apk").test();
 
 
         } finally {
@@ -223,7 +254,7 @@ public class AndroidProjectTest extends TestCase {
                     assertEquals("Library Project", "lib".equals(name), androidProject.isLibrary());
 
                     if (!"lib".equals(name)) {
-                        Dependencies dependencies = androidProject.getVariants().get("debug").getDependencies();
+                        Dependencies dependencies = androidProject.getVariants().get("Debug").getDependencies();
                         assertNotNull(dependencies);
 
                         List<AndroidLibrary> libs = dependencies.getLibraries();
@@ -281,7 +312,7 @@ public class AndroidProjectTest extends TestCase {
                         ProductFlavorContainer flavor1 = androidProject.getProductFlavors().get("flavor1");
                         assertNotNull(flavor1);
 
-                        Variant flavor1Debug = variants.get("flavor1-debug");
+                        Variant flavor1Debug = variants.get("Flavor1Debug");
                         assertNotNull(flavor1Debug);
 
                         Dependencies dependencies = flavor1Debug.getDependencies();
@@ -297,7 +328,7 @@ public class AndroidProjectTest extends TestCase {
                         ProductFlavorContainer flavor2 = androidProject.getProductFlavors().get("flavor2");
                         assertNotNull(flavor2);
 
-                        Variant flavor2Debug = variants.get("flavor2-debug");
+                        Variant flavor2Debug = variants.get("Flavor2Debug");
                         assertNotNull(flavor2Debug);
 
                         dependencies = flavor2Debug.getDependencies();
@@ -542,27 +573,19 @@ public class AndroidProjectTest extends TestCase {
 
         private final Variant variant;
         private final File projectDir;
-        private final String variantPath;
+        private final String outputFileName;
 
-        VariantTester(Variant variant, File projectDir, String variantPath) {
+        VariantTester(Variant variant, File projectDir, String outputFileName) {
             this.variant = variant;
             this.projectDir = projectDir;
-            this.variantPath = variantPath;
+            this.outputFileName = outputFileName;
         }
 
         void test() {
             String variantName = variant.getName();
             File build = new File(projectDir,  "build");
-
-            File apk = new File(build, "apk/" + projectDir.getName() + "-" + variantName +  "-unaligned.apk");
+            File apk = new File(build, "apk/" + outputFileName);
             assertEquals(variantName + " output", apk, variant.getOutputFile());
-
-            String buildType = variantName;
-            int pos = buildType.indexOf("-");
-            if (pos != -1) {
-                buildType = buildType.substring(pos + 1);
-            }
-            assertEquals(variantName + " build type", buildType, variant.getBuildType());
 
             List<File> sourceFolders = variant.getGeneratedSourceFolders();
             assertEquals("Gen src Folder count", 4, sourceFolders.size());
