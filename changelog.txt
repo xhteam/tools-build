@@ -1,5 +1,23 @@
 0.5.0:
 
+- IDE Model is changed and is not compatible with earlier version! A new IDE
+  will required.
+- Fixed IDE model to contain the output file even if it's customized
+  through the DSL. Also fixed the DSL to get/set the output file on the
+  variant object so that it's not necessary to use variant.packageApplication
+  or variant.zipAlign
+- Fixed dependency resolution so that we resolved the combination of (default config,
+  build types, flavor(s)) together instead of separately.
+- Fixed dependency for tests of library project to properly include all the dependencies
+  of the library itself.
+
+0.4.3:
+
+- enable crunching for all png files, not just .9.png
+- fix dealing with non resource files in res/ and assets/
+- fix crash when doing incremental aidl compilation due to broken method name (ah the joy of Groovy...)
+- clean older R classes when the app package name has changed.
+
 0.4.2
 
 * Fixed incremental support for resource merging.
