@@ -14,14 +14,12 @@
  * limitations under the License.
  */
 package com.android.build.gradle.tasks
-
 import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.ide.common.res2.AssetMerger
 import com.android.ide.common.res2.AssetSet
 import com.android.ide.common.res2.FileStatus
+import com.android.ide.common.res2.FileValidity
 import com.android.ide.common.res2.MergedAssetWriter
-import com.android.utils.ILogger
-import com.android.utils.Pair
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 
@@ -37,13 +35,13 @@ public class MergeAssets extends IncrementalTask {
     // fake input to detect changes. Not actually used by the task
     @InputFiles
     Iterable<File> getRawInputFolders() {
-        return IncrementalTask.flattenSourceSets(getInputAssetSets())
+        return flattenSourceSets(getInputAssetSets())
     }
 
     // actual inputs
     List<AssetSet> inputAssetSets
 
-    ILogger androidLogger
+    private final FileValidity<AssetSet> fileValidity = new FileValidity<AssetSet>();
 
     @Override
     protected boolean isIncremental() {
@@ -106,21 +104,19 @@ public class MergeAssets extends IncrementalTask {
         for (Map.Entry<File, FileStatus> entry : changedInputs.entrySet()) {
             File changedFile = entry.getKey()
 
-            Pair<AssetSet, File> matchSet = merger.getDataSetContaining(changedFile)
-            assert matchSet != null
-            if (matchSet == null) {
+            merger.findDataSetContaining(changedFile, fileValidity)
+            if (fileValidity.status == FileValidity.FileStatus.UNKNOWN_FILE) {
                 doFullTaskAction()
                 return
-            }
-
-            // do something?
-            if (!matchSet.getFirst().updateWith(
-                    matchSet.getSecond(), changedFile, entry.getValue(), plugin.logger)) {
-                project.logger.info(
-                        String.format("Failed to process %s event! Full task run",
-                                entry.getValue()))
-                doFullTaskAction()
-                return
+            } else if (fileValidity.status == FileValidity.FileStatus.VALID_FILE) {
+                if (!fileValidity.dataSet.updateWith(
+                        fileValidity.sourceFile, changedFile, entry.getValue(), plugin.logger)) {
+                    project.logger.info(
+                            String.format("Failed to process %s event! Full task run",
+                                    entry.getValue()))
+                    doFullTaskAction()
+                    return
+                }
             }
         }
 
