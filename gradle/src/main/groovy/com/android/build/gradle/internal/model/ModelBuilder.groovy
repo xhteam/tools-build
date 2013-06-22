@@ -27,10 +27,13 @@ import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.LibraryVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.build.gradle.model.AndroidProject
+import com.android.build.gradle.model.ArtifactInfo
 import com.android.build.gradle.model.BuildTypeContainer
 import com.android.build.gradle.model.ProductFlavorContainer
 import com.android.builder.DefaultProductFlavor
 import com.android.builder.SdkParser
+import com.android.builder.VariantConfiguration
+import com.android.builder.model.SigningConfig
 import com.android.builder.model.SourceProvider
 import com.google.common.collect.Lists
 import org.gradle.api.Project
@@ -39,7 +42,6 @@ import org.gradle.tooling.provider.model.ToolingModelBuilder
 
 import java.util.jar.Attributes
 import java.util.jar.Manifest
-
 /**
  * Builder for the custom Android model.
  */
@@ -56,8 +58,12 @@ public class ModelBuilder implements ToolingModelBuilder {
         LibraryPlugin libPlugin = null
         BasePlugin basePlugin = appPlugin
 
+        Collection<SigningConfig> signingConfigs
+
         if (appPlugin == null) {
             basePlugin = libPlugin = getPlugin(project, LibraryPlugin.class)
+        } else {
+            signingConfigs = appPlugin.extension.signingConfigs
         }
 
         if (basePlugin == null) {
@@ -65,13 +71,22 @@ public class ModelBuilder implements ToolingModelBuilder {
             return null
         }
 
+        if (libPlugin != null) {
+            signingConfigs = Collections.singletonList(libPlugin.extension.debugSigningConfig)
+        }
 
         SdkParser sdkParser = basePlugin.getLoadedSdkParser()
-        List<String> bootClasspath = basePlugin.runtimeJarList;
+        List<String> bootClasspath = basePlugin.runtimeJarList
         String compileTarget = sdkParser.target.hashString()
 
-        DefaultAndroidProject androidProject = new DefaultAndroidProject(getModelVersion(),
-                project.name, compileTarget, bootClasspath, libPlugin != null)
+        //noinspection GroovyVariableNotAssigned
+        DefaultAndroidProject androidProject = new DefaultAndroidProject(
+                getModelVersion(),
+                project.name,
+                compileTarget,
+                bootClasspath,
+                cloneSigningConfigs(signingConfigs),
+                libPlugin != null)
                     .setDefaultConfig(createPFC(basePlugin.defaultConfigData))
 
         if (appPlugin != null) {
@@ -79,7 +94,7 @@ public class ModelBuilder implements ToolingModelBuilder {
                 androidProject.addBuildType(createBTC(btData))
             }
             for (ProductFlavorData pfData : appPlugin.productFlavors.values()) {
-                androidProject.addProductFlavors(createPFC(pfData));
+                androidProject.addProductFlavors(createPFC(pfData))
             }
 
         } else if (libPlugin != null) {
@@ -96,7 +111,6 @@ public class ModelBuilder implements ToolingModelBuilder {
         return androidProject
     }
 
-
     @NonNull
     private static String getModelVersion() {
         Class clazz = AndroidProject.class
@@ -107,12 +121,12 @@ public class ModelBuilder implements ToolingModelBuilder {
             return "unknown"
         }
         String manifestPath = classPath.substring(0, classPath.lastIndexOf("!") + 1) +
-                "/META-INF/MANIFEST.MF";
-        Manifest manifest = new Manifest(new URL(manifestPath).openStream());
-        Attributes attr = manifest.getMainAttributes();
-        String version = attr.getValue("Model-Version");
+                "/META-INF/MANIFEST.MF"
+        Manifest manifest = new Manifest(new URL(manifestPath).openStream())
+        Attributes attr = manifest.getMainAttributes()
+        String version = attr.getValue("Model-Version")
         if (version != null) {
-            return version;
+            return version
         }
 
         return "unknown"
@@ -126,27 +140,41 @@ public class ModelBuilder implements ToolingModelBuilder {
             testVariantData = variantData.testVariantData
         }
 
+        ArtifactInfo mainArtifact = createArtifactInfo(variantData)
+        ArtifactInfo testArtifact = testVariantData != null ? createArtifactInfo(testVariantData) : null
+
         VariantImpl variant = new VariantImpl(
                 variantData.name,
                 variantData.baseName,
-                variantData.assembleTask.name,
-                testVariantData?.assembleTask?.name,
                 variantData.variantConfiguration.buildType.name,
                 getProductFlavorNames(variantData),
                 ProductFlavorImpl.cloneFlavor(variantData.variantConfiguration.mergedFlavor),
-                variantData.outputFile,
-                testVariantData?.outputFile,
-                variantData.variantConfiguration.isSigningReady(),
-                getGeneratedSourceFolders(variantData),
-                getGeneratedSourceFolders(testVariantData),
-                getGeneratedResourceFolders(variantData),
-                getGeneratedResourceFolders(testVariantData),
-                variantData.javaCompileTask.destinationDir,
-                DependenciesImpl.cloneDependencies(variantData.variantDependency),
-                DependenciesImpl.cloneDependencies(testVariantData?.variantDependency),
-        )
+                mainArtifact,
+                testArtifact)
 
-        return variant;
+        return variant
+    }
+
+    private static ArtifactInfo createArtifactInfo(@NonNull BaseVariantData variantData) {
+        VariantConfiguration vC = variantData.variantConfiguration
+
+        SigningConfig signingConfig = vC.signingConfig
+        String signingConfigName = null
+        if (signingConfig != null) {
+            signingConfigName = signingConfig.name
+        }
+
+        return new ArtifactInfoImpl(
+                variantData.assembleTask.name,
+                variantData.outputFile,
+                vC.isSigningReady(),
+                signingConfigName,
+                vC.packageName,
+                getGeneratedSourceFolders(variantData),
+                getGeneratedResourceFolders(variantData),
+                variantData.javaCompileTask.destinationDir,
+                DependenciesImpl.cloneDependencies(variantData.variantDependency)
+        )
     }
 
     @NonNull
@@ -157,7 +185,7 @@ public class ModelBuilder implements ToolingModelBuilder {
             flavorNames.add(flavor.name)
         }
 
-        return flavorNames;
+        return flavorNames
     }
 
     @NonNull
@@ -208,6 +236,29 @@ public class ModelBuilder implements ToolingModelBuilder {
         return new BuildTypeContainerImpl(
                 BuildTypeImpl.cloneBuildType(buildTypeData.buildType),
                 SourceProviderImpl.cloneProvider((SourceProvider) buildTypeData.sourceSet))
+    }
+
+    @NonNull
+    private static List<SigningConfig> cloneSigningConfigs(Collection<SigningConfig> signingConfigs) {
+        List<SigningConfig> results = Lists.newArrayListWithCapacity(signingConfigs.size())
+
+        for (SigningConfig signingConfig : signingConfigs) {
+            results.add(createSigningConfig(signingConfig))
+        }
+
+        return results
+    }
+
+    @NonNull
+    private static SigningConfig createSigningConfig(SigningConfig signingConfig) {
+        return new SigningConfigImpl(
+                signingConfig.getName(),
+                signingConfig.getStoreFile(),
+                signingConfig.getStorePassword(),
+                signingConfig.getKeyAlias(),
+                signingConfig.getKeyPassword(),
+                signingConfig.getStoreType(),
+                signingConfig.isSigningReady())
     }
 
     /**

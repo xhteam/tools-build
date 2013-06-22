@@ -18,11 +18,10 @@ package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.build.gradle.model.Dependencies;
+import com.android.build.gradle.model.ArtifactInfo;
 import com.android.build.gradle.model.Variant;
 import com.android.builder.model.ProductFlavor;
 
-import java.io.File;
 import java.io.Serializable;
 import java.util.List;
 
@@ -37,69 +36,30 @@ class VariantImpl implements Variant, Serializable {
     @NonNull
     private final String displayName;
     @NonNull
-    private final String assembleTaskName;
-    @Nullable
-    private final String assembleTestTaskName;
-    @NonNull
     private final String buildTypeName;
     @NonNull
     private final List<String> productFlavorNames;
     @NonNull
     private final ProductFlavor mergedFlavor;
     @NonNull
-    private final File outputFile;
+    private final ArtifactInfo mainArtifactInfo;
     @Nullable
-    private final File testOutputFile;
-    private final boolean isSigned;
-    @NonNull
-    private final List<File> generatedSourceFolders;
-    @Nullable
-    private final List<File> generatedTestSourceFolders;
-    @NonNull
-    private final List<File> generatedResourceFolders;
-    @Nullable
-    private final List<File> generatedTestResourceFolders;
-    @NonNull
-    private final File classesFolder;
-    @NonNull
-    private final Dependencies dependencies;
-    @NonNull
-    private final Dependencies testDependencies;
+    private final ArtifactInfo testArtifactInfo;
 
     VariantImpl(@NonNull  String name,
                 @NonNull  String displayName,
-                @NonNull  String assembleTaskName,
-                @Nullable String assembleTestTaskName,
                 @NonNull  String buildTypeName,
                 @NonNull  List<String> productFlavorNames,
                 @NonNull  ProductFlavorImpl mergedFlavor,
-                @NonNull  File outputFile,
-                @Nullable File testOutputFile,
-                          boolean isSigned,
-                @NonNull  List<File> generatedSourceFolders,
-                @Nullable List<File> generatedTestSourceFolders,
-                @NonNull  List<File> generatedResourceFolders,
-                @Nullable List<File> generatedTestResourceFolders,
-                @NonNull  File classesFolder,
-                @NonNull  Dependencies dependencies,
-                @NonNull  Dependencies testDependencies) {
+                @NonNull  ArtifactInfo mainArtifactInfo,
+                @Nullable ArtifactInfo testArtifactInfo) {
         this.name = name;
         this.displayName = displayName;
-        this.assembleTaskName = assembleTaskName;
-        this.assembleTestTaskName = assembleTestTaskName;
         this.buildTypeName = buildTypeName;
         this.productFlavorNames = productFlavorNames;
         this.mergedFlavor = mergedFlavor;
-        this.outputFile = outputFile;
-        this.testOutputFile = testOutputFile;
-        this.isSigned = isSigned;
-        this.generatedSourceFolders = generatedSourceFolders;
-        this.generatedTestSourceFolders = generatedTestSourceFolders;
-        this.generatedResourceFolders = generatedResourceFolders;
-        this.generatedTestResourceFolders = generatedTestResourceFolders;
-        this.classesFolder = classesFolder;
-        this.dependencies = dependencies;
-        this.testDependencies = testDependencies;
+        this.mainArtifactInfo = mainArtifactInfo;
+        this.testArtifactInfo = testArtifactInfo;
     }
 
     @Override
@@ -112,35 +72,6 @@ class VariantImpl implements Variant, Serializable {
     @NonNull
     public String getDisplayName() {
         return displayName;
-    }
-
-    @NonNull
-    @Override
-    public String getAssembleTaskName() {
-        return assembleTaskName;
-    }
-
-    @Nullable
-    @Override
-    public String getAssembleTestTaskName() {
-        return assembleTestTaskName;
-    }
-
-    @Override
-    @NonNull
-    public File getOutputFile() {
-        return outputFile;
-    }
-
-    @Nullable
-    @Override
-    public File getOutputTestFile() {
-        return testOutputFile;
-    }
-
-    @Override
-    public boolean isSigned() {
-        return isSigned;
     }
 
     @Override
@@ -163,43 +94,13 @@ class VariantImpl implements Variant, Serializable {
 
     @NonNull
     @Override
-    public List<File> getGeneratedSourceFolders() {
-        return generatedSourceFolders;
+    public ArtifactInfo getMainArtifactInfo() {
+        return mainArtifactInfo;
     }
 
     @Nullable
     @Override
-    public List<File> getGeneratedTestSourceFolders() {
-        return generatedTestSourceFolders;
-    }
-
-    @NonNull
-    @Override
-    public List<File> getGeneratedResourceFolders() {
-        return generatedResourceFolders;
-    }
-
-    @Nullable
-    @Override
-    public List<File> getGeneratedTestResourceFolders() {
-        return generatedTestResourceFolders;
-    }
-
-    @NonNull
-    @Override
-    public File getClassesFolder() {
-        return classesFolder;
-    }
-
-    @NonNull
-    @Override
-    public Dependencies getDependencies() {
-        return dependencies;
-    }
-
-    @NonNull
-    @Override
-    public Dependencies getTestDependencies() {
-        return testDependencies;
+    public ArtifactInfo getTestArtifactInfo() {
+        return testArtifactInfo;
     }
 }

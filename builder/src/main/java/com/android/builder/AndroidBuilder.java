@@ -33,6 +33,8 @@ import com.android.builder.internal.compiler.LeafFolderGatherer;
 import com.android.builder.internal.compiler.SourceSearcher;
 import com.android.builder.internal.packaging.JavaResourceProcessor;
 import com.android.builder.internal.packaging.Packager;
+import com.android.builder.model.AaptOptions;
+import com.android.builder.model.SigningConfig;
 import com.android.builder.packaging.DuplicateFileException;
 import com.android.builder.packaging.PackagerException;
 import com.android.builder.packaging.SealedPackageException;
@@ -40,7 +42,6 @@ import com.android.builder.packaging.SigningException;
 import com.android.builder.signing.CertificateInfo;
 import com.android.builder.signing.KeystoreHelper;
 import com.android.builder.signing.KeytoolException;
-import com.android.builder.signing.SigningConfig;
 import com.android.ide.common.internal.AaptRunner;
 import com.android.ide.common.internal.CommandLineRunner;
 import com.android.manifmerger.ManifestMerger;
@@ -80,10 +81,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * {@link #generateBuildConfig(String, boolean, java.util.List, String)}
  * {@link #processManifest(java.io.File, java.util.List, java.util.List, String, int, String, int, int, String)}
  * {@link #processTestManifest(String, int, int, String, String, java.util.List, String)}
- * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, AaptOptions)}
+ * {@link #processResources(java.io.File, java.io.File, java.io.File, java.util.List, String, String, String, String, String, com.android.builder.VariantConfiguration.Type, boolean, com.android.builder.model.AaptOptions)}
  * {@link #compileAllAidlFiles(java.util.List, java.io.File, java.util.List, com.android.builder.compiling.DependencyFileProcessor)}
  * {@link #convertByteCode(Iterable, Iterable, File, String, DexOptions, boolean)}
- * {@link #packageApk(String, String, java.util.List, String, String, boolean, com.android.builder.signing.SigningConfig, String)}
+ * {@link #packageApk(String, String, java.util.List, String, String, boolean, SigningConfig, String)}
  *
  * Java compilation is not handled but the builder provides the bootclasspath with
  * {@link #getBootClasspath(SdkParser)}.
@@ -489,7 +490,7 @@ public class AndroidBuilder {
      * @param proguardOutput optional filepath for proguard file to generate
      * @param type the type of the variant being built
      * @param debuggable whether the app is debuggable
-     * @param options the {@link AaptOptions}
+     * @param options the {@link com.android.builder.model.AaptOptions}
      *
      *
      * @throws IOException
@@ -507,7 +508,7 @@ public class AndroidBuilder {
             @Nullable String proguardOutput,
                       VariantConfiguration.Type type,
                       boolean debuggable,
-            @NonNull  AaptOptions options)
+            @NonNull AaptOptions options)
             throws IOException, InterruptedException {
 
         checkNotNull(manifestFile, "manifestFile cannot be null.");

@@ -15,6 +15,7 @@
  */
 
 package com.android.build.gradle
+
 import com.android.annotations.NonNull
 import com.android.annotations.Nullable
 import com.android.build.gradle.api.BaseVariant
@@ -37,7 +38,7 @@ import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
 import com.android.builder.DefaultBuildType
 import com.android.builder.VariantConfiguration
-import com.android.builder.signing.SigningConfig
+import com.android.builder.model.SigningConfig
 import com.google.common.collect.ArrayListMultimap
 import com.google.common.collect.ListMultimap
 import com.google.common.collect.Maps
@@ -56,6 +57,7 @@ import static com.android.builder.BuilderConstants.INSTRUMENT_TEST
 import static com.android.builder.BuilderConstants.LINT
 import static com.android.builder.BuilderConstants.RELEASE
 import static com.android.builder.BuilderConstants.UI_TEST
+
 /**
  * Gradle plugin class for 'application' projects.
  */

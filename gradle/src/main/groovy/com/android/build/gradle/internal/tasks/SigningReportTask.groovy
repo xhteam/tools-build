@@ -18,10 +18,10 @@ package com.android.build.gradle.internal.tasks
 
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.variant.BaseVariantData
+import com.android.builder.model.SigningConfig
 import com.android.builder.signing.CertificateInfo
 import com.android.builder.signing.KeystoreHelper
 import com.android.builder.signing.KeytoolException
-import com.android.builder.signing.SigningConfig
 import com.google.common.collect.Maps
 import org.gradle.api.tasks.TaskAction
 import org.gradle.logging.StyledTextOutput

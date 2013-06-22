@@ -23,7 +23,7 @@ import com.android.build.gradle.tasks.PackageApplication;
 import com.android.build.gradle.tasks.ZipAlign;
 import com.android.builder.DefaultBuildType;
 import com.android.builder.DefaultProductFlavor;
-import com.android.builder.signing.SigningConfig;
+import com.android.builder.model.SigningConfig;
 import org.gradle.api.DefaultTask;
 
 import java.util.List;
@@ -55,7 +55,7 @@ public interface ApkVariant extends BaseVariant {
     DefaultProductFlavor getMergedFlavor();
 
     /**
-     * Returns the {@link com.android.builder.signing.SigningConfig} for this build variant,
+     * Returns the {@link SigningConfig} for this build variant,
      * if one has been specified.
      */
     @Nullable

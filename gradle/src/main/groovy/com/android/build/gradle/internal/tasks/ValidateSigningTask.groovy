@@ -16,12 +16,13 @@
 
 package com.android.build.gradle.internal.tasks
 
+import com.android.builder.model.SigningConfig
 import com.android.builder.signing.KeystoreHelper
-import com.android.builder.signing.SigningConfig
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.tooling.BuildException
+
 /**
  * A validate task that creates the debug keystore if it's missing.
  * It only creates it if it's in the default debug keystore location.

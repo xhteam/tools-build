@@ -17,9 +17,9 @@
 package com.android.build.gradle.internal.dsl
 
 import com.android.annotations.NonNull
-import com.android.builder.DefaultBuildType
 import com.android.builder.BuilderConstants
-import com.android.builder.signing.SigningConfig
+import com.android.builder.DefaultBuildType
+import com.android.builder.model.SigningConfig
 import com.google.common.collect.Lists
 
 /**

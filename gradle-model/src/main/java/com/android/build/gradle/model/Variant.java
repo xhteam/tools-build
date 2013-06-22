@@ -20,7 +20,6 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.model.ProductFlavor;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -35,18 +34,10 @@ public interface Variant {
     String getDisplayName();
 
     @NonNull
-    File getOutputFile();
-
-    boolean isSigned();
+    ArtifactInfo getMainArtifactInfo();
 
     @Nullable
-    File getOutputTestFile();
-
-    @NonNull
-    String getAssembleTaskName();
-
-    @Nullable
-    String getAssembleTestTaskName();
+    ArtifactInfo getTestArtifactInfo();
 
     @NonNull
     String getBuildType();
@@ -56,25 +47,4 @@ public interface Variant {
 
     @NonNull
     ProductFlavor getMergedFlavor();
-
-    @NonNull
-    List<File> getGeneratedSourceFolders();
-
-    @NonNull
-    List<File> getGeneratedResourceFolders();
-
-    @Nullable
-    List<File> getGeneratedTestSourceFolders();
-
-    @Nullable
-    List<File> getGeneratedTestResourceFolders();
-
-    @NonNull
-    File getClassesFolder();
-
-    @NonNull
-    Dependencies getDependencies();
-
-    @NonNull
-    Dependencies getTestDependencies();
 }

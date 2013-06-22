@@ -19,7 +19,11 @@ package com.android.build.gradle.model;
 import com.android.annotations.NonNull;
 import com.android.builder.model.AndroidLibrary;
 import com.android.builder.model.ProductFlavor;
+import com.android.builder.model.SigningConfig;
 import com.android.builder.model.SourceProvider;
+import com.android.builder.signing.KeystoreHelper;
+import com.android.prefs.AndroidLocation;
+import com.google.common.collect.Maps;
 import junit.framework.TestCase;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
@@ -29,200 +33,254 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
-import java.util.Arrays;
+import java.security.KeyStore;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
 public class AndroidProjectTest extends TestCase {
 
+    private static final Map<String, ProjectData> sProjectModelMap = Maps.newHashMap();
+
+    private static final class ProjectData {
+        AndroidProject model;
+        File projectDir;
+    }
+
+    private ProjectData getModelForProject(String projectName) {
+        ProjectData projectData = sProjectModelMap.get(projectName);
+        if (projectData != null) {
+            return projectData;
+        }
+
+        // Configure the connector and create the connection
+        GradleConnector connector = GradleConnector.newConnector();
+
+        File projectDir = new File(getTestDir(), projectName);
+        connector.forProjectDirectory(projectDir);
+
+        ProjectConnection connection = connector.connect();
+        try {
+            // Load the custom model for the project
+            AndroidProject model = connection.getModel(AndroidProject.class);
+            assertNotNull("Model Object null-check", model);
+            assertEquals("Model Name", projectName, model.getName());
+
+            projectData = new ProjectData();
+            projectData.model = model;
+            projectData.projectDir = projectDir;
+
+
+            sProjectModelMap.put(projectName, projectData);
+
+            return projectData;
+        } finally {
+            connection.close();
+        }
+    }
+
     public void testBasic() {
-        // Configure the connector and create the connection
-        GradleConnector connector = GradleConnector.newConnector();
+        // Load the custom model for the project
+        ProjectData projectData = getModelForProject("basic");
 
-        File projectDir = new File(getTestDir(), "basic");
-        connector.forProjectDirectory(projectDir);
+        AndroidProject model = projectData.model;
 
-        ProjectConnection connection = connector.connect();
-        try {
-            // Load the custom model for the project
-            AndroidProject model = connection.getModel(AndroidProject.class);
-            assertNotNull("Model Object null-check", model);
-            assertEquals("Model Name", "basic", model.getName());
-            assertFalse("Library Project", model.isLibrary());
-            assertEquals("Compile Target", "android-15", model.getCompileTarget());
-            assertFalse("Non empty bootclasspath", model.getBootClasspath().isEmpty());
-
-            ProductFlavorContainer defaultConfig = model.getDefaultConfig();
-
-            new SourceProviderTester(model.getName(), projectDir,
-                    "main", defaultConfig.getSourceProvider())
-                    .test();
-            new SourceProviderTester(model.getName(), projectDir,
-                    "instrumentTest", defaultConfig.getTestSourceProvider())
-                    .test();
-
-            Map<String, BuildTypeContainer> buildTypes = model.getBuildTypes();
-            assertEquals("Build Type Count", 2, buildTypes.size());
-
-            Map<String, Variant> variants = model.getVariants();
-            assertEquals("Variant Count", 2 , variants.size());
-
-            // debug variant
-            Variant debugVariant = variants.get("Debug");
-            assertNotNull("Debug Variant null-check", debugVariant);
-            new ProductFlavorTester(debugVariant.getMergedFlavor(), "Debug Merged Flavor")
-                    .setVersionCode(12)
-                    .setVersionName("2.0")
-                    .setMinSdkVersion(16)
-                    .setTargetSdkVersion(16)
-                    .test();
-
-            // this variant is tested.
-            assertNotNull("Debug assemble test task null-check",
-                    debugVariant.getAssembleTestTaskName());
-            assertNotNull("Debug test output file null-check", debugVariant.getOutputTestFile());
-            assertTrue("Debug signed check", debugVariant.isSigned());
-
-            // release variant, not tested.
-            Variant releaseVariant = variants.get("Release");
-            assertNotNull("Release Variant null-check", releaseVariant);
-
-            assertNull("Release assemble test task null-check",
-                    releaseVariant.getAssembleTestTaskName());
-            assertNull("Release test output file null-check", releaseVariant.getOutputTestFile());
-            assertFalse("Release signed check", releaseVariant.isSigned());
-
-            Dependencies dependencies = model.getVariants().get("Debug").getDependencies();
-            assertNotNull(dependencies);
-            assertEquals(2, dependencies.getJars().size());
-            assertEquals(1, dependencies.getLibraries().size());
-            assertTrue(dependencies.getProjectDependenciesPath().isEmpty());
-
-        } finally {
-            // Clean up
-            connection.close();
-        }
+        assertFalse("Library Project", model.isLibrary());
+        assertEquals("Compile Target", "android-15", model.getCompileTarget());
+        assertFalse("Non empty bootclasspath", model.getBootClasspath().isEmpty());
     }
 
-    public void testMigrated() {
-        // Configure the connector and create the connection
-        GradleConnector connector = GradleConnector.newConnector();
+    public void testBasicSourceProviders() throws Exception {
+        // Load the custom model for the project
+        ProjectData projectData = getModelForProject("basic");
 
-        File projectDir = new File(getTestDir(), "migrated");
-        connector.forProjectDirectory(projectDir);
+        AndroidProject model = projectData.model;
+        File projectDir = projectData.projectDir;
 
-        ProjectConnection connection = connector.connect();
-        try {
-            // Load the custom model for the project
-            AndroidProject model = connection.getModel(AndroidProject.class);
-            assertNotNull("Model Object null-check", model);
-            assertEquals("Model Name", "migrated", model.getName());
-            assertFalse("Library Project", model.isLibrary());
+        ProductFlavorContainer defaultConfig = model.getDefaultConfig();
 
-            ProductFlavorContainer defaultConfig = model.getDefaultConfig();
+        new SourceProviderTester(model.getName(), projectDir,
+                "main", defaultConfig.getSourceProvider())
+                .test();
+        new SourceProviderTester(model.getName(), projectDir,
+                "instrumentTest", defaultConfig.getTestSourceProvider())
+                .test();
 
-            new SourceProviderTester(model.getName(), projectDir,
-                    "main", defaultConfig.getSourceProvider())
-                    .setJavaDir("src")
-                    .setResourcesDir("src")
-                    .setAidlDir("src")
-                    .setRenderscriptDir("src")
-                    .setResDir("res")
-                    .setAssetsDir("assets")
-                    .setManifestFile("AndroidManifest.xml")
-                    .test();
-
-            new SourceProviderTester(model.getName(), projectDir,
-                    "instrumentTest", defaultConfig.getTestSourceProvider())
-                    .setJavaDir("tests/java")
-                    .setResourcesDir("tests/resources")
-                    .setAidlDir("tests/aidl")
-                    .setJniDir("tests/jni")
-                    .setRenderscriptDir("tests/rs")
-                    .setResDir("tests/res")
-                    .setAssetsDir("tests/assets")
-                    .setManifestFile("tests/AndroidManifest.xml")
-                    .test();
-
-        } finally {
-            // Clean up
-            connection.close();
-        }
+        Map<String, BuildTypeContainer> buildTypes = model.getBuildTypes();
+        assertEquals("Build Type Count", 2, buildTypes.size());
     }
 
-    public void testRenamedApk() {
-        // Configure the connector and create the connection
-        GradleConnector connector = GradleConnector.newConnector();
+    public void testBasicVariantDetails() throws Exception {
+        // Load the custom model for the project
+        ProjectData projectData = getModelForProject("basic");
 
-        File projectDir = new File(getTestDir(), "renamedApk");
-        connector.forProjectDirectory(projectDir);
+        AndroidProject model = projectData.model;
 
-        ProjectConnection connection = connector.connect();
-        try {
-            // Load the custom model for the project
-            AndroidProject model = connection.getModel(AndroidProject.class);
-            assertNotNull("Model Object null-check", model);
-            assertEquals("Model Name", "renamedApk", model.getName());
+        Map<String, Variant> variants = model.getVariants();
+        assertEquals("Variant Count", 2 , variants.size());
 
-            Map<String, Variant> variants = model.getVariants();
-            assertEquals("Variant Count", 2 , variants.size());
+        // debug variant
+        Variant debugVariant = variants.get("Debug");
+        assertNotNull("Debug Variant null-check", debugVariant);
+        new ProductFlavorTester(debugVariant.getMergedFlavor(), "Debug Merged Flavor")
+                .setVersionCode(12)
+                .setVersionName("2.0")
+                .setMinSdkVersion(16)
+                .setTargetSdkVersion(16)
+                .test();
 
-            File buildDir = new File(projectDir, "build");
+        ArtifactInfo debugMainInfo = debugVariant.getMainArtifactInfo();
+        assertNotNull("Debug main info null-check", debugMainInfo);
+        assertEquals("Debug package name", "com.android.tests.basic.debug",
+                debugMainInfo.getPackageName());
+        assertTrue("Debug signed check", debugMainInfo.isSigned());
+        assertEquals("Debug signingConfig name", "myConfig", debugMainInfo.getSigningConfigName());
 
-            for (Variant variant : variants.values()) {
-                assertEquals("Output file for " + variant.getName(),
-                        new File(buildDir, variant.getName() + ".apk"),
-                        variant.getOutputFile());
-            }
+        // this variant is tested.
+        ArtifactInfo debugTestInfo = debugVariant.getTestArtifactInfo();
+        assertNotNull("Test info null-check", debugTestInfo);
+        assertEquals("Test package name", "com.android.tests.basic.debug.test",
+                debugTestInfo.getPackageName());
+        assertNotNull("Test output file null-check", debugTestInfo.getOutputFile());
+        assertTrue("Test signed check", debugTestInfo.isSigned());
+        assertEquals("Test signingConfig name", "myConfig", debugTestInfo.getSigningConfigName());
 
-        } finally {
-            // Clean up
-            connection.close();
+        // release variant, not tested.
+        Variant releaseVariant = variants.get("Release");
+        assertNotNull("Release Variant null-check", releaseVariant);
+
+        ArtifactInfo relMainInfo = releaseVariant.getMainArtifactInfo();
+        assertNotNull("Release main info null-check", relMainInfo);
+        assertEquals("Release package name", "com.android.tests.basic",
+                relMainInfo.getPackageName());
+        assertFalse("Release signed check", relMainInfo.isSigned());
+        assertNull("Release signingConfig name", relMainInfo.getSigningConfigName());
+
+        ArtifactInfo relTestInfo = releaseVariant.getTestArtifactInfo();
+        assertNull("Release test info null-check", relTestInfo);
+
+        // check debug dependencies
+        Dependencies dependencies = debugMainInfo.getDependencies();
+        assertNotNull(dependencies);
+        assertEquals(2, dependencies.getJars().size());
+        assertEquals(1, dependencies.getLibraries().size());
+        assertTrue(dependencies.getProjectDependenciesPath().isEmpty());
+    }
+
+    public void testBasicSigningConfigs() throws Exception {
+        // Load the custom model for the project
+        ProjectData projectData = getModelForProject("basic");
+
+        AndroidProject model = projectData.model;
+
+        assertEquals("Number of signingConfig", 2, model.getSigningConfigs().size());
+
+        SigningConfig debugSigningConfig = model.getSigningConfigs().get(0);
+        new SigningConfigTester(debugSigningConfig, "debug", true).test();
+
+        SigningConfig mySigningConfig = model.getSigningConfigs().get(1);
+        new SigningConfigTester(mySigningConfig, "myConfig", true)
+                .setStoreFile(new File(projectData.projectDir, "debug.keystore"))
+                .test();
+
+    }
+
+    public void testMigrated() throws Exception {
+        // Load the custom model for the project
+        ProjectData projectData = getModelForProject("migrated");
+
+        AndroidProject model = projectData.model;
+        File projectDir = projectData.projectDir;
+
+        assertNotNull("Model Object null-check", model);
+        assertEquals("Model Name", "migrated", model.getName());
+        assertFalse("Library Project", model.isLibrary());
+
+        ProductFlavorContainer defaultConfig = model.getDefaultConfig();
+
+        new SourceProviderTester(model.getName(), projectDir,
+                "main", defaultConfig.getSourceProvider())
+                .setJavaDir("src")
+                .setResourcesDir("src")
+                .setAidlDir("src")
+                .setRenderscriptDir("src")
+                .setResDir("res")
+                .setAssetsDir("assets")
+                .setManifestFile("AndroidManifest.xml")
+                .test();
+
+        new SourceProviderTester(model.getName(), projectDir,
+                "instrumentTest", defaultConfig.getTestSourceProvider())
+                .setJavaDir("tests/java")
+                .setResourcesDir("tests/resources")
+                .setAidlDir("tests/aidl")
+                .setJniDir("tests/jni")
+                .setRenderscriptDir("tests/rs")
+                .setResDir("tests/res")
+                .setAssetsDir("tests/assets")
+                .setManifestFile("tests/AndroidManifest.xml")
+                .test();
+    }
+
+    public void testRenamedApk() throws Exception {
+        // Load the custom model for the project
+        ProjectData projectData = getModelForProject("renamedApk");
+
+        AndroidProject model = projectData.model;
+        File projectDir = projectData.projectDir;
+
+        assertNotNull("Model Object null-check", model);
+        assertEquals("Model Name", "renamedApk", model.getName());
+
+        Map<String, Variant> variants = model.getVariants();
+        assertEquals("Variant Count", 2 , variants.size());
+
+        File buildDir = new File(projectDir, "build");
+
+        for (Variant variant : variants.values()) {
+            ArtifactInfo mainInfo = variant.getMainArtifactInfo();
+            assertNotNull(
+                    "Null-check on mainArtifactInfo for " + variant.getDisplayName(),
+                    mainInfo);
+
+            assertEquals("Output file for " + variant.getName(),
+                    new File(buildDir, variant.getName() + ".apk"),
+                    mainInfo.getOutputFile());
         }
     }
 
     public void testFlavors() {
-        // Configure the connector and create the connection
-        GradleConnector connector = GradleConnector.newConnector();
+        // Load the custom model for the project
+        ProjectData projectData = getModelForProject("flavors");
 
-        File projectDir = new File(getTestDir(), "flavors");
-        connector.forProjectDirectory(projectDir);
+        AndroidProject model = projectData.model;
+        File projectDir = projectData.projectDir;
 
-        ProjectConnection connection = connector.connect();
-        try {
-            // Load the custom model for the project
-            AndroidProject model = connection.getModel(AndroidProject.class);
-            assertNotNull("Model Object null-check", model);
-            assertEquals("Model Name", "flavors", model.getName());
-            assertFalse("Library Project", model.isLibrary());
+        assertNotNull("Model Object null-check", model);
+        assertEquals("Model Name", "flavors", model.getName());
+        assertFalse("Library Project", model.isLibrary());
 
-            ProductFlavorContainer defaultConfig = model.getDefaultConfig();
+        ProductFlavorContainer defaultConfig = model.getDefaultConfig();
 
-            new SourceProviderTester(model.getName(), projectDir,
-                    "main", defaultConfig.getSourceProvider())
-                    .test();
-            new SourceProviderTester(model.getName(), projectDir,
-                    "instrumentTest", defaultConfig.getTestSourceProvider())
-                    .test();
+        new SourceProviderTester(model.getName(), projectDir,
+                "main", defaultConfig.getSourceProvider())
+                .test();
+        new SourceProviderTester(model.getName(), projectDir,
+                "instrumentTest", defaultConfig.getTestSourceProvider())
+                .test();
 
-            Map<String, BuildTypeContainer> buildTypes = model.getBuildTypes();
-            assertEquals("Build Type Count", 2, buildTypes.size());
+        Map<String, BuildTypeContainer> buildTypes = model.getBuildTypes();
+        assertEquals("Build Type Count", 2, buildTypes.size());
 
-            Map<String, Variant> variants = model.getVariants();
-            assertEquals("Variant Count", 8 , variants.size());
+        Map<String, Variant> variants = model.getVariants();
+        assertEquals("Variant Count", 8 , variants.size());
 
-            Variant f1faDebugVariant = variants.get("F1FaDebug");
-            assertNotNull("F1faDebug Variant null-check", f1faDebugVariant);
-            new ProductFlavorTester(f1faDebugVariant.getMergedFlavor(), "F1faDebug Merged Flavor")
-                    .test();
-            new VariantTester(f1faDebugVariant, projectDir, "flavors-f1fa-debug-unaligned.apk").test();
-
-
-        } finally {
-            // Clean up
-            connection.close();
-        }
+        Variant f1faDebugVariant = variants.get("F1FaDebug");
+        assertNotNull("F1faDebug Variant null-check", f1faDebugVariant);
+        new ProductFlavorTester(f1faDebugVariant.getMergedFlavor(), "F1faDebug Merged Flavor")
+                .test();
+        new VariantTester(f1faDebugVariant, projectDir, "flavors-f1fa-debug-unaligned.apk").test();
     }
 
     public void testTicTacToe() {
@@ -254,7 +312,7 @@ public class AndroidProjectTest extends TestCase {
                     assertEquals("Library Project", "lib".equals(name), androidProject.isLibrary());
 
                     if (!"lib".equals(name)) {
-                        Dependencies dependencies = androidProject.getVariants().get("Debug").getDependencies();
+                        Dependencies dependencies = androidProject.getVariants().get("Debug").getMainArtifactInfo().getDependencies();
                         assertNotNull(dependencies);
 
                         List<AndroidLibrary> libs = dependencies.getLibraries();
@@ -315,7 +373,7 @@ public class AndroidProjectTest extends TestCase {
                         Variant flavor1Debug = variants.get("Flavor1Debug");
                         assertNotNull(flavor1Debug);
 
-                        Dependencies dependencies = flavor1Debug.getDependencies();
+                        Dependencies dependencies = flavor1Debug.getMainArtifactInfo().getDependencies();
                         assertNotNull(dependencies);
                         List<AndroidLibrary> libs = dependencies.getLibraries();
                         assertNotNull(libs);
@@ -331,7 +389,7 @@ public class AndroidProjectTest extends TestCase {
                         Variant flavor2Debug = variants.get("Flavor2Debug");
                         assertNotNull(flavor2Debug);
 
-                        dependencies = flavor2Debug.getDependencies();
+                        dependencies = flavor2Debug.getMainArtifactInfo().getDependencies();
                         assertNotNull(dependencies);
                         libs = dependencies.getLibraries();
                         assertNotNull(libs);
@@ -585,10 +643,94 @@ public class AndroidProjectTest extends TestCase {
             String variantName = variant.getName();
             File build = new File(projectDir,  "build");
             File apk = new File(build, "apk/" + outputFileName);
-            assertEquals(variantName + " output", apk, variant.getOutputFile());
+            assertEquals(variantName + " output", apk, variant.getMainArtifactInfo().getOutputFile());
 
-            List<File> sourceFolders = variant.getGeneratedSourceFolders();
+            List<File> sourceFolders = variant.getMainArtifactInfo().getGeneratedSourceFolders();
             assertEquals("Gen src Folder count", 4, sourceFolders.size());
+        }
+    }
+
+    private static final class SigningConfigTester {
+
+        public static final String DEFAULT_PASSWORD = "android";
+        public static final String DEFAULT_ALIAS = "AndroidDebugKey";
+
+        @NonNull private final SigningConfig signingConfig;
+        @NonNull private final String name;
+        private File storeFile = null;
+        private String storePassword = null;
+        private String keyAlias = null;
+        private String keyPassword = null;
+        private String storeType = KeyStore.getDefaultType();
+        private boolean isSigningReady = false;
+
+        SigningConfigTester(@NonNull SigningConfig signingConfig, @NonNull String name,
+                            boolean isDebug) throws AndroidLocation.AndroidLocationException {
+            assertNotNull(String.format("SigningConfig '%s' null-check", name), signingConfig);
+            this.signingConfig = signingConfig;
+            this.name = name;
+
+            if (isDebug) {
+                storeFile =  new File(KeystoreHelper.defaultDebugKeystoreLocation());
+                storePassword = DEFAULT_PASSWORD;
+                keyAlias = DEFAULT_ALIAS;
+                keyPassword = DEFAULT_PASSWORD;
+                isSigningReady = true;
+            }
+        }
+
+        SigningConfigTester setStoreFile(File storeFile) {
+            this.storeFile = storeFile;
+            return this;
+        }
+
+        SigningConfigTester setStorePassword(String storePassword) {
+            this.storePassword = storePassword;
+            return this;
+        }
+
+        SigningConfigTester setKeyAlias(String keyAlias) {
+            this.keyAlias = keyAlias;
+            return this;
+        }
+
+        SigningConfigTester setKeyPassword(String keyPassword) {
+            this.keyPassword = keyPassword;
+            return this;
+        }
+
+        SigningConfigTester setStoreType(String storeType) {
+            this.storeType = storeType;
+            return this;
+        }
+
+        SigningConfigTester setSigningReady(boolean isSigningReady) {
+            this.isSigningReady = isSigningReady;
+            return this;
+        }
+
+        void test() {
+            assertEquals("SigningConfig name", name, signingConfig.getName());
+
+            assertEquals(String.format("SigningConfig '%s' storeFile", name),
+                    storeFile, signingConfig.getStoreFile());
+
+            assertEquals(String.format("SigningConfig '%s' storePassword", name),
+                    storePassword, signingConfig.getStorePassword());
+
+            String scAlias = signingConfig.getKeyAlias();
+            assertEquals(String.format("SigningConfig '%s' keyAlias", name),
+                    keyAlias != null ? keyAlias.toLowerCase(Locale.getDefault()) : keyAlias,
+                    scAlias != null ? scAlias.toLowerCase(Locale.getDefault()) : scAlias);
+
+            assertEquals(String.format("SigningConfig '%s' keyPassword", name),
+                    keyPassword, signingConfig.getKeyPassword());
+
+            assertEquals(String.format("SigningConfig '%s' storeType", name),
+                    storeType, signingConfig.getStoreType());
+
+            assertEquals(String.format("SigningConfig '%s' isSigningReady", name),
+                    isSigningReady, signingConfig.isSigningReady());
         }
     }
 }

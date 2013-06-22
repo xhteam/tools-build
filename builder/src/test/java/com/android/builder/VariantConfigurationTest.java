@@ -17,6 +17,7 @@
 package com.android.builder;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import junit.framework.TestCase;
 
 import java.io.File;
@@ -35,8 +36,9 @@ public class VariantConfigurationTest extends TestCase {
             mPackageName = packageName;
         }
 
+        @Nullable
         @Override
-        public String getPackage(File manifestFile) {
+        public String getPackage(@NonNull File manifestFile) {
             return mPackageName;
         }
 
@@ -50,8 +52,9 @@ public class VariantConfigurationTest extends TestCase {
             return -1;
         }
 
+        @Nullable
         @Override
-        public String getVersionName(File manifestFile) {
+        public String getVersionName(@NonNull File manifestFile) {
             return "1.0";
         }
     }

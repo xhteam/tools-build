@@ -20,7 +20,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.internal.BuildConfigImpl;
 import com.android.builder.model.BuildType;
-import com.android.builder.signing.SigningConfig;
+import com.android.builder.model.SigningConfig;
 import com.google.common.base.Objects;
 
 public class DefaultBuildType extends BuildConfigImpl implements BuildType {

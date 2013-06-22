@@ -16,7 +16,7 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.builder.signing.SigningConfig
+import com.android.builder.model.SigningConfig
 import org.gradle.api.NamedDomainObjectFactory
 import org.gradle.internal.reflect.Instantiator
 

@@ -17,6 +17,8 @@
 package com.android.build.gradle.model;
 
 import com.android.annotations.NonNull;
+import com.android.builder.model.AaptOptions;
+import com.android.builder.model.SigningConfig;
 
 import java.util.List;
 import java.util.Map;
@@ -51,4 +53,11 @@ public interface AndroidProject {
 
     @NonNull
     List<String> getBootClasspath();
+
+    @NonNull
+    List<SigningConfig> getSigningConfigs();
+
+    @NonNull
+    AaptOptions getAaptOptions();
+
 }

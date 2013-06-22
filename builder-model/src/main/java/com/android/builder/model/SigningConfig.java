@@ -14,38 +14,35 @@
  * limitations under the License.
  */
 
-package com.android.builder.testing;
+package com.android.builder.model;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 
-import java.util.Set;
+import java.io.File;
 
 /**
+ * A Signing Configuration
  */
-public interface TestData {
-
-    /**
-     * Returns the package name.
-     *
-     * @return the package name
-     */
-    @NonNull
-    String getPackageName();
-
-    /**
-     * Returns the tested package name. This can be empty if the test package is self-contained.
-     *
-     * @return the package name or null.
-     */
-    @Nullable
-    String getTestedPackageName();
+public interface SigningConfig {
 
     @NonNull
-    String getInstrumentationRunner();
-
-    int getMinSdkVersion();
+    public String getName();
 
     @Nullable
-    Set<String> getSupportedAbis();
+    File getStoreFile();
+
+    @Nullable
+    String getStorePassword();
+
+    @Nullable
+    String getKeyAlias();
+
+    @Nullable
+    String getKeyPassword();
+
+    @Nullable
+    String getStoreType();
+
+    boolean isSigningReady();
 }

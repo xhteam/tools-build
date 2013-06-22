@@ -18,6 +18,7 @@ package com.android.builder.signing;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.builder.model.SigningConfig;
 import com.android.prefs.AndroidLocation;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.android.sdklib.util.GrabProcessOutput;
@@ -193,7 +194,7 @@ public final class KeystoreHelper {
      * @throws KeytoolException
      * @throws FileNotFoundException
      */
-    public static CertificateInfo getCertificateInfo(SigningConfig signingConfig)
+    public static CertificateInfo getCertificateInfo(@NonNull SigningConfig signingConfig)
             throws KeytoolException, FileNotFoundException {
 
         try {
@@ -202,11 +203,15 @@ public final class KeystoreHelper {
                             signingConfig.getStoreType() : KeyStore.getDefaultType());
 
             FileInputStream fis = new FileInputStream(signingConfig.getStoreFile());
+            //noinspection ConstantConditions
             keyStore.load(fis, signingConfig.getStorePassword().toCharArray());
             fis.close();
+
+            //noinspection ConstantConditions
+            char[] keyPassword = signingConfig.getKeyPassword().toCharArray();
             PrivateKeyEntry entry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(
                     signingConfig.getKeyAlias(),
-                    new KeyStore.PasswordProtection(signingConfig.getKeyPassword().toCharArray()));
+                    new KeyStore.PasswordProtection(keyPassword));
 
             if (entry != null) {
                 return new CertificateInfo(entry.getPrivateKey(),

@@ -20,11 +20,12 @@ import com.android.build.gradle.internal.dsl.BuildTypeDsl
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.builder.BuilderConstants
 import com.android.builder.DefaultBuildType
-import com.android.builder.signing.SigningConfig
+import com.android.builder.model.SigningConfig
 import org.gradle.api.Action
 import org.gradle.api.internal.DefaultDomainObjectSet
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.internal.reflect.Instantiator
+
 /**
  * Extension for 'library' project.
  */
