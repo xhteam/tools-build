@@ -15,8 +15,8 @@
  */
 package com.android.build.gradle.tasks
 
+import com.android.build.gradle.internal.dsl.DexOptionsImpl
 import com.android.build.gradle.internal.tasks.IncrementalTask
-import com.android.builder.DexOptions
 import com.android.ide.common.res2.FileStatus
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.InputFiles
@@ -43,7 +43,7 @@ public class Dex extends IncrementalTask {
     File proguardedJar
 
     @Nested
-    DexOptions dexOptions
+    DexOptionsImpl dexOptions
 
     @Override
     protected void doFullTaskAction() {
