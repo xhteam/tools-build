@@ -16,7 +16,10 @@
 
 package com.android.build.gradle.internal;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.build.gradle.internal.variant.BaseVariantData;
+import com.android.builder.dependency.JarDependency;
 import com.android.builder.dependency.LibraryBundle;
 import com.android.builder.dependency.LibraryDependency;
 import org.gradle.api.Action;
@@ -83,17 +86,18 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
         List<LibraryDependency> libraries =
                 variantData.getVariantConfiguration().getDirectLibraries();
 
-        renderNow(libraries);
+        renderNow(libraries, variantData.getVariantDependency().getLocalDependencies());
     }
 
-    void renderNow(List<LibraryDependency> libraries) {
-        if (libraries.isEmpty()) {
+    void renderNow(@NonNull List<LibraryDependency> libraries,
+                   @Nullable List<JarDependency> localJars) {
+        if (libraries.isEmpty() && (localJars == null || localJars.isEmpty())) {
             getTextOutput().withStyle(Info).text("No dependencies");
             getTextOutput().println();
             return;
         }
 
-        renderChildren(libraries);
+        renderChildren(libraries, localJars);
     }
 
     @Override
@@ -114,14 +118,35 @@ public class AndroidAsciiReportRenderer extends TextReportRenderer {
             }
         }, lastChild);
 
-        renderChildren(lib.getDependencies());
+        renderChildren(lib.getDependencies(), lib.getLocalDependencies());
     }
 
-    private void renderChildren(List<LibraryDependency> libraries) {
+    private void render(final JarDependency jar, boolean lastChild) {
+        renderer.visit(new Action<StyledTextOutput>() {
+            @Override
+            public void execute(StyledTextOutput styledTextOutput) {
+                getTextOutput().text("LOCAL: " + jar.getJarFile().getName());
+            }
+        }, lastChild);
+    }
+
+    private void renderChildren(@NonNull List<LibraryDependency> libraries,
+                                @Nullable List<JarDependency> localJars) {
         renderer.startChildren();
-        for (int i = 0; i < libraries.size(); i++) {
+        if (localJars != null) {
+            final boolean emptyChildren = libraries.isEmpty();
+            final int count = localJars.size();
+
+            for (int i = 0; i < count; i++) {
+                JarDependency jarDependency = localJars.get(i);
+                render(jarDependency, emptyChildren && i == count - 1);
+            }
+        }
+
+        final int count = libraries.size();
+        for (int i = 0; i < count; i++) {
             LibraryDependency lib = libraries.get(i);
-            render(lib, i == libraries.size() - 1);
+            render(lib, i == count - 1);
         }
         renderer.completeChildren();
     }
