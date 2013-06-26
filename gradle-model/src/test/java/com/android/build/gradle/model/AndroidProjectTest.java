@@ -95,8 +95,8 @@ public class AndroidProjectTest extends TestCase {
 
             Dependencies dependencies = model.getVariants().get("Debug").getDependencies();
             assertNotNull(dependencies);
-            assertFalse(dependencies.getJars().isEmpty());
-            assertFalse(dependencies.getLibraries().isEmpty());
+            assertEquals(2, dependencies.getJars().size());
+            assertEquals(1, dependencies.getLibraries().size());
             assertTrue(dependencies.getProjectDependenciesPath().isEmpty());
 
         } finally {
