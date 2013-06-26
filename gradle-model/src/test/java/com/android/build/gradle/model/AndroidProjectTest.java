@@ -264,7 +264,7 @@ public class AndroidProjectTest extends TestCase {
                         AndroidLibrary androidLibrary = libs.get(0);
                         assertNotNull(androidLibrary);
                         // TODO: right now we can only test the folder name efficiently
-                        assertEquals("lib.aar", androidLibrary.getFolder().getName());
+                        assertEquals("TictactoeLibUnspecified.aar", androidLibrary.getFolder().getName());
                     }
                 } finally {
                     childConnection.close();
@@ -323,7 +323,7 @@ public class AndroidProjectTest extends TestCase {
                         AndroidLibrary androidLibrary = libs.get(0);
                         assertNotNull(androidLibrary);
                         // TODO: right now we can only test the folder name efficiently
-                        assertEquals("lib1.aar", androidLibrary.getFolder().getName());
+                        assertEquals("FlavorlibLib1Unspecified.aar", androidLibrary.getFolder().getName());
 
                         ProductFlavorContainer flavor2 = androidProject.getProductFlavors().get("flavor2");
                         assertNotNull(flavor2);
@@ -339,7 +339,7 @@ public class AndroidProjectTest extends TestCase {
                         androidLibrary = libs.get(0);
                         assertNotNull(androidLibrary);
                         // TODO: right now we can only test the folder name efficiently
-                        assertEquals("lib2.aar", androidLibrary.getFolder().getName());
+                        assertEquals("FlavorlibLib2Unspecified.aar", androidLibrary.getFolder().getName());
 
                     } finally {
                         childConnection.close();
