@@ -21,6 +21,8 @@ tests/localJars/*/build
 tests/proguardLib/*/build
 tests/renderscriptInLib/*/build
 tests/repo/*/build
+tests/sameNamedLibs/*/build
+tests/sameNamedLibs/*/*/build
 tests/tictactoe/*/build
 /repo
 /out

@@ -1331,8 +1331,9 @@ public abstract class BasePlugin {
             def moduleArtifacts = artifacts[id]
             moduleArtifacts?.each { artifact ->
                 if (artifact.type == EXT_LIB_ARCHIVE) {
+                    String bundleName = GUtil.toCamelCase(id.group + " " + id.name + " " + id.version)
                     def explodedDir = project.file(
-                            "$project.buildDir/exploded-bundles/$artifact.file.name")
+                            "$project.buildDir/exploded-bundles/${bundleName}.aar")
                     LibraryDependencyImpl adep = new LibraryDependencyImpl(
                             explodedDir, nestedBundles, artifact.file,
                             id.group + ":" + id.name + ":" + id.version)
