@@ -84,14 +84,6 @@ public class FakeDevice extends DeviceConnector {
 
     @Override
     public void executeShellCommand(String command, IShellOutputReceiver receiver,
-                                    int maxTimeToOutputResponse)
-            throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
-            IOException {
-        throw new UnsupportedOperationException("Wrong executeShellCommand");
-    }
-
-    @Override
-    public void executeShellCommand(String command, IShellOutputReceiver receiver,
                                     long maxTimeToOutputResponse, TimeUnit maxTimeUnits)
             throws TimeoutException, AdbCommandRejectedException, ShellCommandUnresponsiveException,
             IOException {
