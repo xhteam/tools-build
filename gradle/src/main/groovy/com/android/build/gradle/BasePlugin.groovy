@@ -68,8 +68,8 @@ import com.android.builder.VariantConfiguration
 import com.android.builder.dependency.JarDependency
 import com.android.builder.dependency.LibraryDependency
 import com.android.builder.model.ProductFlavor
+import com.android.builder.model.SigningConfig
 import com.android.builder.model.SourceProvider
-import com.android.builder.signing.SigningConfig
 import com.android.builder.testing.ConnectedDeviceProvider
 import com.android.builder.testing.api.DeviceProvider
 import com.android.builder.testing.api.TestServer
@@ -329,7 +329,7 @@ public abstract class BasePlugin {
         processManifestTask.conventionMapping.manifestOverlays = {
             config.manifestOverlays
         }
-        processManifestTask.conventionMapping.packageName = {
+        processManifestTask.conventionMapping.packageNameOverride = {
             config.packageOverride
         }
         processManifestTask.conventionMapping.versionName = {

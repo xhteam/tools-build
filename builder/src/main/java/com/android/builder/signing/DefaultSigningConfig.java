@@ -16,6 +16,9 @@
 
 package com.android.builder.signing;
 
+import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
+import com.android.builder.model.SigningConfig;
 import com.android.prefs.AndroidLocation.AndroidLocationException;
 import com.google.common.base.Objects;
 
@@ -26,11 +29,13 @@ import java.security.KeyStore;
  * SigningConfig encapsulates the information necessary to access certificates in a keystore file
  * that can be used to sign APKs.
  */
-public class SigningConfig {
+public class DefaultSigningConfig implements SigningConfig {
 
-    public static final String DFAULT_PASSWORD = "android";
+    public static final String DEFAULT_PASSWORD = "android";
     public static final String DEFAULT_ALIAS = "AndroidDebugKey";
 
+    @NonNull
+    protected final String mName;
     private File mStoreFile = null;
     private String mStorePassword = null;
     private String mKeyAlias = null;
@@ -40,7 +45,8 @@ public class SigningConfig {
     /**
      * Creates a SigningConfig.
      */
-    public SigningConfig() {
+    public DefaultSigningConfig(@NonNull String name) {
+        mName = name;
     }
 
     /**
@@ -50,55 +56,78 @@ public class SigningConfig {
      */
     public void initDebug() throws AndroidLocationException {
         mStoreFile = new File(KeystoreHelper.defaultDebugKeystoreLocation());
-        mStorePassword = DFAULT_PASSWORD;
+        mStorePassword = DEFAULT_PASSWORD;
         mKeyAlias = DEFAULT_ALIAS;
-        mKeyPassword = DFAULT_PASSWORD;
+        mKeyPassword = DEFAULT_PASSWORD;
     }
 
+    @Override
+    @NonNull
+    public String getName() {
+        return mName;
+    }
+
+    @Override
+    @Nullable
     public File getStoreFile() {
         return mStoreFile;
     }
 
-    public SigningConfig setStoreFile(File storeFile) {
+    @NonNull
+    public DefaultSigningConfig setStoreFile(File storeFile) {
         mStoreFile = storeFile;
         return this;
     }
 
+    @Override
+    @Nullable
     public String getStorePassword() {
         return mStorePassword;
     }
 
-    public SigningConfig setStorePassword(String storePassword) {
+    @NonNull
+    public DefaultSigningConfig setStorePassword(String storePassword) {
         mStorePassword = storePassword;
         return this;
     }
 
+    @Override
+    @Nullable
     public String getKeyAlias() {
         return mKeyAlias;
     }
 
-    public SigningConfig setKeyAlias(String keyAlias) {
+    @NonNull
+    public DefaultSigningConfig setKeyAlias(String keyAlias) {
         mKeyAlias = keyAlias;
         return this;
     }
 
+    @Override
+    @Nullable
     public String getKeyPassword() {
         return mKeyPassword;
     }
 
-    public SigningConfig setKeyPassword(String keyPassword) {
+    @NonNull
+    public DefaultSigningConfig setKeyPassword(String keyPassword) {
         mKeyPassword = keyPassword;
         return this;
     }
 
+    @Override
+    @Nullable
     public String getStoreType() {
         return mStoreType;
     }
 
-    public void SetStoreType(String storeType) {
+    @NonNull
+    public DefaultSigningConfig setStoreType(String storeType) {
         mStoreType = storeType;
+        return this;
     }
 
+    @Override
     public boolean isSigningReady() {
         return mStoreFile != null &&
                 mStorePassword != null &&
@@ -112,7 +141,7 @@ public class SigningConfig {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
 
-        SigningConfig that = (SigningConfig) o;
+        DefaultSigningConfig that = (DefaultSigningConfig) o;
 
         if (mKeyAlias != null ?
                 !mKeyAlias.equals(that.mKeyAlias) :

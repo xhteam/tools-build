@@ -37,7 +37,7 @@ public class ProcessAppManifest extends ProcessManifest {
     List<ManifestDependencyImpl> libraries
 
     @Input @Optional
-    String packageName
+    String packageNameOverride
 
     @Input
     int versionCode
@@ -57,7 +57,7 @@ public class ProcessAppManifest extends ProcessManifest {
                 getMainManifest(),
                 getManifestOverlays(),
                 getLibraries(),
-                getPackageName(),
+                getPackageNameOverride(),
                 getVersionCode(),
                 getVersionName(),
                 getMinSdkVersion(),

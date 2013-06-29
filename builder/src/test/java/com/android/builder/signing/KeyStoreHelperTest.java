@@ -37,7 +37,7 @@ public class KeyStoreHelperTest extends TestCase {
         FakeLogger fakeLogger = new FakeLogger();
 
         // create a default signing Config.
-        SigningConfig signingConfig = new SigningConfig();
+        DefaultSigningConfig signingConfig = new DefaultSigningConfig("");
         signingConfig.initDebug();
         signingConfig.setStoreFile(keystoreFile);
 

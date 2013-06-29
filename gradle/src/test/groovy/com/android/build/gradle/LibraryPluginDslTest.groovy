@@ -19,9 +19,10 @@ import com.android.annotations.NonNull
 import com.android.build.gradle.api.LibraryVariant
 import com.android.build.gradle.api.TestVariant
 import com.android.build.gradle.internal.test.BaseTest
-import com.android.builder.signing.SigningConfig
+import com.android.builder.model.SigningConfig
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+
 /**
  * Tests for the public DSL of the App plugin ("android-library")
  */

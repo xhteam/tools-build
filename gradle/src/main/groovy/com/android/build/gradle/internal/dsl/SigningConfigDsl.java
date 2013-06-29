@@ -18,9 +18,11 @@ package com.android.build.gradle.internal.dsl;
 
 import com.android.annotations.NonNull;
 import com.android.builder.BuilderConstants;
-import com.android.builder.signing.SigningConfig;
+import com.android.builder.model.SigningConfig;
+import com.android.builder.signing.DefaultSigningConfig;
 import com.android.prefs.AndroidLocation;
 import com.google.common.base.Objects;
+import org.gradle.api.Named;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFile;
 import org.gradle.api.tasks.Optional;
@@ -30,13 +32,10 @@ import java.io.File;
 import java.io.Serializable;
 
 /**
- * DSL overlay for {@link SigningConfig}.
+ * DSL overlay for {@link DefaultSigningConfig}.
  */
-public class SigningConfigDsl extends SigningConfig implements Serializable {
+public class SigningConfigDsl extends DefaultSigningConfig implements Serializable, Named {
     private static final long serialVersionUID = 1L;
-
-    @NonNull
-    private final String name;
 
     /**
      * Creates a SigningConfig with a given name.
@@ -45,8 +44,8 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
      *
      */
     public SigningConfigDsl(@NonNull String name) {
-        super();
-        this.name = name;
+        super(name);
+
         if (BuilderConstants.DEBUG.equals(name)) {
             try {
                 initDebug();
@@ -54,11 +53,6 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
                 throw new BuildException("Failed to get default debug keystore location", e);
             }
         }
-    }
-
-    @NonNull
-    public String getName() {
-        return name;
     }
 
     public SigningConfigDsl initWith(SigningConfig that) {
@@ -122,7 +116,7 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
 
         SigningConfigDsl that = (SigningConfigDsl) o;
 
-        if (!name.equals(that.name)) return false;
+        if (!mName.equals(that.mName)) return false;
 
         return true;
     }
@@ -130,14 +124,14 @@ public class SigningConfigDsl extends SigningConfig implements Serializable {
     @Override
     public int hashCode() {
         int result = super.hashCode();
-        result = 31 * result + name.hashCode();
+        result = 31 * result + mName.hashCode();
         return result;
     }
 
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("name", name)
+                .add("name", mName)
                 .add("storeFile", getStoreFile() != null ? getStoreFile().getAbsolutePath() : "null")
                 .add("storePassword", getStorePassword())
                 .add("keyAlias", getKeyAlias())

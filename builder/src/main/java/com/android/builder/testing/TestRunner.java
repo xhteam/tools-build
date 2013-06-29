@@ -45,7 +45,8 @@ public interface TestRunner {
      * @param timeout
      * @param resultsDir
      * @param logger
-     * @return
+     * @return true if the test succeed
+     *
      * @throws TestException
      * @throws InterruptedException
      */

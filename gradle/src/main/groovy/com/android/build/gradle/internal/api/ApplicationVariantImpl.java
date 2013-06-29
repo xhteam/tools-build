@@ -33,7 +33,7 @@ import com.android.build.gradle.tasks.RenderscriptCompile;
 import com.android.build.gradle.tasks.ZipAlign;
 import com.android.builder.DefaultBuildType;
 import com.android.builder.DefaultProductFlavor;
-import com.android.builder.signing.SigningConfig;
+import com.android.builder.model.SigningConfig;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.Task;
 import org.gradle.api.tasks.Copy;

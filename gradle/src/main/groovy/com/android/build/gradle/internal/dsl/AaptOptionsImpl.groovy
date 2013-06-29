@@ -16,8 +16,7 @@
 
 package com.android.build.gradle.internal.dsl;
 
-
-import com.android.builder.AaptOptions
+import com.android.builder.model.AaptOptions
 import org.gradle.api.tasks.Input
 
 public class AaptOptionsImpl implements AaptOptions {

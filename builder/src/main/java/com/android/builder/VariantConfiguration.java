@@ -22,8 +22,8 @@ import com.android.annotations.VisibleForTesting;
 import com.android.builder.dependency.DependencyContainer;
 import com.android.builder.dependency.JarDependency;
 import com.android.builder.dependency.LibraryDependency;
+import com.android.builder.model.SigningConfig;
 import com.android.builder.model.SourceProvider;
-import com.android.builder.signing.SigningConfig;
 import com.android.builder.testing.TestData;
 import com.android.ide.common.res2.AssetSet;
 import com.android.ide.common.res2.ResourceSet;
@@ -31,7 +31,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -361,22 +360,30 @@ public class VariantConfiguration implements TestData {
      * @return the package
      */
     @Override
-    @Nullable
+    @NonNull
     public String getPackageName() {
         String packageName;
 
         if (mType == Type.TEST) {
+            assert mTestedConfig != null;
+
             packageName = mMergedFlavor.getTestPackageName();
             if (packageName == null) {
                 String testedPackage = mTestedConfig.getPackageName();
-
                 packageName = testedPackage + ".test";
             }
         } else {
+            // first get package override.
             packageName = getPackageOverride();
+            // if it's null, this means we just need the default package
+            // from the manifest since both flavor and build type do nothing.
             if (packageName == null) {
                 packageName = getPackageFromManifest();
             }
+        }
+
+        if (packageName == null) {
+            throw new RuntimeException("Failed get query package name for " + mDebugName);
         }
 
         return packageName;
@@ -386,6 +393,7 @@ public class VariantConfiguration implements TestData {
     @Nullable
     public String getTestedPackageName() {
         if (mType == Type.TEST) {
+            assert mTestedConfig != null;
             if (mTestedConfig.mType == Type.LIBRARY) {
                 return getPackageName();
             } else {
@@ -399,6 +407,7 @@ public class VariantConfiguration implements TestData {
     /**
      * Returns the package override values coming from the Product Flavor and/or the Build Type.
      * If the package is not overridden then this returns null.
+     *
      * @return the package override or null
      */
     @Nullable
@@ -463,10 +472,11 @@ public class VariantConfiguration implements TestData {
     }
 
     /**
-     * Reads the package name from the manifest.
+     * Reads the package name from the manifest. This is unmodified by the build type.
      */
     @Nullable
     public String getPackageFromManifest() {
+        assert mType != Type.TEST;
         File manifestLocation = mDefaultSourceProvider.getManifestFile();
         return sManifestParser.getPackage(manifestLocation);
     }

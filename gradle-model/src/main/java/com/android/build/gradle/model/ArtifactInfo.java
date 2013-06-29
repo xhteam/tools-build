@@ -14,38 +14,45 @@
  * limitations under the License.
  */
 
-package com.android.builder.testing;
+package com.android.build.gradle.model;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 
-import java.util.Set;
+import java.io.File;
+import java.util.List;
 
 /**
+ * the information for a generated artifact.
  */
-public interface TestData {
+public interface ArtifactInfo {
 
-    /**
-     * Returns the package name.
-     *
-     * @return the package name
-     */
+    @NonNull
+    File getOutputFile();
+
+    boolean isSigned();
+
+    @Nullable
+    String getSigningConfigName();
+
     @NonNull
     String getPackageName();
 
-    /**
-     * Returns the tested package name. This can be empty if the test package is self-contained.
-     *
-     * @return the package name or null.
-     */
-    @Nullable
-    String getTestedPackageName();
+    @NonNull
+    String getSourceGenTaskName();
 
     @NonNull
-    String getInstrumentationRunner();
+    String getAssembleTaskName();
 
-    int getMinSdkVersion();
+    @NonNull
+    List<File> getGeneratedSourceFolders();
 
-    @Nullable
-    Set<String> getSupportedAbis();
+    @NonNull
+    List<File> getGeneratedResourceFolders();
+
+    @NonNull
+    File getClassesFolder();
+
+    @NonNull
+    Dependencies getDependencies();
 }

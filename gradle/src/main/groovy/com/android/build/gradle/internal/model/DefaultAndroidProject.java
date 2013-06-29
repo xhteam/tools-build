@@ -21,6 +21,8 @@ import com.android.build.gradle.model.AndroidProject;
 import com.android.build.gradle.model.BuildTypeContainer;
 import com.android.build.gradle.model.ProductFlavorContainer;
 import com.android.build.gradle.model.Variant;
+import com.android.builder.model.AaptOptions;
+import com.android.builder.model.SigningConfig;
 import com.google.common.collect.Maps;
 
 import java.io.Serializable;
@@ -41,6 +43,8 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     private final String compileTarget;
     @NonNull
     private final List<String> bootClasspath;
+    @NonNull
+    private final List<SigningConfig> signingConfigs;
     private final boolean isLibrary;
 
     private final Map<String, BuildTypeContainer> buildTypes = Maps.newHashMap();
@@ -52,11 +56,13 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     DefaultAndroidProject(@NonNull String modelVersion,
                           @NonNull String name, @NonNull String compileTarget,
                           @NonNull List<String> bootClasspath,
+                          @NonNull List<SigningConfig> signingConfigs,
                           boolean isLibrary) {
         this.modelVersion = modelVersion;
         this.name = name;
         this.compileTarget = compileTarget;
         this.bootClasspath = bootClasspath;
+        this.signingConfigs = signingConfigs;
         this.isLibrary = isLibrary;
     }
 
@@ -137,5 +143,17 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     @Override
     public List<String> getBootClasspath() {
         return bootClasspath;
+    }
+
+    @NonNull
+    @Override
+    public List<SigningConfig> getSigningConfigs() {
+        return signingConfigs;
+    }
+
+    @NonNull
+    @Override
+    public AaptOptions getAaptOptions() {
+        return null;
     }
 }
