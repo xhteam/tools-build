@@ -1335,7 +1335,7 @@ public abstract class BasePlugin {
                     def explodedDir = project.file(
                             "$project.buildDir/exploded-bundles/${bundleName}.aar")
                     LibraryDependencyImpl adep = new LibraryDependencyImpl(
-                            explodedDir, nestedBundles, artifact.file,
+                            artifact.file, explodedDir, nestedBundles,
                             id.group + ":" + id.name + ":" + id.version)
                     bundlesForThisModule << adep
                     reverseMap.put(adep, configDependencies)

@@ -29,21 +29,13 @@ public class LibraryDependencyImpl extends LibraryBundle {
 
     @NonNull
     private final List<LibraryDependency> dependencies;
-    @NonNull
-    private final File bundle;
 
-    public LibraryDependencyImpl(@NonNull File explodedBundle,
+    public LibraryDependencyImpl(@NonNull File bundle,
+                                 @NonNull File explodedBundle,
                                  @NonNull List<LibraryDependency> dependencies,
-                                 @NonNull File bundle,
                                  @Nullable String name) {
-        super(explodedBundle, name);
+        super(bundle, explodedBundle, name);
         this.dependencies = dependencies;
-        this.bundle = bundle;
-    }
-
-    @NonNull
-    public File getBundle() {
-        return bundle;
     }
 
     @NonNull
