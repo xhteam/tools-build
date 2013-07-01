@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'signing'
 apply plugin: 'clone-artifacts'
+apply plugin: 'idea'
 
 def toolingApiVersion = gradle.gradleVersion
 
@@ -135,4 +136,10 @@ artifacts {
 signing {
     required { project.has("release") && gradle.taskGraph.hasTask("uploadArchives") }
     sign configurations.archives
+}
+
+idea {
+    module {
+        scopes.COMPILE.plus += configurations.gradleRepo
+    }
 }

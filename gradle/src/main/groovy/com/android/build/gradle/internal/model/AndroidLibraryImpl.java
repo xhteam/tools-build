@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.builder.dependency.LibraryDependency;
 import com.android.builder.model.AndroidLibrary;
 
@@ -27,6 +28,8 @@ import java.util.List;
 public class AndroidLibraryImpl implements AndroidLibrary, Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Nullable
+    private final String project;
     @NonNull
     private final File bundle;
     @NonNull
@@ -50,10 +53,11 @@ public class AndroidLibraryImpl implements AndroidLibrary, Serializable {
     @NonNull
     private final File lintJar;
     @NonNull
-    private final List<AndroidLibraryImpl> dependencies;
+    private final List<AndroidLibrary> dependencies;
 
     AndroidLibraryImpl(@NonNull LibraryDependency libraryDependency,
-                       @NonNull List<AndroidLibraryImpl> dependencies) {
+                       @NonNull List<AndroidLibrary> dependencies,
+                       @Nullable String project) {
         this.dependencies = dependencies;
         bundle = libraryDependency.getBundle();
         folder = libraryDependency.getFolder();
@@ -66,8 +70,15 @@ public class AndroidLibraryImpl implements AndroidLibrary, Serializable {
         renderscriptFolder = libraryDependency.getRenderscriptFolder();
         proguardRules = libraryDependency.getProguardRules();
         lintJar = libraryDependency.getLintJar();
+
+        this.project = project;
     }
 
+    @Nullable
+    @Override
+    public String getProject() {
+        return project;
+    }
 
     @NonNull
     @Override

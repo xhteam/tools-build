@@ -296,6 +296,12 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
                 project.file("$project.buildDir/$DIR_BUNDLES/${variantData.dirName}"),
                 variantData.getName()) {
 
+            @Nullable
+            @Override
+            String getProject() {
+                return LibraryPlugin.this.project.path
+            }
+
             @NonNull
             @Override
             List<LibraryDependency> getDependencies() {
