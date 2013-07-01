@@ -27,6 +27,7 @@ import com.google.common.collect.Maps;
 import junit.framework.TestCase;
 import org.gradle.tooling.GradleConnector;
 import org.gradle.tooling.ProjectConnection;
+import org.gradle.tooling.UnknownModelException;
 import org.gradle.tooling.model.GradleProject;
 
 import java.io.File;
@@ -41,43 +42,101 @@ import java.util.Set;
 
 public class AndroidProjectTest extends TestCase {
 
+    private final static String MODEL_VERSION = "0.5.0-SNAPSHOT";
+
     private static final Map<String, ProjectData> sProjectModelMap = Maps.newHashMap();
 
     private static final class ProjectData {
         AndroidProject model;
         File projectDir;
+
+        static ProjectData create(File projectDir, AndroidProject model) {
+            ProjectData projectData = new ProjectData();
+            projectData.model = model;
+            projectData.projectDir = projectDir;
+
+            return projectData;
+        }
     }
 
     private ProjectData getModelForProject(String projectName) {
         ProjectData projectData = sProjectModelMap.get(projectName);
-        if (projectData != null) {
-            return projectData;
+
+        if (projectData == null) {
+            // Configure the connector and create the connection
+            GradleConnector connector = GradleConnector.newConnector();
+
+            File projectDir = new File(getTestDir(), projectName);
+            connector.forProjectDirectory(projectDir);
+
+            ProjectConnection connection = connector.connect();
+            try {
+                // Load the custom model for the project
+                AndroidProject model = connection.getModel(AndroidProject.class);
+                assertNotNull("Model Object null-check", model);
+                assertEquals("Model Name", projectName, model.getName());
+                assertEquals("Model version", MODEL_VERSION, model.getModelVersion());
+
+                projectData = ProjectData.create(projectDir, model);
+
+                sProjectModelMap.put(projectName, projectData);
+
+                return projectData;
+            } finally {
+                connection.close();
+            }
         }
 
+        return projectData;
+    }
+
+    private Map<String, ProjectData> getModelForMultiProject(String projectName) throws Exception {
         // Configure the connector and create the connection
         GradleConnector connector = GradleConnector.newConnector();
 
         File projectDir = new File(getTestDir(), projectName);
         connector.forProjectDirectory(projectDir);
 
+        Map<String, ProjectData> map = Maps.newHashMap();
+
         ProjectConnection connection = connector.connect();
+
         try {
-            // Load the custom model for the project
-            AndroidProject model = connection.getModel(AndroidProject.class);
+            // Query the default Gradle Model.
+            GradleProject model = connection.getModel(GradleProject.class);
             assertNotNull("Model Object null-check", model);
-            assertEquals("Model Name", projectName, model.getName());
 
-            projectData = new ProjectData();
-            projectData.model = model;
-            projectData.projectDir = projectDir;
+            // Now get the children projects, recursively.
+            for (GradleProject child : model.getChildren()) {
+                String path = child.getPath();
+                String name = path.substring(1);
+                File childDir = new File(projectDir, name);
 
+                GradleConnector childConnector = GradleConnector.newConnector();
 
-            sProjectModelMap.put(projectName, projectData);
+                childConnector.forProjectDirectory(childDir);
 
-            return projectData;
+                ProjectConnection childConnection = childConnector.connect();
+                try {
+                    AndroidProject androidProject = childConnection.getModel(AndroidProject.class);
+
+                    assertNotNull("Model Object null-check for " + path, androidProject);
+                    assertEquals("Model Name for " + path, name, androidProject.getName());
+                    assertEquals("Model version", MODEL_VERSION, androidProject.getModelVersion());
+
+                    map.put(path, ProjectData.create(childDir, androidProject));
+
+                } catch (UnknownModelException e) {
+                    // probably a Java-only project, ignore.
+                } finally {
+                    childConnection.close();
+                }
+            }
         } finally {
             connection.close();
         }
+
+        return map;
     }
 
     public void testBasic() {
@@ -289,133 +348,74 @@ public class AndroidProjectTest extends TestCase {
         new VariantTester(f1faDebugVariant, projectDir, "flavors-f1fa-debug-unaligned.apk").test();
     }
 
-    public void testTicTacToe() {
-        // Configure the connector and create the connection
-        GradleConnector connector = GradleConnector.newConnector();
+    public void testTicTacToe() throws Exception {
+        Map<String, ProjectData> map = getModelForMultiProject("tictactoe");
 
-        File projectDir = new File(getTestDir(), "tictactoe");
-        connector.forProjectDirectory(projectDir);
+        ProjectData libModelData = map.get(":lib");
+        assertNotNull("lib module model null-check", libModelData);
+        assertTrue("lib module library flag", libModelData.model.isLibrary());
 
-        ProjectConnection connection = connector.connect();
-        try {
-            GradleProject model = connection.getModel(GradleProject.class);
-            assertNotNull("Model Object null-check", model);
+        ProjectData appModelData = map.get(":app");
+        assertNotNull("app module model null-check", appModelData);
 
-            for (GradleProject child : model.getChildren()) {
-                String path = child.getPath();
-                String name = path.substring(1);
-                File childDir = new File(projectDir, name);
+        Dependencies dependencies = appModelData.model.getVariants().get("Debug").getMainArtifactInfo().getDependencies();
+        assertNotNull(dependencies);
 
-                GradleConnector childConnector = GradleConnector.newConnector();
+        List<AndroidLibrary> libs = dependencies.getLibraries();
+        assertNotNull(libs);
+        assertEquals(1, libs.size());
 
-                childConnector.forProjectDirectory(childDir);
+        AndroidLibrary androidLibrary = libs.get(0);
+        assertNotNull(androidLibrary);
 
-                ProjectConnection childConnection = childConnector.connect();
-                try {
-                    AndroidProject androidProject = childConnection.getModel(AndroidProject.class);
-                    assertNotNull("Model Object null-check", androidProject);
-                    assertEquals("Model Name", name, androidProject.getName());
-                    assertEquals("Library Project", "lib".equals(name), androidProject.isLibrary());
+        assertEquals("Dependency project path", ":lib", androidLibrary.getProject());
 
-                    if (!"lib".equals(name)) {
-                        Dependencies dependencies = androidProject.getVariants().get("Debug").getMainArtifactInfo().getDependencies();
-                        assertNotNull(dependencies);
-
-                        List<AndroidLibrary> libs = dependencies.getLibraries();
-                        assertNotNull(libs);
-
-                        assertEquals(1, libs.size());
-                        AndroidLibrary androidLibrary = libs.get(0);
-                        assertNotNull(androidLibrary);
-                        // TODO: right now we can only test the folder name efficiently
-                        assertEquals("TictactoeLibUnspecified.aar", androidLibrary.getFolder().getName());
-                    }
-                } finally {
-                    childConnection.close();
-                }
-
-            }
-        } finally {
-            // Clean up
-            connection.close();
-        }
+        // TODO: right now we can only test the folder name efficiently
+        assertEquals("TictactoeLibUnspecified.aar", androidLibrary.getFolder().getName());
     }
 
-    public void testFlavorLib() {
-        // Configure the connector and create the connection
-        GradleConnector connector = GradleConnector.newConnector();
+    public void testFlavorLib() throws Exception {
+        Map<String, ProjectData> map = getModelForMultiProject("flavorlib");
 
-        File projectDir = new File(getTestDir(), "flavorlib");
-        connector.forProjectDirectory(projectDir);
+        ProjectData appModelData = map.get(":app");
+        assertNotNull("Module app null-check", appModelData);
+        AndroidProject model = appModelData.model;
 
-        ProjectConnection connection = connector.connect();
-        try {
-            GradleProject model = connection.getModel(GradleProject.class);
-            assertNotNull("Model Object null-check", model);
+        assertFalse("Library Project", model.isLibrary());
 
-            for (GradleProject child : model.getChildren()) {
-                String path = child.getPath();
-                String name = path.substring(1);
+        Map<String, Variant> variants = model.getVariants();
 
-                if ("app".equals(name)) {
-                    File childDir = new File(projectDir, name);
+        ProductFlavorContainer flavor1 = model.getProductFlavors().get("flavor1");
+        assertNotNull(flavor1);
 
-                    GradleConnector childConnector = GradleConnector.newConnector();
-                    childConnector.forProjectDirectory(childDir);
+        Variant flavor1Debug = variants.get("Flavor1Debug");
+        assertNotNull(flavor1Debug);
 
-                    ProjectConnection childConnection = childConnector.connect();
+        Dependencies dependencies = flavor1Debug.getMainArtifactInfo().getDependencies();
+        assertNotNull(dependencies);
+        List<AndroidLibrary> libs = dependencies.getLibraries();
+        assertNotNull(libs);
+        assertEquals(1, libs.size());
+        AndroidLibrary androidLibrary = libs.get(0);
+        assertNotNull(androidLibrary);
+        // TODO: right now we can only test the folder name efficiently
+        assertEquals("FlavorlibLib1Unspecified.aar", androidLibrary.getFolder().getName());
 
-                    try {
-                        AndroidProject androidProject = childConnection.getModel(AndroidProject.class);
-                        assertNotNull("Model Object null-check", androidProject);
-                        assertEquals("Model Name", name, androidProject.getName());
-                        assertFalse("Library Project", androidProject.isLibrary());
+        ProductFlavorContainer flavor2 = model.getProductFlavors().get("flavor2");
+        assertNotNull(flavor2);
 
-                        Map<String, Variant> variants = androidProject.getVariants();
+        Variant flavor2Debug = variants.get("Flavor2Debug");
+        assertNotNull(flavor2Debug);
 
-                        ProductFlavorContainer flavor1 = androidProject.getProductFlavors().get("flavor1");
-                        assertNotNull(flavor1);
-
-                        Variant flavor1Debug = variants.get("Flavor1Debug");
-                        assertNotNull(flavor1Debug);
-
-                        Dependencies dependencies = flavor1Debug.getMainArtifactInfo().getDependencies();
-                        assertNotNull(dependencies);
-                        List<AndroidLibrary> libs = dependencies.getLibraries();
-                        assertNotNull(libs);
-                        assertEquals(1, libs.size());
-                        AndroidLibrary androidLibrary = libs.get(0);
-                        assertNotNull(androidLibrary);
-                        // TODO: right now we can only test the folder name efficiently
-                        assertEquals("FlavorlibLib1Unspecified.aar", androidLibrary.getFolder().getName());
-
-                        ProductFlavorContainer flavor2 = androidProject.getProductFlavors().get("flavor2");
-                        assertNotNull(flavor2);
-
-                        Variant flavor2Debug = variants.get("Flavor2Debug");
-                        assertNotNull(flavor2Debug);
-
-                        dependencies = flavor2Debug.getMainArtifactInfo().getDependencies();
-                        assertNotNull(dependencies);
-                        libs = dependencies.getLibraries();
-                        assertNotNull(libs);
-                        assertEquals(1, libs.size());
-                        androidLibrary = libs.get(0);
-                        assertNotNull(androidLibrary);
-                        // TODO: right now we can only test the folder name efficiently
-                        assertEquals("FlavorlibLib2Unspecified.aar", androidLibrary.getFolder().getName());
-
-                    } finally {
-                        childConnection.close();
-                    }
-
-                    break;
-                }
-            }
-        } finally {
-            // Clean up
-            connection.close();
-        }
+        dependencies = flavor2Debug.getMainArtifactInfo().getDependencies();
+        assertNotNull(dependencies);
+        libs = dependencies.getLibraries();
+        assertNotNull(libs);
+        assertEquals(1, libs.size());
+        androidLibrary = libs.get(0);
+        assertNotNull(androidLibrary);
+        // TODO: right now we can only test the folder name efficiently
+        assertEquals("FlavorlibLib2Unspecified.aar", androidLibrary.getFolder().getName());
     }
 
     /**
@@ -445,8 +445,14 @@ public class AndroidProjectTest extends TestCase {
                 File dir = new File(location.toURI());
                 assertTrue(dir.getPath(), dir.exists());
 
-                File f= dir.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
-                return  new File(f, "tools" + File.separator + "build");
+                File f;
+                if (System.getenv("IDE_MODE") != null) {
+                    f = dir.getParentFile().getParentFile().getParentFile();
+                } else {
+                    f = dir.getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile().getParentFile();
+                    f = new File(f, "tools" + File.separator + "build");
+                }
+                return f;
             } catch (URISyntaxException e) {
                 fail(e.getLocalizedMessage());
             }

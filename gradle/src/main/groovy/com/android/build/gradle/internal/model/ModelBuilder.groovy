@@ -102,9 +102,11 @@ public class ModelBuilder implements ToolingModelBuilder {
                           .addBuildType(createBTC(libPlugin.releaseBuildTypeData))
         }
 
+        Set<Project> gradleProjects = project.getRootProject().getAllprojects();
+
         for (BaseVariantData variantData : basePlugin.variantDataList) {
             if (!(variantData instanceof TestVariantData)) {
-                androidProject.addVariant(createVariant(variantData))
+                androidProject.addVariant(createVariant(variantData, gradleProjects))
             }
         }
 
@@ -133,15 +135,17 @@ public class ModelBuilder implements ToolingModelBuilder {
     }
 
     @NonNull
-    private static VariantImpl createVariant(@NonNull BaseVariantData variantData) {
+    private static VariantImpl createVariant(@NonNull BaseVariantData variantData,
+                                             @NonNull Set<Project> gradleProjects) {
         TestVariantData testVariantData = null
         if (variantData instanceof ApplicationVariantData ||
                 variantData instanceof LibraryVariantData) {
             testVariantData = variantData.testVariantData
         }
 
-        ArtifactInfo mainArtifact = createArtifactInfo(variantData)
-        ArtifactInfo testArtifact = testVariantData != null ? createArtifactInfo(testVariantData) : null
+        ArtifactInfo mainArtifact = createArtifactInfo(variantData, gradleProjects)
+        ArtifactInfo testArtifact = testVariantData != null ?
+            createArtifactInfo(testVariantData, gradleProjects) : null
 
         VariantImpl variant = new VariantImpl(
                 variantData.name,
@@ -155,7 +159,8 @@ public class ModelBuilder implements ToolingModelBuilder {
         return variant
     }
 
-    private static ArtifactInfo createArtifactInfo(@NonNull BaseVariantData variantData) {
+    private static ArtifactInfo createArtifactInfo(@NonNull BaseVariantData variantData,
+                                                   @NonNull Set<Project> gradleProjects) {
         VariantConfiguration vC = variantData.variantConfiguration
 
         SigningConfig signingConfig = vC.signingConfig
@@ -173,7 +178,7 @@ public class ModelBuilder implements ToolingModelBuilder {
                 getGeneratedSourceFolders(variantData),
                 getGeneratedResourceFolders(variantData),
                 variantData.javaCompileTask.destinationDir,
-                DependenciesImpl.cloneDependencies(variantData.variantDependency)
+                DependenciesImpl.cloneDependencies(variantData.variantDependency, gradleProjects)
         )
     }
 

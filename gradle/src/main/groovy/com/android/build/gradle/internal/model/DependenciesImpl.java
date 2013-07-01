@@ -25,11 +25,13 @@ import com.android.builder.dependency.JarDependency;
 import com.android.builder.dependency.LibraryDependency;
 import com.android.builder.model.AndroidLibrary;
 import com.google.common.collect.Lists;
+import org.gradle.api.Project;
 
 import java.io.File;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  */
@@ -43,7 +45,8 @@ public class DependenciesImpl implements Dependencies, Serializable {
 
     @NonNull
     static DependenciesImpl cloneDependencies(
-            @Nullable VariantDependencies variantDependencies) {
+            @Nullable VariantDependencies variantDependencies,
+            @NonNull Set<Project> gradleProjects) {
 
         List<AndroidLibrary> libraries;
         List<File> jars;
@@ -52,7 +55,8 @@ public class DependenciesImpl implements Dependencies, Serializable {
             List<LibraryDependencyImpl> libs = variantDependencies.getLibraries();
             libraries = Lists.newArrayListWithCapacity(libs.size());
             for (LibraryDependencyImpl libImpl : libs) {
-                libraries.add(new AndroidLibraryImpl(libImpl, getChildrenDependencies(libImpl)));
+                AndroidLibrary clonedLib = getAndroidLibrary(libImpl, gradleProjects);
+                libraries.add(clonedLib);
             }
 
             List<JarDependency> jarDeps = variantDependencies.getJarDependencies();
@@ -74,17 +78,42 @@ public class DependenciesImpl implements Dependencies, Serializable {
     }
 
     @NonNull
-    private static List<AndroidLibraryImpl> getChildrenDependencies(LibraryDependency lib) {
-        List<LibraryDependency> children = lib.getDependencies();
-        List<AndroidLibraryImpl> result = Lists.newArrayListWithExpectedSize(children.size());
+    private static AndroidLibrary getAndroidLibrary(@NonNull LibraryDependency libImpl,
+                                                    @NonNull Set<Project> gradleProjects) {
+        File bundle = libImpl.getBundle();
 
-        for (LibraryDependency child : children) {
-            List<AndroidLibraryImpl> subResults = getChildrenDependencies(child);
-
-            result.add(new AndroidLibraryImpl(child, subResults));
+        // search for a project that contains this bundle in its output folder.
+        Project projectMatch = null;
+        for (Project project : gradleProjects) {
+            File buildDir = project.getBuildDir();
+            if (contains(buildDir, bundle)) {
+                projectMatch = project;
+                break;
+            }
         }
 
-        return result;
+        List<LibraryDependency> deps = libImpl.getDependencies();
+        List<AndroidLibrary> clonedDeps = Lists.newArrayListWithCapacity(deps.size());
+        for (LibraryDependency child : deps) {
+            AndroidLibrary clonedLib = getAndroidLibrary(child, gradleProjects);
+            clonedDeps.add(clonedLib);
+        }
+
+        return new AndroidLibraryImpl(libImpl, clonedDeps,
+                projectMatch != null ? projectMatch.getPath() : null);
+    }
+
+    private static boolean contains(File buildDir, File file) {
+        File parent = file.getParentFile();
+        if (parent == null) {
+            return false;
+        }
+
+        if (parent.equals(buildDir)) {
+            return true;
+        }
+
+        return contains(buildDir, parent);
     }
 
     private DependenciesImpl(@NonNull List<AndroidLibrary> libraries, @NonNull List<File> jars) {

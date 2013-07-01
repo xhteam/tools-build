@@ -17,6 +17,7 @@
 package com.android.builder.model;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 
 import java.io.File;
 import java.util.List;
@@ -25,6 +26,14 @@ import java.util.List;
  * Represents an Android Library, its content and its own dependencies
  */
 public interface AndroidLibrary {
+
+    /**
+     * Returns the project identifier if the library is output
+     * by a module.
+     * @return the project identifier
+     */
+    @Nullable
+    String getProject();
 
     /**
      * Returns the location of the library aar bundle.
