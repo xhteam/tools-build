@@ -165,6 +165,12 @@ public class AndroidProjectTest extends TestCase {
         assertNotNull(dependencies);
         assertEquals(2, dependencies.getJars().size());
         assertEquals(1, dependencies.getLibraries().size());
+
+        AndroidLibrary lib = dependencies.getLibraries().get(0);
+        assertNotNull(lib);
+        assertNotNull(lib.getBundle());
+        assertNotNull(lib.getFolder());
+
         assertTrue(dependencies.getProjectDependenciesPath().isEmpty());
     }
 

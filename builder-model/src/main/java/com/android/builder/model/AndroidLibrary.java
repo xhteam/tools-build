@@ -27,6 +27,12 @@ import java.util.List;
 public interface AndroidLibrary {
 
     /**
+     * Returns the location of the library aar bundle.
+     */
+    @NonNull
+    File getBundle();
+
+    /**
      * Returns the location of the unzipped archive.
      */
     @NonNull

@@ -292,6 +292,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
 
         // configure the variant to be testable.
         variantConfig.output = new LibraryBundle(
+                bundle.archivePath,
                 project.file("$project.buildDir/$DIR_BUNDLES/${variantData.dirName}"),
                 variantData.getName()) {
 

@@ -28,6 +28,8 @@ public class AndroidLibraryImpl implements AndroidLibrary, Serializable {
     private static final long serialVersionUID = 1L;
 
     @NonNull
+    private final File bundle;
+    @NonNull
     private final File folder;
     @NonNull
     private final File jarFile;
@@ -53,6 +55,7 @@ public class AndroidLibraryImpl implements AndroidLibrary, Serializable {
     AndroidLibraryImpl(@NonNull LibraryDependency libraryDependency,
                        @NonNull List<AndroidLibraryImpl> dependencies) {
         this.dependencies = dependencies;
+        bundle = libraryDependency.getBundle();
         folder = libraryDependency.getFolder();
         jarFile = libraryDependency.getJarFile();
         localJars = libraryDependency.getLocalJars();
@@ -63,6 +66,13 @@ public class AndroidLibraryImpl implements AndroidLibrary, Serializable {
         renderscriptFolder = libraryDependency.getRenderscriptFolder();
         proguardRules = libraryDependency.getProguardRules();
         lintJar = libraryDependency.getLintJar();
+    }
+
+
+    @NonNull
+    @Override
+    public File getBundle() {
+        return bundle;
     }
 
     @NonNull

@@ -34,20 +34,26 @@ public abstract class LibraryBundle implements LibraryDependency {
     public static final String FN_PROGUARD_TXT = "proguard.txt";
 
     private final String mName;
+    private final File mBundle;
     private final File mBundleFolder;
 
     /**
      * Creates the bundle dependency with an optional name
-     * @param bundleFolder the folder containing the library
+     *
+     * @param bundle the library's aar bundle file
+     * @param bundleFolder the folder containing the unarchived library content
      * @param name an optional name
      */
-    protected LibraryBundle(@NonNull File bundleFolder, @Nullable String name) {
-        mName = name;
+    protected LibraryBundle(@NonNull File bundle,
+                            @NonNull File bundleFolder,
+                            @Nullable String name) {
+        mBundle = bundle;
         mBundleFolder = bundleFolder;
+        mName = name;
     }
 
-    protected LibraryBundle(@NonNull File bundleFolder) {
-        this(bundleFolder, null);
+    protected LibraryBundle(@NonNull File bundle, @NonNull File bundleFolder) {
+        this(bundle, bundleFolder, null);
     }
 
     public String getName() {
@@ -69,6 +75,12 @@ public abstract class LibraryBundle implements LibraryDependency {
     @NonNull
     public File getSymbolFile() {
         return new File(mBundleFolder, "R.txt");
+    }
+
+    @Override
+    @NonNull
+    public File getBundle() {
+        return mBundle;
     }
 
     @Override
