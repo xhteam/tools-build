@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import org.gradle.api.Project;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -103,17 +104,22 @@ public class DependenciesImpl implements Dependencies, Serializable {
                 projectMatch != null ? projectMatch.getPath() : null);
     }
 
-    private static boolean contains(File buildDir, File file) {
-        File parent = file.getParentFile();
-        if (parent == null) {
+    private static boolean contains(@NonNull File dir, @NonNull File file) {
+        try {
+            dir = dir.getCanonicalFile();
+            file = file.getCanonicalFile();
+        } catch (IOException e) {
             return false;
         }
 
-        if (parent.equals(buildDir)) {
-            return true;
-        }
+        // quick fail
+        return file.getAbsolutePath().startsWith(dir.getAbsolutePath()) && doContains(dir, file);
 
-        return contains(buildDir, parent);
+    }
+
+    private static boolean doContains(@NonNull File dir, @NonNull File file) {
+        File parent = file.getParentFile();
+        return parent != null && (parent.equals(dir) || doContains(dir, parent));
     }
 
     private DependenciesImpl(@NonNull List<AndroidLibrary> libraries, @NonNull List<File> jars) {
