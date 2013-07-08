@@ -73,7 +73,11 @@ public class FakeAndroidTarget implements IAndroidTarget {
             return Integer.parseInt(target.substring("android-".length()));
         }
 
-        return -1;
+        // We don't actually know the API level at this point since the mode is "current"
+        // or "unstubbed". This API is only called to check if annotations.jar needs to be
+        // added to the classpath, so by putting a large value we make sure annotations.jar
+        // isn't used.
+        return 99;
     }
 
     @Override

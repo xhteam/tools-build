@@ -949,7 +949,7 @@ public abstract class BasePlugin {
 
         VariantConfiguration variantConfig = variantData.variantConfiguration
 
-        Closure libraryClosure = { project.files({ variantConfig.packagedJars }) }
+        Closure libraryClosure = { project.files(variantConfig.packagedJars) }
         Closure sourceClosure = { variantData.javaCompileTask.outputs.files }
         Closure proguardFileClosure = { }
 
