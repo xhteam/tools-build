@@ -47,4 +47,7 @@ public interface Variant {
 
     @NonNull
     ProductFlavor getMergedFlavor();
+
+    @NonNull
+    List<String> getResourceConfigurations();
 }

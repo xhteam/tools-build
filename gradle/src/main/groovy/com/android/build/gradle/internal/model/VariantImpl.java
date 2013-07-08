@@ -23,6 +23,7 @@ import com.android.build.gradle.model.Variant;
 import com.android.builder.model.ProductFlavor;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -102,5 +103,11 @@ class VariantImpl implements Variant, Serializable {
     @Override
     public ArtifactInfo getTestArtifactInfo() {
         return testArtifactInfo;
+    }
+
+    @Override
+    @NonNull
+    public List<String> getResourceConfigurations() {
+        return Collections.emptyList();
     }
 }
