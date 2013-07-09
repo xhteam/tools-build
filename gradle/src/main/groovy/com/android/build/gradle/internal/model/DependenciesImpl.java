@@ -43,6 +43,8 @@ public class DependenciesImpl implements Dependencies, Serializable {
     private final List<AndroidLibrary> libraries;
     @NonNull
     private final List<File> jars;
+    @NonNull
+    private final List<String> projects;
 
     @NonNull
     static DependenciesImpl cloneDependencies(
@@ -51,6 +53,7 @@ public class DependenciesImpl implements Dependencies, Serializable {
 
         List<AndroidLibrary> libraries;
         List<File> jars;
+        List<String> projects;
 
         if (variantDependencies != null) {
             List<LibraryDependencyImpl> libs = variantDependencies.getLibraries();
@@ -63,9 +66,17 @@ public class DependenciesImpl implements Dependencies, Serializable {
             List<JarDependency> jarDeps = variantDependencies.getJarDependencies();
             List<JarDependency> localDeps = variantDependencies.getLocalDependencies();
 
-            jars = Lists.newArrayListWithCapacity(jarDeps.size() + localDeps.size());
+            jars = Lists.newArrayListWithExpectedSize(jarDeps.size() + localDeps.size());
+            projects = Lists.newArrayList();
+
             for (JarDependency jarDep : jarDeps) {
-                jars.add(jarDep.getJarFile());
+                File jarFile = jarDep.getJarFile();
+                Project projectMatch = getProject(jarFile, gradleProjects);
+                if (projectMatch != null) {
+                    projects.add(projectMatch.getPath());
+                } else {
+                    jars.add(jarFile);
+                }
             }
             for (JarDependency jarDep : localDeps) {
                 jars.add(jarDep.getJarFile());
@@ -73,58 +84,18 @@ public class DependenciesImpl implements Dependencies, Serializable {
         } else {
             libraries = Collections.emptyList();
             jars = Collections.emptyList();
+            projects = Collections.emptyList();
         }
 
-        return new DependenciesImpl(libraries, jars);
+        return new DependenciesImpl(libraries, jars, projects);
     }
 
-    @NonNull
-    private static AndroidLibrary getAndroidLibrary(@NonNull LibraryDependency libImpl,
-                                                    @NonNull Set<Project> gradleProjects) {
-        File bundle = libImpl.getBundle();
-
-        // search for a project that contains this bundle in its output folder.
-        Project projectMatch = null;
-        for (Project project : gradleProjects) {
-            File buildDir = project.getBuildDir();
-            if (contains(buildDir, bundle)) {
-                projectMatch = project;
-                break;
-            }
-        }
-
-        List<LibraryDependency> deps = libImpl.getDependencies();
-        List<AndroidLibrary> clonedDeps = Lists.newArrayListWithCapacity(deps.size());
-        for (LibraryDependency child : deps) {
-            AndroidLibrary clonedLib = getAndroidLibrary(child, gradleProjects);
-            clonedDeps.add(clonedLib);
-        }
-
-        return new AndroidLibraryImpl(libImpl, clonedDeps,
-                projectMatch != null ? projectMatch.getPath() : null);
-    }
-
-    private static boolean contains(@NonNull File dir, @NonNull File file) {
-        try {
-            dir = dir.getCanonicalFile();
-            file = file.getCanonicalFile();
-        } catch (IOException e) {
-            return false;
-        }
-
-        // quick fail
-        return file.getAbsolutePath().startsWith(dir.getAbsolutePath()) && doContains(dir, file);
-
-    }
-
-    private static boolean doContains(@NonNull File dir, @NonNull File file) {
-        File parent = file.getParentFile();
-        return parent != null && (parent.equals(dir) || doContains(dir, parent));
-    }
-
-    private DependenciesImpl(@NonNull List<AndroidLibrary> libraries, @NonNull List<File> jars) {
+    private DependenciesImpl(@NonNull List<AndroidLibrary> libraries,
+                             @NonNull List<File> jars,
+                             @NonNull List<String> projects) {
         this.libraries = libraries;
         this.jars = jars;
+        this.projects = projects;
     }
 
     @NonNull
@@ -141,7 +112,55 @@ public class DependenciesImpl implements Dependencies, Serializable {
 
     @NonNull
     @Override
-    public List<String> getProjectDependenciesPath() {
-        return Collections.emptyList();
+    public List<String> getProjects() {
+        return projects;
+    }
+
+    @NonNull
+    private static AndroidLibrary getAndroidLibrary(@NonNull LibraryDependency libImpl,
+                                                    @NonNull Set<Project> gradleProjects) {
+        File bundle = libImpl.getBundle();
+        Project projectMatch = getProject(bundle, gradleProjects);
+
+        List<LibraryDependency> deps = libImpl.getDependencies();
+        List<AndroidLibrary> clonedDeps = Lists.newArrayListWithCapacity(deps.size());
+        for (LibraryDependency child : deps) {
+            AndroidLibrary clonedLib = getAndroidLibrary(child, gradleProjects);
+            clonedDeps.add(clonedLib);
+        }
+
+        return new AndroidLibraryImpl(libImpl, clonedDeps,
+                projectMatch != null ? projectMatch.getPath() : null);
+    }
+
+    @Nullable
+    private static Project getProject(File outputFile, Set<Project> gradleProjects) {
+        // search for a project that contains this file in its output folder.
+        Project projectMatch = null;
+        for (Project project : gradleProjects) {
+            File buildDir = project.getBuildDir();
+            if (contains(buildDir, outputFile)) {
+                projectMatch = project;
+                break;
+            }
+        }
+        return projectMatch;
+    }
+
+    private static boolean contains(@NonNull File dir, @NonNull File file) {
+        try {
+            dir = dir.getCanonicalFile();
+            file = file.getCanonicalFile();
+        } catch (IOException e) {
+            return false;
+        }
+
+        // quick fail
+        return file.getAbsolutePath().startsWith(dir.getAbsolutePath()) && doContains(dir, file);
+    }
+
+    private static boolean doContains(@NonNull File dir, @NonNull File file) {
+        File parent = file.getParentFile();
+        return parent != null && (parent.equals(dir) || doContains(dir, parent));
     }
 }

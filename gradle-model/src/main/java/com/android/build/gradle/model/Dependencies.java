@@ -33,9 +33,17 @@ public interface Dependencies {
     @NonNull
     List<AndroidLibrary> getLibraries();
 
+    /**
+     * The list of jar dependencies
+     * @return the list of jar files.
+     */
     @NonNull
     List<File> getJars();
 
+    /**
+     * The list of project dependencies
+     * @return the list of projects.
+     */
     @NonNull
-    List<String> getProjectDependenciesPath();
+    List<String> getProjects();
 }

@@ -230,7 +230,7 @@ public class AndroidProjectTest extends TestCase {
         assertNotNull(lib.getBundle());
         assertNotNull(lib.getFolder());
 
-        assertTrue(dependencies.getProjectDependenciesPath().isEmpty());
+        assertTrue(dependencies.getProjects().isEmpty());
     }
 
     public void testBasicSigningConfigs() throws Exception {
@@ -416,6 +416,36 @@ public class AndroidProjectTest extends TestCase {
         assertNotNull(androidLibrary);
         // TODO: right now we can only test the folder name efficiently
         assertEquals("FlavorlibLib2Unspecified.aar", androidLibrary.getFolder().getName());
+    }
+
+    public void testMultiproject() throws Exception {
+        Map<String, ProjectData> map = getModelForMultiProject("multiproject");
+
+        ProjectData baseLibModelData = map.get(":baseLibrary");
+        assertNotNull("Module app null-check", baseLibModelData);
+        AndroidProject model = baseLibModelData.model;
+
+        Map<String, Variant> variants = model.getVariants();
+        assertEquals("Variant count", 2, variants.size());
+
+        Variant variant = variants.get("Release");
+        assertNotNull("Release variant null-check", variant);
+
+        ArtifactInfo mainInfo = variant.getMainArtifactInfo();
+        assertNotNull("Main Artifact null-check", mainInfo);
+
+        Dependencies dependencies = mainInfo.getDependencies();
+        assertNotNull("Dependencies null-check", dependencies);
+
+        List<String> projects = dependencies.getProjects();
+        assertNotNull("project dep list null-check", projects);
+        assertEquals("project dep count", 1, projects.size());
+        assertEquals("dep on :util check", ":util", projects.get(0));
+
+        List<File> jars = dependencies.getJars();
+        assertNotNull("jar dep list null-check", jars);
+        // TODO these are jars coming from ':util' They shouldn't be there.
+        assertEquals("jar dep count", 2, jars.size());
     }
 
     /**
