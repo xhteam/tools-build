@@ -28,7 +28,7 @@ import com.google.common.collect.Lists
 public class BuildTypeDsl extends DefaultBuildType implements Serializable {
     private static final long serialVersionUID = 1L
 
-    private List<Object> proguardFiles = Lists.newArrayList();
+    private final List<Object> proguardFiles = Lists.newArrayList();
 
     BuildTypeDsl(@NonNull String name) {
         super(name)
@@ -56,6 +56,9 @@ public class BuildTypeDsl extends DefaultBuildType implements Serializable {
         setRunProguard(that.isRunProguard())
         setZipAlign(that.isZipAlign())
         setSigningConfig(that.getSigningConfig())
+
+        proguardFiles.clear();
+        proguardFiles.addAll(that.proguardFiles);
 
         return this;
     }
