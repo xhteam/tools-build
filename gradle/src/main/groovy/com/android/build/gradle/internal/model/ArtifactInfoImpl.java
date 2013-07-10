@@ -18,8 +18,8 @@ package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.build.gradle.model.ArtifactInfo;
-import com.android.build.gradle.model.Dependencies;
+import com.android.builder.model.ArtifactInfo;
+import com.android.builder.model.Dependencies;
 
 import java.io.File;
 import java.io.Serializable;

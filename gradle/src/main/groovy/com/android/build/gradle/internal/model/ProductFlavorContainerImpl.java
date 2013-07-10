@@ -17,7 +17,7 @@
 package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
-import com.android.build.gradle.model.ProductFlavorContainer;
+import com.android.builder.model.ProductFlavorContainer;
 import com.android.builder.model.ProductFlavor;
 import com.android.builder.model.SourceProvider;
 

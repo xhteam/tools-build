@@ -17,7 +17,7 @@
 package com.android.builder.internal;
 
 import com.android.annotations.NonNull;
-import com.android.builder.model.BuildConfig;
+import com.android.builder.model.BaseConfig;
 import com.google.common.collect.Lists;
 
 import java.io.Serializable;
@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * An object that contain a BuildConfig configuration
  */
-public class BuildConfigImpl implements Serializable, BuildConfig {
+public class BaseConfigImpl implements Serializable, BaseConfig {
     private static final long serialVersionUID = 1L;
 
     private final List<String> mBuildConfigLines = Lists.newArrayList();
@@ -60,7 +60,7 @@ public class BuildConfigImpl implements Serializable, BuildConfig {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        BuildConfigImpl that = (BuildConfigImpl) o;
+        BaseConfigImpl that = (BaseConfigImpl) o;
 
         return mBuildConfigLines.equals(that.mBuildConfigLines);
     }

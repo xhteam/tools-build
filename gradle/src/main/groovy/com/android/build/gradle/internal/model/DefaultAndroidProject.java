@@ -17,10 +17,10 @@
 package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
-import com.android.build.gradle.model.AndroidProject;
-import com.android.build.gradle.model.BuildTypeContainer;
-import com.android.build.gradle.model.ProductFlavorContainer;
-import com.android.build.gradle.model.Variant;
+import com.android.builder.model.AndroidProject;
+import com.android.builder.model.BuildTypeContainer;
+import com.android.builder.model.ProductFlavorContainer;
+import com.android.builder.model.Variant;
 import com.android.builder.model.AaptOptions;
 import com.android.builder.model.SigningConfig;
 import com.google.common.collect.Maps;
@@ -44,7 +44,7 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     @NonNull
     private final List<String> bootClasspath;
     @NonNull
-    private final List<SigningConfig> signingConfigs;
+    private final Map<String, SigningConfig> signingConfigs;
     private final boolean isLibrary;
 
     private final Map<String, BuildTypeContainer> buildTypes = Maps.newHashMap();
@@ -56,7 +56,7 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
     DefaultAndroidProject(@NonNull String modelVersion,
                           @NonNull String name, @NonNull String compileTarget,
                           @NonNull List<String> bootClasspath,
-                          @NonNull List<SigningConfig> signingConfigs,
+                          @NonNull Map<String, SigningConfig> signingConfigs,
                           boolean isLibrary) {
         this.modelVersion = modelVersion;
         this.name = name;
@@ -147,7 +147,7 @@ class DefaultAndroidProject implements AndroidProject, Serializable {
 
     @NonNull
     @Override
-    public List<SigningConfig> getSigningConfigs() {
+    public Map<String,SigningConfig> getSigningConfigs() {
         return signingConfigs;
     }
 

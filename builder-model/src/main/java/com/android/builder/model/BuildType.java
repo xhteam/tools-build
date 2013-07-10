@@ -20,29 +20,81 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 
 /**
- * a Build Type.
+ * a Build Type. This is only the configuration of the build type.
  *
- * TODO add signing config
+ * It does not include the sources or the dependencies. Those are available on the container
+ * or in the artifact info.
+ *
+ * @see BuildTypeContainer
+ * @see ArtifactInfo#getDependencies()
  */
-public interface BuildType extends BuildConfig {
+public interface BuildType extends BaseConfig {
+
+    /**
+     * Returns the name of the build type.
+     *
+     * @return the name of the build type.
+     */
     @NonNull
     String getName();
 
+    /**
+     * Returns whether the build type is configured to generate a debuggable apk.
+     *
+     * @return true if the apk is debuggable
+     */
     boolean isDebuggable();
 
+    /**
+     * Returns whether the build type is configured to generate an apk with debuggable native code.
+     *
+     * @return true if the apk is debuggable
+     */
     boolean isJniDebugBuild();
 
+    /**
+     * Returns whether the build type is configured to generate an apk with debuggable
+     * renderscript code.
+     *
+     * @return true if the apk is debuggable
+     */
     boolean isRenderscriptDebugBuild();
 
+    /**
+     * Returns the optimization level of the renderscript compilation.
+     *
+     * @return the optimization level.
+     */
     int getRenderscriptOptimLevel();
 
+    /**
+     * Returns the package name suffix applied to this build type.
+     * To get the final package name, use {@link ArtifactInfo#getPackageName()}.
+     *
+     * @return the package name suffix.
+     */
     @Nullable
     String getPackageNameSuffix();
 
+    /**
+     * Returns the version name suffix.
+     *
+     * @return the version name suffix.
+     */
     @Nullable
     String getVersionNameSuffix();
 
+    /**
+     * Returns whether proguard is enabled for this build type.
+     *
+     * @return true if proguard is enabled.
+     */
     boolean isRunProguard();
 
+    /**
+     * Return whether zipalign is enabled for this build type.
+     *
+     * @return true if zipalign is enabled.
+     */
     boolean isZipAlign();
 }

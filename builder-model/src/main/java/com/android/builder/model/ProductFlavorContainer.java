@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Android Open Source Project
+ * Copyright (C) 2013 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,32 @@ package com.android.builder.model;
 
 import com.android.annotations.NonNull;
 
-import java.util.List;
-
 /**
- * An object that contain a BuildConfig configuration
+ * A Container of all the data related to {@link ProductFlavor}.
  */
-public interface BuildConfig {
+public interface ProductFlavorContainer {
 
     /**
-     * List of Build Config lines.
-     * @return a non-null list of lines (possibly empty)
+     * The Product Flavor itself.
+     *
+     * @return the product flavor
      */
     @NonNull
-    List<String> getBuildConfig();
+    ProductFlavor getProductFlavor();
 
+    /**
+     * The associated main sources of the product flavor
+     *
+     * @return the main source provider.
+     */
     @NonNull
-    List<Object> getProguardFiles();
+    SourceProvider getSourceProvider();
+
+    /**
+     * The associated test sources of the product flavor
+     *
+     * @return the test source provider.
+     */
+    @NonNull
+    SourceProvider getTestSourceProvider();
 }

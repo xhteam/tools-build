@@ -18,12 +18,12 @@ package com.android.builder;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.builder.internal.BuildConfigImpl;
+import com.android.builder.internal.BaseConfigImpl;
 import com.android.builder.model.BuildType;
 import com.android.builder.model.SigningConfig;
 import com.google.common.base.Objects;
 
-public class DefaultBuildType extends BuildConfigImpl implements BuildType {
+public class DefaultBuildType extends BaseConfigImpl implements BuildType {
     private static final long serialVersionUID = 1L;
 
     private final String mName;

@@ -14,34 +14,39 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.model;
+package com.android.builder.model;
 
 import com.android.annotations.NonNull;
-import com.android.builder.model.AndroidLibrary;
 
 import java.io.File;
 import java.util.List;
 
 /**
+ * A set of dependencies for an {@link ArtifactInfo}.
  */
 public interface Dependencies {
 
     /**
-     * The list of libraries. Can be AndroidLibrary or AndroidLibraryProject
+     * The list of Android library dependencies. This includes both modules and external
+     * dependencies.
+     *
      * @return the list of libraries.
      */
     @NonNull
     List<AndroidLibrary> getLibraries();
 
     /**
-     * The list of jar dependencies
+     * The list of jar dependencies. This only includes external dependencies.
+     *
      * @return the list of jar files.
      */
     @NonNull
     List<File> getJars();
 
     /**
-     * The list of project dependencies
+     * The list of project dependencies. This is only for non Android module dependencies (which
+     * right now is Java-only modules).
+     *
      * @return the list of projects.
      */
     @NonNull

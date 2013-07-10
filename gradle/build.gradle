@@ -28,7 +28,6 @@ dependencies {
     gradleApi gradleApi()
     groovy localGroovy()
     compile project(':builder')
-    compile project(':gradle-model')
 
     runtime 'net.sf.proguard:proguard-gradle:4.9'
 
@@ -80,7 +79,6 @@ version = getVersion()
 archivesBaseName = 'gradle'
 jar.manifest.attributes("Plugin-Version": version)
 
-
 task publishLocal(type: Upload) {
     configuration = configurations.archives
     repositories {
@@ -90,7 +88,6 @@ task publishLocal(type: Upload) {
     }
 }
 publishLocal.dependsOn ':builder:publishLocal'
-publishLocal.dependsOn ':gradle-model:publishLocal'
 
 task buildTest(type: Test, dependsOn: publishLocal) {
     testClassesDir = sourceSets.buildTest.output.classesDir

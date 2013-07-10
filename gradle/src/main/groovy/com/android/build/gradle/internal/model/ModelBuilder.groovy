@@ -26,16 +26,17 @@ import com.android.build.gradle.internal.variant.ApplicationVariantData
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.LibraryVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
-import com.android.build.gradle.model.AndroidProject
-import com.android.build.gradle.model.ArtifactInfo
-import com.android.build.gradle.model.BuildTypeContainer
-import com.android.build.gradle.model.ProductFlavorContainer
+import com.android.builder.model.AndroidProject
+import com.android.builder.model.ArtifactInfo
+import com.android.builder.model.BuildTypeContainer
+import com.android.builder.model.ProductFlavorContainer
 import com.android.builder.DefaultProductFlavor
 import com.android.builder.SdkParser
 import com.android.builder.VariantConfiguration
 import com.android.builder.model.SigningConfig
 import com.android.builder.model.SourceProvider
 import com.google.common.collect.Lists
+import com.google.common.collect.Maps
 import org.gradle.api.Project
 import org.gradle.api.plugins.UnknownPluginException
 import org.gradle.tooling.provider.model.ToolingModelBuilder
@@ -244,18 +245,20 @@ public class ModelBuilder implements ToolingModelBuilder {
     }
 
     @NonNull
-    private static List<SigningConfig> cloneSigningConfigs(Collection<SigningConfig> signingConfigs) {
-        List<SigningConfig> results = Lists.newArrayListWithCapacity(signingConfigs.size())
+    private static Map<String, SigningConfig> cloneSigningConfigs(
+            @NonNull Collection<SigningConfig> signingConfigs) {
+        Map<String, SigningConfig> results = Maps.newHashMapWithExpectedSize(signingConfigs.size())
 
         for (SigningConfig signingConfig : signingConfigs) {
-            results.add(createSigningConfig(signingConfig))
+            SigningConfig clonedSigningConfig = createSigningConfig(signingConfig)
+            results.put(clonedSigningConfig.name, clonedSigningConfig)
         }
 
         return results
     }
 
     @NonNull
-    private static SigningConfig createSigningConfig(SigningConfig signingConfig) {
+    private static SigningConfig createSigningConfig(@NonNull SigningConfig signingConfig) {
         return new SigningConfigImpl(
                 signingConfig.getName(),
                 signingConfig.getStoreFile(),
