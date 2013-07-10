@@ -18,9 +18,15 @@ package com.android.build.gradle.model;
 
 import com.android.annotations.NonNull;
 import com.android.builder.model.AndroidLibrary;
+import com.android.builder.model.AndroidProject;
+import com.android.builder.model.ArtifactInfo;
+import com.android.builder.model.BuildTypeContainer;
+import com.android.builder.model.Dependencies;
 import com.android.builder.model.ProductFlavor;
+import com.android.builder.model.ProductFlavorContainer;
 import com.android.builder.model.SigningConfig;
 import com.android.builder.model.SourceProvider;
+import com.android.builder.model.Variant;
 import com.android.builder.signing.KeystoreHelper;
 import com.android.prefs.AndroidLocation;
 import com.google.common.collect.Maps;
@@ -241,14 +247,13 @@ public class AndroidProjectTest extends TestCase {
 
         assertEquals("Number of signingConfig", 2, model.getSigningConfigs().size());
 
-        SigningConfig debugSigningConfig = model.getSigningConfigs().get(0);
+        SigningConfig debugSigningConfig = model.getSigningConfigs().get("debug");
         new SigningConfigTester(debugSigningConfig, "debug", true).test();
 
-        SigningConfig mySigningConfig = model.getSigningConfigs().get(1);
+        SigningConfig mySigningConfig = model.getSigningConfigs().get("myConfig");
         new SigningConfigTester(mySigningConfig, "myConfig", true)
                 .setStoreFile(new File(projectData.projectDir, "debug.keystore"))
                 .test();
-
     }
 
     public void testMigrated() throws Exception {

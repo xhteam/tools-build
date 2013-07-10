@@ -14,45 +14,28 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.model;
+package com.android.builder.model;
 
 import com.android.annotations.NonNull;
-import com.android.annotations.Nullable;
-
-import java.io.File;
-import java.util.List;
 
 /**
- * the information for a generated artifact.
+ * A Container of all the data related to {@link BuildType}.
  */
-public interface ArtifactInfo {
+public interface BuildTypeContainer {
 
+    /**
+     * The Build Type itself.
+     *
+     * @return the build type
+     */
     @NonNull
-    File getOutputFile();
+    BuildType getBuildType();
 
-    boolean isSigned();
-
-    @Nullable
-    String getSigningConfigName();
-
+    /**
+     * The associated sources of the build type.
+     *
+     * @return the build type source provider.
+     */
     @NonNull
-    String getPackageName();
-
-    @NonNull
-    String getSourceGenTaskName();
-
-    @NonNull
-    String getAssembleTaskName();
-
-    @NonNull
-    List<File> getGeneratedSourceFolders();
-
-    @NonNull
-    List<File> getGeneratedResourceFolders();
-
-    @NonNull
-    File getClassesFolder();
-
-    @NonNull
-    Dependencies getDependencies();
+    SourceProvider getSourceProvider();
 }

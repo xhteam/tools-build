@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Android Open Source Project
+ * Copyright (C) 2012 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,29 @@
  * limitations under the License.
  */
 
-package com.android.build.gradle.model;
+package com.android.builder.model;
 
 import com.android.annotations.NonNull;
-import com.android.builder.model.BuildType;
-import com.android.builder.model.SourceProvider;
 
-public interface BuildTypeContainer {
+import java.util.List;
 
+/**
+ * Base config object for Build Type and Product flavor.
+ */
+public interface BaseConfig {
+
+    /**
+     * List of Build Config lines.
+     * @return a non-null list of lines (possibly empty)
+     */
     @NonNull
-    BuildType getBuildType();
+    List<String> getBuildConfig();
 
+    /**
+     * Returns the list of proguard rule files.
+     *
+     * @return a non-null list of files.
+     */
     @NonNull
-    SourceProvider getSourceProvider();
+    List<Object> getProguardFiles();
 }

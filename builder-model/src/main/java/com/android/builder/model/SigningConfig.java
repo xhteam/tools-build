@@ -26,23 +26,58 @@ import java.io.File;
  */
 public interface SigningConfig {
 
+    /**
+     * Returns the name of the Signing config
+     *
+     * @return the name of the config
+     */
     @NonNull
     public String getName();
 
+    /**
+     * Returns the keystore file.
+     *
+     * @return the file.
+     */
     @Nullable
     File getStoreFile();
 
+    /**
+     * Returns the keystore password.
+     *
+     * @return the password.
+     */
     @Nullable
     String getStorePassword();
 
+    /**
+     * Returns the key alias name.
+     *
+     * @return the key alias name.
+     */
     @Nullable
     String getKeyAlias();
 
+    /**
+     * return the key password.
+     *
+     * @return the password.
+     */
     @Nullable
     String getKeyPassword();
 
+    /**
+     * Returns the store type.
+     *
+     * @return the store type.
+     */
     @Nullable
     String getStoreType();
 
+    /**
+     * Returns whether the config is fully configured for signing.
+     *
+     * @return true if all the required information are present.
+     */
     boolean isSigningReady();
 }

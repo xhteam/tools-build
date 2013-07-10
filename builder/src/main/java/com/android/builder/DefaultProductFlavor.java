@@ -18,7 +18,7 @@ package com.android.builder;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
-import com.android.builder.internal.BuildConfigImpl;
+import com.android.builder.internal.BaseConfigImpl;
 import com.android.builder.model.ProductFlavor;
 import com.android.builder.model.SigningConfig;
 import com.google.common.base.Objects;
@@ -29,7 +29,7 @@ import com.google.common.base.Objects;
  * This is also used to describe the default configuration of all builds, even those that
  * do not contain any flavors.
  */
-public class DefaultProductFlavor extends BuildConfigImpl implements ProductFlavor {
+public class DefaultProductFlavor extends BaseConfigImpl implements ProductFlavor {
     private static final long serialVersionUID = 1L;
 
     private final String mName;

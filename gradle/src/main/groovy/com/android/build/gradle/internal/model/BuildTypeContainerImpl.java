@@ -17,7 +17,7 @@
 package com.android.build.gradle.internal.model;
 
 import com.android.annotations.NonNull;
-import com.android.build.gradle.model.BuildTypeContainer;
+import com.android.builder.model.BuildTypeContainer;
 import com.android.builder.model.BuildType;
 import com.android.builder.model.SourceProvider;
 

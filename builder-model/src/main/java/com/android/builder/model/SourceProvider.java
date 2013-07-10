@@ -27,27 +27,67 @@ import java.util.Set;
  */
 public interface SourceProvider {
 
+    /**
+     * Returns the manifest file.
+     *
+     * @return the manifest file. It may not exist.
+     */
     @NonNull
     File getManifestFile();
 
+    /**
+     * Returns the java source folders.
+     *
+     * @return a list of folders. They may not all exist.
+     */
     @NonNull
     Set<File> getJavaDirectories();
 
+    /**
+     * Returns the java resources folders.
+     *
+     * @return a list of folders. They may not all exist.
+     */
     @NonNull
     Set<File> getResourcesDirectories();
 
+    /**
+     * Returns the aidl source folders.
+     *
+     * @return a list of folders. They may not all exist.
+     */
     @NonNull
     Set<File> getAidlDirectories();
 
+    /**
+     * Returns the renderscript source folders.
+     *
+     * @return a list of folders. They may not all exist.
+     */
     @NonNull
     Set<File> getRenderscriptDirectories();
 
+    /**
+     * Returns the jni source folders.
+     *
+     * @return a list of folders. They may not all exist.
+     */
     @NonNull
     Set<File> getJniDirectories();
 
+    /**
+     * Returns the android resources folders.
+     *
+     * @return a list of folders. They may not all exist.
+     */
     @NonNull
     Set<File> getResDirectories();
 
+    /**
+     * Returns the android assets folders.
+     *
+     * @return a list of folders. They may not all exist.
+     */
     @NonNull
     Set<File> getAssetsDirectories();
 }

@@ -23,13 +23,14 @@ import java.io.File;
 import java.util.List;
 
 /**
- * Represents an Android Library, its content and its own dependencies
+ * Represents an Android Library dependency, its content and its own dependencies
  */
 public interface AndroidLibrary {
 
     /**
      * Returns the project identifier if the library is output
      * by a module.
+     *
      * @return the project identifier
      */
     @Nullable
@@ -42,7 +43,7 @@ public interface AndroidLibrary {
     File getBundle();
 
     /**
-     * Returns the location of the unzipped archive.
+     * Returns the location of the unzipped bundle folder.
      */
     @NonNull
     File getFolder();
@@ -63,6 +64,7 @@ public interface AndroidLibrary {
 
     /**
      * Returns the list of local Jar files that are included in the dependency.
+     *
      * @return a list of File. May be empty but not null.
      */
     @NonNull
