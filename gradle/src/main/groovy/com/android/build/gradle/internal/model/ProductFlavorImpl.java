@@ -20,6 +20,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.model.ProductFlavor;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -138,8 +139,7 @@ class ProductFlavorImpl implements ProductFlavor, Serializable {
 
     @NonNull
     @Override
-    public List<Object> getProguardFiles() {
+    public List<File> getProguardFiles() {
         return Collections.emptyList();
     }
-
 }

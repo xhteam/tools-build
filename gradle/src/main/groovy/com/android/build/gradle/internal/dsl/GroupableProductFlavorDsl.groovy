@@ -16,25 +16,18 @@
 
 package com.android.build.gradle.internal.dsl
 
-import com.android.builder.DefaultProductFlavor
+import com.android.annotations.NonNull
+import org.gradle.api.internal.file.FileResolver
 
 /**
- * A version of ProductFlavor that can receive a group name
+ * A version of ProductFlavorDsl that can receive a group name
  */
-public class GroupableProductFlavor extends DefaultProductFlavor {
+public class GroupableProductFlavorDsl extends ProductFlavorDsl {
     private static final long serialVersionUID = 1L
 
-    private String flavorGroup
+    String flavorGroup
 
-    public GroupableProductFlavor(String name) {
-        super(name)
-    }
-
-    public void setFlavorGroup(String flavorGroup) {
-        this.flavorGroup = flavorGroup
-    }
-
-    public String getFlavorGroup() {
-        return flavorGroup
+    public GroupableProductFlavorDsl(@NonNull String name, @NonNull FileResolver fileResolver) {
+        super(name, fileResolver)
     }
 }

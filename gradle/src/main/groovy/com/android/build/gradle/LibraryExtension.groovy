@@ -45,9 +45,9 @@ public class LibraryExtension extends BaseExtension {
                 BuilderConstants.DEBUG)
         debugSigningConfig.initDebug()
 
-        debug = instantiator.newInstance(BuildTypeDsl.class, BuilderConstants.DEBUG)
+        debug = instantiator.newInstance(BuildTypeDsl.class, BuilderConstants.DEBUG, project.fileResolver)
         debug.init(debugSigningConfig)
-        release = instantiator.newInstance(BuildTypeDsl.class, BuilderConstants.RELEASE)
+        release = instantiator.newInstance(BuildTypeDsl.class, BuilderConstants.RELEASE, project.fileResolver)
         release.init(null)
     }
 

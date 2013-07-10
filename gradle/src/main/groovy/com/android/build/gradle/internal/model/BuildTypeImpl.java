@@ -20,6 +20,7 @@ import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.builder.model.BuildType;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -115,7 +116,7 @@ class BuildTypeImpl implements BuildType, Serializable {
     }
 
     @Override
-    public @NonNull List<Object> getProguardFiles() {
+    public @NonNull List<File> getProguardFiles() {
         return Collections.emptyList();
     }
 }

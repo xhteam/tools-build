@@ -39,6 +39,7 @@ import java.util.Set;
 /**
  */
 public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider {
+    @NonNull
     private final String name;
     private final SourceDirectorySet javaSource;
     private final SourceDirectorySet allJavaSource;
@@ -52,7 +53,7 @@ public class DefaultAndroidSourceSet implements AndroidSourceSet, SourceProvider
     private final String displayName;
     private final SourceDirectorySet allSource;
 
-    public DefaultAndroidSourceSet(String name, FileResolver fileResolver) {
+    public DefaultAndroidSourceSet(@NonNull String name, @NonNull FileResolver fileResolver) {
         this.name = name;
         displayName = GUtil.toWords(this.name);
 
