@@ -28,7 +28,7 @@ import com.android.build.gradle.internal.api.TestVariantImpl
 import com.android.build.gradle.internal.dependency.VariantDependencies
 import com.android.build.gradle.internal.dsl.BuildTypeDsl
 import com.android.build.gradle.internal.dsl.BuildTypeFactory
-import com.android.build.gradle.internal.dsl.GroupableProductFlavor
+import com.android.build.gradle.internal.dsl.GroupableProductFlavorDsl
 import com.android.build.gradle.internal.dsl.GroupableProductFlavorFactory
 import com.android.build.gradle.internal.dsl.SigningConfigDsl
 import com.android.build.gradle.internal.dsl.SigningConfigFactory
@@ -65,7 +65,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
     static PluginHolder pluginHolder;
 
     final Map<String, BuildTypeData> buildTypes = [:]
-    final Map<String, ProductFlavorData<GroupableProductFlavor>> productFlavors = [:]
+    final Map<String, ProductFlavorData<GroupableProductFlavorDsl>> productFlavors = [:]
     final Map<String, SigningConfig> signingConfigs = [:]
 
     AppExtension extension
@@ -84,9 +84,10 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
             pluginHolder.plugin = this;
         }
 
-        def buildTypeContainer = project.container(DefaultBuildType, new BuildTypeFactory(instantiator))
-        def productFlavorContainer = project.container(GroupableProductFlavor,
-                new GroupableProductFlavorFactory(instantiator))
+        def buildTypeContainer = project.container(DefaultBuildType,
+                new BuildTypeFactory(instantiator,  project.fileResolver))
+        def productFlavorContainer = project.container(GroupableProductFlavorDsl,
+                new GroupableProductFlavorFactory(instantiator, project.fileResolver))
         def signingConfigContainer = project.container(SigningConfig,
                 new SigningConfigFactory(instantiator))
 
@@ -106,7 +107,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
             addBuildType(buildType)
         }
 
-        productFlavorContainer.whenObjectAdded { GroupableProductFlavor productFlavor ->
+        productFlavorContainer.whenObjectAdded { GroupableProductFlavorDsl productFlavor ->
             addProductFlavor(productFlavor)
         }
 
@@ -154,7 +155,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
      *
      * @param productFlavor the product flavor
      */
-    private void addProductFlavor(GroupableProductFlavor productFlavor) {
+    private void addProductFlavor(GroupableProductFlavorDsl productFlavor) {
         String name = productFlavor.name
         checkName(name, "ProductFlavor")
 
@@ -166,8 +167,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
         String testName = "${INSTRUMENT_TEST}${productFlavor.name.capitalize()}"
         def testSourceSet = (DefaultAndroidSourceSet) extension.sourceSetsContainer.create(testName)
 
-        ProductFlavorData<GroupableProductFlavor> productFlavorData =
-                new ProductFlavorData<GroupableProductFlavor>(
+        ProductFlavorData<GroupableProductFlavorDsl> productFlavorData =
+                new ProductFlavorData<GroupableProductFlavorDsl>(
                         productFlavor, mainSourceSet, testSourceSet, project)
 
         productFlavors[productFlavor.name] = productFlavorData
@@ -210,8 +211,8 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
             } else {
                 // need to group the flavor per group.
                 // First a map of group -> list(ProductFlavor)
-                ArrayListMultimap<String, ProductFlavorData<GroupableProductFlavor>> map = ArrayListMultimap.create();
-                productFlavors.values().each { ProductFlavorData<GroupableProductFlavor> productFlavorData ->
+                ArrayListMultimap<String, ProductFlavorData<GroupableProductFlavorDsl>> map = ArrayListMultimap.create();
+                productFlavors.values().each { ProductFlavorData<GroupableProductFlavorDsl> productFlavorData ->
                     def flavor = productFlavorData.productFlavor
                     if (flavor.flavorGroup == null) {
                         throw new RuntimeException(

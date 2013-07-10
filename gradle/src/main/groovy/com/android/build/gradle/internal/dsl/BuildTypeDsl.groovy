@@ -15,12 +15,11 @@
  */
 
 package com.android.build.gradle.internal.dsl
-
 import com.android.annotations.NonNull
 import com.android.builder.BuilderConstants
 import com.android.builder.DefaultBuildType
 import com.android.builder.model.SigningConfig
-import com.google.common.collect.Lists
+import org.gradle.api.internal.file.FileResolver
 
 /**
  * DSL overlay to make methods that accept String... work.
@@ -28,10 +27,12 @@ import com.google.common.collect.Lists
 public class BuildTypeDsl extends DefaultBuildType implements Serializable {
     private static final long serialVersionUID = 1L
 
-    private final List<Object> proguardFiles = Lists.newArrayList();
+    @NonNull
+    private final FileResolver fileResolver
 
-    BuildTypeDsl(@NonNull String name) {
+    BuildTypeDsl(@NonNull String name, @NonNull FileResolver fileResolver) {
         super(name)
+        this.fileResolver = fileResolver
     }
 
     public void init(SigningConfig debugSigningConfig) {
@@ -44,23 +45,6 @@ public class BuildTypeDsl extends DefaultBuildType implements Serializable {
         } else if (BuilderConstants.RELEASE.equals(getName())) {
             // no config needed for now.
         }
-    }
-
-    public BuildTypeDsl initWith(DefaultBuildType that) {
-        setDebuggable(that.isDebuggable())
-        setJniDebugBuild(that.isJniDebugBuild())
-        setRenderscriptDebugBuild(that.isRenderscriptDebugBuild())
-        setRenderscriptOptimLevel(that.getRenderscriptOptimLevel())
-        setPackageNameSuffix(that.getPackageNameSuffix())
-        setVersionNameSuffix(that.getVersionNameSuffix())
-        setRunProguard(that.isRunProguard())
-        setZipAlign(that.isZipAlign())
-        setSigningConfig(that.getSigningConfig())
-
-        proguardFiles.clear();
-        proguardFiles.addAll(that.proguardFiles);
-
-        return this;
     }
 
     @Override
@@ -84,13 +68,13 @@ public class BuildTypeDsl extends DefaultBuildType implements Serializable {
 
     @NonNull
     public BuildTypeDsl proguardFile(Object proguardFile) {
-        proguardFiles.add(proguardFile);
+        proguardFiles.add(fileResolver.resolve(proguardFile));
         return this;
     }
 
     @NonNull
     public BuildTypeDsl proguardFiles(Object... proguardFileArray) {
-        Collections.addAll(proguardFiles, proguardFileArray);
+        proguardFiles.addAll(fileResolver.resolveFiles(proguardFileArray).files);
         return this;
     }
 
@@ -98,14 +82,8 @@ public class BuildTypeDsl extends DefaultBuildType implements Serializable {
     public BuildTypeDsl setProguardFiles(Iterable<?> proguardFileIterable) {
         proguardFiles.clear();
         for (Object proguardFile : proguardFileIterable) {
-            proguardFiles.add(proguardFile);
+            proguardFiles.add(fileResolver.resolve(proguardFile));
         }
         return this;
-    }
-
-    @Override
-    @NonNull
-    public List<Object> getProguardFiles() {
-        return proguardFiles;
     }
 }

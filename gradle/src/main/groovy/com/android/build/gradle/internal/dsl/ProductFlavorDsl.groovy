@@ -17,17 +17,20 @@
 package com.android.build.gradle.internal.dsl
 import com.android.annotations.NonNull
 import com.android.builder.DefaultProductFlavor
-import com.google.common.collect.Lists
+import org.gradle.api.internal.file.FileResolver
+
 /**
  * DSL overlay to make methods that accept String... work.
  */
 class ProductFlavorDsl extends DefaultProductFlavor {
     private static final long serialVersionUID = 1L
 
-    private List<Object> proguardFiles = Lists.newArrayList();
+    @NonNull
+    private final FileResolver fileResolver
 
-    ProductFlavorDsl(String name) {
+    ProductFlavorDsl(String name, @NonNull FileResolver fileResolver) {
         super(name)
+        this.fileResolver = fileResolver
     }
 
     // -- DSL Methods. TODO remove once the instantiator does what I expect it to do.
@@ -41,29 +44,23 @@ class ProductFlavorDsl extends DefaultProductFlavor {
     }
 
     @NonNull
-    public ProductFlavorDsl proguardFile(Object srcDir) {
-        proguardFiles.add(srcDir);
+    public ProductFlavorDsl proguardFile(Object proguardFile) {
+        proguardFiles.add(fileResolver.resolve(proguardFile));
         return this;
     }
 
     @NonNull
-    public ProductFlavorDsl proguardFiles(Object... srcDirs) {
-        Collections.addAll(proguardFiles, srcDirs);
+    public ProductFlavorDsl proguardFiles(Object... proguardFileArray) {
+        proguardFiles.addAll(fileResolver.resolveFiles(proguardFileArray).files);
         return this;
     }
 
     @NonNull
-    public ProductFlavorDsl setProguardFiles(Iterable<?> srcDirs) {
+    public ProductFlavorDsl setProguardFiles(Iterable<?> proguardFileIterable) {
         proguardFiles.clear();
-        for (Object srcDir : srcDirs) {
-            proguardFiles.add(srcDir);
+        for (Object proguardFile : proguardFileIterable) {
+            proguardFiles.add(fileResolver.resolve(proguardFile));
         }
         return this;
-    }
-
-    @Override
-    @NonNull
-    public List<Object> getProguardFiles() {
-        return proguardFiles;
     }
 }

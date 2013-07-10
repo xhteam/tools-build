@@ -20,9 +20,9 @@ import com.android.annotations.NonNull;
 import com.android.builder.model.BaseConfig;
 import com.google.common.collect.Lists;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,6 +32,7 @@ public class BaseConfigImpl implements Serializable, BaseConfig {
     private static final long serialVersionUID = 1L;
 
     private final List<String> mBuildConfigLines = Lists.newArrayList();
+    private final List<File> mProguardFiles = Lists.newArrayList();
 
     public void setBuildConfig(String... lines) {
         mBuildConfigLines.clear();
@@ -51,8 +52,16 @@ public class BaseConfigImpl implements Serializable, BaseConfig {
 
     @Override
     @NonNull
-    public List<Object> getProguardFiles() {
-        return Collections.emptyList();
+    public List<File> getProguardFiles() {
+        return mProguardFiles;
+    }
+
+    protected void _initWith(BaseConfig that) {
+        mBuildConfigLines.clear();
+        mBuildConfigLines.addAll(that.getBuildConfig());
+
+        mProguardFiles.clear();
+        mProguardFiles.addAll(that.getProguardFiles());
     }
 
     @Override
@@ -62,11 +71,16 @@ public class BaseConfigImpl implements Serializable, BaseConfig {
 
         BaseConfigImpl that = (BaseConfigImpl) o;
 
-        return mBuildConfigLines.equals(that.mBuildConfigLines);
+        if (!mBuildConfigLines.equals(that.mBuildConfigLines)) return false;
+        if (!mProguardFiles.equals(that.mProguardFiles)) return false;
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return mBuildConfigLines.hashCode();
+        int result = mBuildConfigLines.hashCode();
+        result = 31 * result + mProguardFiles.hashCode();
+        return result;
     }
 }

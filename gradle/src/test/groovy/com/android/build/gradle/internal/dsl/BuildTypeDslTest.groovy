@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2012 The Android Open Source Project
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the "License")
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
@@ -30,7 +30,7 @@ public class BuildTypeDslTest extends BaseTest {
 
     public void testDebug() {
         Project project = ProjectBuilder.builder().withProjectDir(
-                new File(testDir, "basic")).build();
+                new File(testDir, "basic")).build()
 
         project.apply plugin: 'android'
 
@@ -42,17 +42,17 @@ public class BuildTypeDslTest extends BaseTest {
 
         DefaultBuildType type = plugin.buildTypes.get(BuilderConstants.DEBUG).buildType
 
-        assertTrue(type.isDebuggable());
-        assertFalse(type.isJniDebugBuild());
-        assertFalse(type.isRenderscriptDebugBuild());
-        assertNotNull(type.getSigningConfig());
-        assertTrue(type.getSigningConfig().isSigningReady());
-        assertFalse(type.isZipAlign());
+        assertTrue(type.isDebuggable())
+        assertFalse(type.isJniDebugBuild())
+        assertFalse(type.isRenderscriptDebugBuild())
+        assertNotNull(type.getSigningConfig())
+        assertTrue(type.getSigningConfig().isSigningReady())
+        assertFalse(type.isZipAlign())
     }
 
     public void testRelease() {
         Project project = ProjectBuilder.builder().withProjectDir(
-                new File(testDir, "basic")).build();
+                new File(testDir, "basic")).build()
 
         project.apply plugin: 'android'
 
@@ -64,14 +64,17 @@ public class BuildTypeDslTest extends BaseTest {
 
         DefaultBuildType type = plugin.buildTypes.get(BuilderConstants.RELEASE).buildType
 
-        assertFalse(type.isDebuggable());
-        assertFalse(type.isJniDebugBuild());
-        assertFalse(type.isRenderscriptDebugBuild());
-        assertTrue(type.isZipAlign());
+        assertFalse(type.isDebuggable())
+        assertFalse(type.isJniDebugBuild())
+        assertFalse(type.isRenderscriptDebugBuild())
+        assertTrue(type.isZipAlign())
     }
 
     public void testInitWith() {
-        BuildTypeDsl object1 = new BuildTypeDsl("foo");
+        Project project = ProjectBuilder.builder().withProjectDir(
+                new File(testDir, "basic")).build()
+
+        BuildTypeDsl object1 = new BuildTypeDsl("foo", project.fileResolver)
 
         // change every value from their default.
         object1.setDebuggable(true)
@@ -84,7 +87,7 @@ public class BuildTypeDslTest extends BaseTest {
         object1.setSigningConfig(new SigningConfigDsl("blah"))
         object1.setZipAlign(false)
 
-        BuildTypeDsl object2 = new BuildTypeDsl(object1.name)
+        BuildTypeDsl object2 = new BuildTypeDsl(object1.name, project.fileResolver)
         object2.initWith(object1)
 
         assertEquals(object1, object2)

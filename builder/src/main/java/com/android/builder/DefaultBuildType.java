@@ -42,6 +42,22 @@ public class DefaultBuildType extends BaseConfigImpl implements BuildType {
         mName = name;
     }
 
+    public DefaultBuildType initWith(DefaultBuildType that) {
+        _initWith(that);
+
+        setDebuggable(that.isDebuggable());
+        setJniDebugBuild(that.isJniDebugBuild());
+        setRenderscriptDebugBuild(that.isRenderscriptDebugBuild());
+        setRenderscriptOptimLevel(that.getRenderscriptOptimLevel());
+        setPackageNameSuffix(that.getPackageNameSuffix());
+        setVersionNameSuffix(that.getVersionNameSuffix());
+        setRunProguard(that.isRunProguard());
+        setZipAlign(that.isZipAlign());
+        setSigningConfig(that.getSigningConfig());
+
+        return this;
+    }
+
     @Override
     @NonNull
     public String getName() {
