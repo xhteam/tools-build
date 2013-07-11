@@ -11,6 +11,7 @@
 - Fixed dependency for tests of library project to properly include all the dependencies
   of the library itself.
 - Fixed case where two dependencies have the same leaf name.
+- Fixed issue where proguard rules file cannot be applied on flavors.
 
 0.4.3:
 
