@@ -38,7 +38,7 @@ public class DependencyChecker {
             int moduleLevel = getApiLevelFromMavenArtifact(id.version)
             foundAndroidApis.add(moduleLevel)
 
-            logger.info("Ignoring Android API artifact %s for %s", id, getConfigName())
+            logger.info("Ignoring Android API artifact %s for %s", id, configurationDependencies.name)
             return true
         }
 
@@ -50,7 +50,7 @@ public class DependencyChecker {
             logger.warning(
                     "WARNING: Dependency %s is ignored for %s as it may be conflicting with the internal version provided by Android.\n" +
                     "         In case of problem, please repackage it with jarjar to change the class packages",
-                    id, getConfigName())
+                    id, configurationDependencies.name)
             return true;
         }
 
@@ -58,7 +58,7 @@ public class DependencyChecker {
             logger.warning(
                     "WARNING: Dependency %s is ignored for %s as it may be conflicting with the internal version provided by Android.\n" +
                             "         In case of problem, please repackage with jarjar to change the class packages",
-                    id, getConfigName())
+                    id, configurationDependencies.name)
             return true
         }
 
@@ -66,7 +66,7 @@ public class DependencyChecker {
             logger.warning(
                     "WARNING: Dependency %s is ignored for %s as it may be conflicting with the internal version provided by Android.\n" +
                             "         In case of problem, please repackage with jarjar to change the class packages",
-                    id, getConfigName())
+                    id, configurationDependencies.name)
             return true
         }
 
@@ -75,23 +75,6 @@ public class DependencyChecker {
         }
 
         return false
-    }
-
-    public String getConfigName() {
-        switch (configurationDependencies.type) {
-            case VariantDependencies.ConfigType.DEFAULT:
-                if (configurationDependencies.sourceSet.name.equals("test")) {
-                    return "the default test configuration"
-                }
-
-                return "the default configuration"
-            case VariantDependencies.ConfigType.FLAVOR:
-                return "Flavor ${configurationDependencies.sourceSet.name.capitalize()}"
-            case VariantDependencies.ConfigType.BUILDTYPE:
-                return "Build Type ${configurationDependencies.sourceSet.name.capitalize()}"
-            case VariantDependencies.ConfigType.KEYSTORE:
-                return "Signing SigningConfig ${configurationDependencies.sourceSet.name.capitalize()}"
-        }
     }
 
     private static int getApiLevelFromMavenArtifact(String version) {
