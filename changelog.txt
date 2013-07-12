@@ -1,3 +1,7 @@
+0.5.1
+
+- Fix issue in the dependency checker.
+
 0.5.0:
 
 - IDE Model is changed and is not compatible with earlier version! A new IDE
