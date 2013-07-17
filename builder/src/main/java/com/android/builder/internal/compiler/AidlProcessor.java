@@ -19,6 +19,7 @@ package com.android.builder.internal.compiler;
 import com.android.annotations.NonNull;
 import com.android.builder.compiling.DependencyFileProcessor;
 import com.android.ide.common.internal.CommandLineRunner;
+import com.android.ide.common.internal.LoggedErrorException;
 import com.google.common.collect.Lists;
 
 import java.io.File;
@@ -59,7 +60,7 @@ public class AidlProcessor implements SourceSearcher.SourceFileProcessor {
     }
 
     @Override
-    public void processFile(File sourceFile) throws IOException, InterruptedException {
+    public void processFile(File sourceFile) throws IOException, InterruptedException, LoggedErrorException {
         ArrayList<String> command = Lists.newArrayList();
 
         command.add(mAidlExecutable);

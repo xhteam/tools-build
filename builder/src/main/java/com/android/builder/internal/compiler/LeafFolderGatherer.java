@@ -16,6 +16,7 @@
 
 package com.android.builder.internal.compiler;
 
+import com.android.ide.common.internal.LoggedErrorException;
 import com.google.common.collect.Sets;
 
 import java.io.File;
@@ -30,7 +31,7 @@ public class LeafFolderGatherer implements SourceSearcher.SourceFileProcessor {
     private final Set<File> mFolders = Sets.newHashSet();
 
     @Override
-    public void processFile(File sourceFile) throws IOException, InterruptedException {
+    public void processFile(File sourceFile) throws IOException, InterruptedException, LoggedErrorException {
         mFolders.add(sourceFile.getParentFile());
     }
 
