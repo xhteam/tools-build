@@ -16,6 +16,8 @@
 
 package com.android.build.gradle.tasks
 
+import com.android.annotations.NonNull
+import com.android.annotations.Nullable
 import com.android.build.gradle.internal.tasks.DependencyBasedCompileTask
 import com.android.builder.compiling.DependencyFileProcessor
 import com.google.common.collect.Lists
@@ -68,13 +70,13 @@ public class AidlCompile extends DependencyBasedCompileTask {
     }
 
     @Override
-    protected void compileSingleFile(File file,Object data,
-                                     DependencyFileProcessor dependencyFileProcessor) {
+    protected void compileSingleFile(@NonNull File file,
+                                     @Nullable Object data,
+                                     @NonNull DependencyFileProcessor dependencyFileProcessor) {
         getBuilder().compileAidlFile(
                 file,
                 getSourceOutputDir(),
                 (List<File>)data,
                 dependencyFileProcessor)
-
     }
 }
