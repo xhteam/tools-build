@@ -17,6 +17,7 @@
 package com.android.build.gradle.internal.tasks
 
 import com.android.annotations.NonNull
+import com.android.annotations.Nullable
 import com.android.builder.compiling.DependencyFileProcessor
 import com.android.builder.internal.incremental.DependencyData
 import com.android.builder.internal.incremental.DependencyDataStore
@@ -33,7 +34,7 @@ import java.util.concurrent.Callable
  */
 public abstract class DependencyBasedCompileTask extends IncrementalTask {
 
-    private static final String DEPENDENCY_STORE = "dependency.store";
+    private static final String DEPENDENCY_STORE = "dependency.store"
 
     // ----- PUBLIC TASK API -----
 
@@ -57,7 +58,7 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
                 dependencyDataList.add(data)
             }
 
-            return true;
+            return true
         }
     }
 
@@ -95,8 +96,9 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
      *
      * @see #incrementalSetup()
      */
-    protected abstract void compileSingleFile(File file, Object data,
-                                              DependencyFileProcessor dependencyFileProcessor)
+    protected abstract void compileSingleFile(@NonNull File file,
+                                              @Nullable Object data,
+                                              @NonNull DependencyFileProcessor dependencyFileProcessor)
 
     /**
      * Small wrapper around an optional WaitableExecutor.
@@ -106,7 +108,7 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
 
         ExecutorWrapper(boolean useExecutor) {
             if (useExecutor) {
-                executor = new WaitableExecutor();
+                executor = new WaitableExecutor<Void>()
             }
         }
 
@@ -118,10 +120,13 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
             }
         }
 
-        void waitForTasks() {
+        @Nullable
+        List<WaitableExecutor.TaskResult<Void>> waitForTasks() {
             if (executor != null) {
-                executor.waitForAllTasks()
+                return executor.waitForAllTasks()
             }
+
+            return null
         }
     }
 
@@ -171,52 +176,60 @@ public abstract class DependencyBasedCompileTask extends IncrementalTask {
 
             switch (status) {
                 case FileStatus.NEW:
-                    executor.execute(new Callable() {
+                    executor.execute(new Callable<Void>() {
                         @Override
-                        Object call() throws Exception {
+                        Void call() throws Exception {
                             compileSingleFile(entry.getKey(), incrementalObject, processor)
                         }
                     })
-                    break;
+                    break
                 case FileStatus.CHANGED:
                     List<DependencyData> impactedData = inputMap.get(entry.getKey().absolutePath)
                     if (impactedData != null) {
                         for (final DependencyData data : impactedData) {
-                            executor.execute(new Callable() {
+                            executor.execute(new Callable<Void>() {
                                 @Override
-                                Object call() throws Exception {
+                                Void call() throws Exception {
                                     compileSingleFile(new File(data.getMainFile()),
                                             incrementalObject, processor)
                                 }
                             })
                         }
                     }
-                    break;
+                    break
                 case FileStatus.REMOVED:
                     final DependencyData data = mainFileMap.get(entry.getKey().absolutePath)
                     if (data != null) {
-                        executor.execute(new Callable() {
+                        executor.execute(new Callable<Void>() {
                             @Override
-                            Object call() throws Exception {
+                            Void call() throws Exception {
                                 cleanUpOutputFrom(data)
                             }
                         })
                         store.remove(data)
                     }
-                    break;
+                    break
             }
         }
 
-        executor.waitForTasks()
+        // results will be null if there was no spawning of threads
+        List<WaitableExecutor.TaskResult<Void>> results = executor.waitForTasks()
+        if (results != null) {
+            for (WaitableExecutor.TaskResult<Void> result : results) {
+                if (result.exception != null) {
+                    throw result.exception
+                }
+            }
+        }
 
         // get all the update data for the recompiled objects
         store.updateAll(processor.getDependencyDataList())
 
-        store.saveTo(incrementalData);
+        store.saveTo(incrementalData)
     }
 
     private static void cleanUpOutputFrom(DependencyData dependencyData) {
-        List<String> outputs = dependencyData.getOutputFiles();
+        List<String> outputs = dependencyData.getOutputFiles()
 
         for (String output : outputs) {
             new File(output).delete()

@@ -44,6 +44,7 @@ import com.android.builder.signing.KeystoreHelper;
 import com.android.builder.signing.KeytoolException;
 import com.android.ide.common.internal.AaptRunner;
 import com.android.ide.common.internal.CommandLineRunner;
+import com.android.ide.common.internal.LoggedErrorException;
 import com.android.manifmerger.ManifestMerger;
 import com.android.manifmerger.MergerLog;
 import com.android.sdklib.BuildToolInfo;
@@ -64,7 +65,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -495,6 +495,7 @@ public class AndroidBuilder {
      *
      * @throws IOException
      * @throws InterruptedException
+     * @throws LoggedErrorException
      */
     public void processResources(
             @NonNull  File manifestFile,
@@ -509,7 +510,7 @@ public class AndroidBuilder {
                       VariantConfiguration.Type type,
                       boolean debuggable,
             @NonNull AaptOptions options)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, LoggedErrorException {
 
         checkNotNull(manifestFile, "manifestFile cannot be null.");
         checkNotNull(resFolder, "resFolder cannot be null.");
@@ -684,12 +685,13 @@ public class AndroidBuilder {
      *                                of the compilation.
      * @throws IOException
      * @throws InterruptedException
+     * @throws LoggedErrorException
      */
     public void compileAllAidlFiles(@NonNull List<File> sourceFolders,
                                     @NonNull File sourceOutputDir,
                                     @NonNull List<File> importFolders,
                                     @Nullable DependencyFileProcessor dependencyFileProcessor)
-            throws IOException, InterruptedException, ExecutionException {
+            throws IOException, InterruptedException, LoggedErrorException {
         checkNotNull(sourceFolders, "sourceFolders cannot be null.");
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
@@ -728,12 +730,13 @@ public class AndroidBuilder {
      *                                of the compilation.
      * @throws IOException
      * @throws InterruptedException
+     * @throws LoggedErrorException
      */
     public void compileAidlFile(@NonNull File aidlFile,
                                 @NonNull File sourceOutputDir,
                                 @NonNull List<File> importFolders,
                                 @Nullable DependencyFileProcessor dependencyFileProcessor)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, LoggedErrorException {
         checkNotNull(aidlFile, "aidlFile cannot be null.");
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
@@ -770,8 +773,10 @@ public class AndroidBuilder {
      * @param targetApi the target api
      * @param debugBuild whether the build is debug
      * @param optimLevel the optimization level
+     *
      * @throws IOException
      * @throws InterruptedException
+     * @throws LoggedErrorException
      */
     public void compileAllRenderscriptFiles(@NonNull List<File> sourceFolders,
                                             @NonNull List<File> importFolders,
@@ -780,7 +785,7 @@ public class AndroidBuilder {
                                             int targetApi,
                                             boolean debugBuild,
                                             int optimLevel)
-            throws IOException, InterruptedException, ExecutionException {
+            throws IOException, InterruptedException, LoggedErrorException {
         checkNotNull(sourceFolders, "sourceFolders cannot be null.");
         checkNotNull(importFolders, "importFolders cannot be null.");
         checkNotNull(sourceOutputDir, "sourceOutputDir cannot be null.");
@@ -879,10 +884,10 @@ public class AndroidBuilder {
                 } catch (InterruptedException e) {
                     // wont happen as we're not using the executor, and our processor
                     // doesn't throw those.
-                } catch (ExecutionException e) {
+                } catch (IOException e) {
                     // wont happen as we're not using the executor, and our processor
                     // doesn't throw those.
-                } catch (IOException e) {
+                } catch (LoggedErrorException e) {
                     // wont happen as we're not using the executor, and our processor
                     // doesn't throw those.
                 }
@@ -901,8 +906,10 @@ public class AndroidBuilder {
      * @param outDexFile the location of the output classes.dex file
      * @param dexOptions dex options
      * @param incremental true if it should attempt incremental dex if applicable
+     *
      * @throws IOException
      * @throws InterruptedException
+     * @throws LoggedErrorException
      */
     public void convertByteCode(
             @NonNull Iterable<File> classesLocation,
@@ -910,7 +917,7 @@ public class AndroidBuilder {
             @Nullable File proguardFile,
             @NonNull String outDexFile,
             @NonNull DexOptions dexOptions,
-            boolean incremental) throws IOException, InterruptedException {
+            boolean incremental) throws IOException, InterruptedException, LoggedErrorException {
         checkNotNull(classesLocation, "classesLocation cannot be null.");
         checkNotNull(libraries, "libraries cannot be null.");
         checkNotNull(outDexFile, "outDexFile cannot be null.");

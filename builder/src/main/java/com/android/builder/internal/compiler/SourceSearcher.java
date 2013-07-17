@@ -17,13 +17,13 @@
 package com.android.builder.internal.compiler;
 
 import com.android.annotations.Nullable;
+import com.android.ide.common.internal.LoggedErrorException;
 import com.android.ide.common.internal.WaitableExecutor;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 
 /**
  * Class to search for source files (by extension) in a set of source folders.
@@ -36,7 +36,7 @@ public class SourceSearcher {
     private WaitableExecutor<Void> mExecutor;
 
     public interface SourceFileProcessor {
-        void processFile(File sourceFile) throws IOException, InterruptedException;
+        void processFile(File sourceFile) throws IOException, InterruptedException, LoggedErrorException;
     }
 
     public SourceSearcher(List<File> sourceFolders, String... extensions) {
@@ -53,29 +53,18 @@ public class SourceSearcher {
     }
 
     public void search(SourceFileProcessor processor)
-            throws IOException, InterruptedException, ExecutionException {
+            throws IOException, InterruptedException, LoggedErrorException {
         for (File file : mSourceFolders) {
             processFile(file, processor);
         }
 
         if (mExecutor != null) {
-            try {
-                mExecutor.waitForTasksWithQuickFail();
-            } catch (InterruptedException e) {
-                // if this thread was cancelled we need to cancel the rest of the executor tasks.
-                mExecutor.cancelAllTasks();
-                throw e;
-            } catch (ExecutionException e) {
-                // if a task fail, we also want to cancel the rest of the tasks.
-                mExecutor.cancelAllTasks();
-                // and return the first error
-                throw e;
-            }
+            mExecutor.waitForTasksWithQuickFail(true /*cancelRemaining*/);
         }
     }
 
     private void processFile(final File file, final SourceFileProcessor processor)
-            throws IOException, InterruptedException {
+            throws IOException, InterruptedException, LoggedErrorException {
         if (file.isFile()) {
             // get the extension of the file.
             if (checkExtension(file)) {
