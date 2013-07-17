@@ -17,6 +17,7 @@ package com.android.build.gradle.tasks
 import com.android.build.gradle.internal.tasks.IncrementalTask
 import com.android.ide.common.res2.FileStatus
 import com.android.ide.common.res2.FileValidity
+import com.android.ide.common.res2.MergeConsumer
 import com.android.ide.common.res2.MergedResourceWriter
 import com.android.ide.common.res2.ResourceMerger
 import com.android.ide.common.res2.ResourceSet
@@ -77,7 +78,12 @@ public class MergeResources extends IncrementalTask {
         // get the merged set and write it down.
         MergedResourceWriter writer = new MergedResourceWriter(
                 destinationDir, getProcess9Patch() ? builder.aaptRunner : null)
-        merger.mergeData(writer, false /*doCleanUp*/)
+
+        try {
+            merger.mergeData(writer, false /*doCleanUp*/)
+        } catch (MergeConsumer.ConsumerException e) {
+            throw e.getCause()
+        }
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
@@ -127,7 +133,11 @@ public class MergeResources extends IncrementalTask {
 
         MergedResourceWriter writer = new MergedResourceWriter(
                 getOutputDir(), getProcess9Patch() ? builder.aaptRunner : null)
-        merger.mergeData(writer, false /*doCleanUp*/)
+        try {
+            merger.mergeData(writer, false /*doCleanUp*/)
+        } catch (MergeConsumer.ConsumerException e) {
+            throw e.getCause()
+        }
 
         // No exception? Write the known state.
         merger.writeBlobTo(getIncrementalFolder())
