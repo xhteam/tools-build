@@ -1,3 +1,9 @@
+0.5.2
+
+- Better error reporting for cmd line tools, especially
+  if run in parallel in spawned threads
+- Fix an issue due to windows path in merged resource files.
+
 0.5.1
 
 - Fix issue in the dependency checker.
