@@ -1,3 +1,7 @@
+0.5.3
+
+- Fix a crashing bug in PrepareDependenciesTask
+
 0.5.2
 
 - Better error reporting for cmd line tools, especially
