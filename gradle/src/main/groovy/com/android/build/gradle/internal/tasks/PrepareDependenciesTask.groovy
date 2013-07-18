@@ -36,7 +36,7 @@ public class PrepareDependenciesTask extends BaseTask {
                 if (api > minSdkVersion) {
                     throw new RuntimeException(String.format(
                             "ERROR: %s has an indirect dependency on Android API level %d, but minSdkVersion for variant '%s' is API level %d",
-                            checker.configName.capitalize(), api, variant.name, minSdkVersion))
+                            checker.configurationDependencies.name.capitalize(), api, variant.name, minSdkVersion))
                 }
             }
 
