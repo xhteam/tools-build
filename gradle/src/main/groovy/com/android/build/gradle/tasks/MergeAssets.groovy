@@ -81,7 +81,7 @@ public class MergeAssets extends IncrementalTask {
         }
 
         // No exception? Write the known state.
-        merger.writeBlobTo(getIncrementalFolder())
+        merger.writeBlobTo(getIncrementalFolder(), writer)
     }
 
     @Override
@@ -135,6 +135,6 @@ public class MergeAssets extends IncrementalTask {
         }
 
         // No exception? Write the known state.
-        merger.writeBlobTo(getIncrementalFolder())
+        merger.writeBlobTo(getIncrementalFolder(), writer)
     }
 }
