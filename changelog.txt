@@ -1,3 +1,7 @@
+0.5.4
+
+- Fixed incremental compilation issue with declare-styleable
+
 0.5.3
 
 - Fix a crashing bug in PrepareDependenciesTask
