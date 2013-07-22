@@ -539,7 +539,7 @@ class AppPlugin extends com.android.build.gradle.BasePlugin implements Plugin<Pr
         createMergeResourcesTask(variant, true /*process9Patch*/)
 
         // Add a task to merge the asset folders
-        createMergeAssetsTask(variant, null /*default location*/)
+        createMergeAssetsTask(variant, null /*default location*/, true /*includeDependencies*/)
 
         // Add a task to create the BuildConfig class
         createBuildConfigTask(variant)
