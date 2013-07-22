@@ -29,6 +29,7 @@ import com.android.build.gradle.internal.tasks.MergeFileTask
 import com.android.build.gradle.internal.variant.BaseVariantData
 import com.android.build.gradle.internal.variant.LibraryVariantData
 import com.android.build.gradle.internal.variant.TestVariantData
+import com.android.build.gradle.tasks.MergeResources
 import com.android.builder.BuilderConstants
 import com.android.builder.DefaultBuildType
 import com.android.builder.VariantConfiguration
@@ -197,14 +198,22 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         // Add a task to compile renderscript files.
         createRenderscriptTask(variantData)
 
-        // Add a task to merge the resource folders
-        createMergeResourcesTask(variantData,
+        // Add a task to merge the resource folders, including the libraries, in order to
+        // generate the R.txt file with all the symbols, including the ones from the dependencies.
+        createMergeResourcesTask(variantData, false /*process9Patch*/)
+
+        // Create another merge task to only merge the resources from this libraries and not
+        // the dependencies. This is what gets packaged in the aar.
+        MergeResources packageRes = basicCreateMergeResourcesTask(variantData,
+                "package",
                 "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/res",
+                false /*includeDependencies*/,
                 false /*process9Patch*/)
 
         // Add a task to merge the assets folders
         createMergeAssetsTask(variantData,
-                "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/assets")
+                "$project.buildDir/$DIR_BUNDLES/${variantData.dirName}/assets",
+                false /*includeDependencies*/)
 
         // Add a task to create the BuildConfig class
         createBuildConfigTask(variantData)
@@ -268,7 +277,7 @@ public class LibraryPlugin extends BasePlugin implements Plugin<Project> {
         }
 
         Zip bundle = project.tasks.create("bundle${variantData.name}", Zip)
-        bundle.dependsOn jar, packageAidl, packageRenderscript, packageLocalJar, mergeFileTask
+        bundle.dependsOn packageRes, jar, packageAidl, packageRenderscript, packageLocalJar, mergeFileTask
         bundle.setDescription("Assembles a bundle containing the library in ${variantData.name}.");
         bundle.destinationDir = project.file("$project.buildDir/libs")
         bundle.extension = BuilderConstants.EXT_LIB_ARCHIVE
