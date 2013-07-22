@@ -415,36 +415,50 @@ public abstract class BasePlugin {
         }
     }
 
-    protected void createMergeResourcesTask(BaseVariantData variantData, boolean process9Patch) {
-        createMergeResourcesTask(variantData, "$project.buildDir/res/all/$variantData.dirName",
+    protected void createMergeResourcesTask(@NonNull BaseVariantData variantData,
+                                            final boolean process9Patch) {
+        MergeResources mergeResourcesTask = basicCreateMergeResourcesTask(
+                variantData,
+                "merge",
+                "$project.buildDir/res/all/$variantData.dirName",
+                true /*includeDependencies*/,
                 process9Patch)
+        variantData.mergeResourcesTask = mergeResourcesTask
     }
 
-    protected void createMergeResourcesTask(BaseVariantData variantData, String location,
-                                            boolean process9Patch) {
-        def mergeResourcesTask = project.tasks.create("merge${variantData.name}Resources",
-                MergeResources)
-        variantData.mergeResourcesTask = mergeResourcesTask
+    protected MergeResources basicCreateMergeResourcesTask(
+            @NonNull BaseVariantData variantData,
+            @NonNull String taskNamePrefix,
+            @NonNull String outputLocation,
+            final boolean includeDependencies,
+            final boolean process9Patch) {
+        MergeResources mergeResourcesTask = project.tasks.create(
+                "$taskNamePrefix${variantData.name}Resources", MergeResources)
 
         mergeResourcesTask.dependsOn variantData.prepareDependenciesTask, variantData.renderscriptCompileTask
         mergeResourcesTask.plugin = this
         mergeResourcesTask.variant = variantData
-        mergeResourcesTask.incrementalFolder =
-                project.file("$project.buildDir/incremental/mergeResources/$variantData.dirName")
+        mergeResourcesTask.incrementalFolder = project.file(
+                "$project.buildDir/incremental/${taskNamePrefix}Resources/$variantData.dirName")
 
         mergeResourcesTask.process9Patch = process9Patch
 
         mergeResourcesTask.conventionMapping.inputResourceSets = {
             variantData.variantConfiguration.getResourceSets(
-                    variantData.renderscriptCompileTask.getResOutputDir())
+                    variantData.renderscriptCompileTask.getResOutputDir(),
+                    includeDependencies)
         }
 
-        mergeResourcesTask.conventionMapping.outputDir = { project.file(location) }
+        mergeResourcesTask.conventionMapping.outputDir = { project.file(outputLocation) }
+
+        return mergeResourcesTask
     }
 
-    protected void createMergeAssetsTask(BaseVariantData variantData, String location) {
-        if (location == null) {
-            location = "$project.buildDir/assets/$variantData.dirName"
+    protected void createMergeAssetsTask(@NonNull BaseVariantData variantData,
+                                         @Nullable String outputLocation,
+                                         final boolean includeDependencies) {
+        if (outputLocation == null) {
+            outputLocation = "$project.buildDir/assets/$variantData.dirName"
         }
 
         def mergeAssetsTask = project.tasks.create("merge${variantData.name}Assets", MergeAssets)
@@ -457,9 +471,9 @@ public abstract class BasePlugin {
             project.file("$project.buildDir/incremental/mergeAssets/$variantData.dirName")
 
         mergeAssetsTask.conventionMapping.inputAssetSets = {
-            variantData.variantConfiguration.assetSets
+            variantData.variantConfiguration.getAssetSets(includeDependencies)
         }
-        mergeAssetsTask.conventionMapping.outputDir = { project.file(location) }
+        mergeAssetsTask.conventionMapping.outputDir = { project.file(outputLocation) }
     }
 
     protected void createBuildConfigTask(BaseVariantData variantData) {
@@ -689,7 +703,7 @@ public abstract class BasePlugin {
         createMergeResourcesTask(variantData, true /*process9Patch*/)
 
         // Add a task to merge the assets folders
-        createMergeAssetsTask(variantData, null /*default location*/)
+        createMergeAssetsTask(variantData, null /*default location*/, true /*includeDependencies*/)
 
         if (testedVariantData.variantConfiguration.type == VariantConfiguration.Type.LIBRARY) {
             // in this case the tested library must be fully built before test can be built!
