@@ -77,6 +77,7 @@ public class MergeAssets extends IncrementalTask {
         try {
             merger.mergeData(writer, false /*doCleanUp*/)
         } catch (MergeConsumer.ConsumerException e) {
+            merger.cleanBlob(getIncrementalFolder())
             throw e.getCause()
         }
 
@@ -131,6 +132,7 @@ public class MergeAssets extends IncrementalTask {
         try {
             merger.mergeData(writer, false /*doCleanUp*/)
         } catch (MergeConsumer.ConsumerException e) {
+            merger.cleanBlob(getIncrementalFolder())
             throw e.getCause()
         }
 

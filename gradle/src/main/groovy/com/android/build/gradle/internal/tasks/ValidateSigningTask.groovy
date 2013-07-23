@@ -59,7 +59,7 @@ class ValidateSigningTask extends BaseTask {
             if (KeystoreHelper.defaultDebugKeystoreLocation().equals(storeFile.absolutePath)) {
                 getLogger().info("Creating default debug keystore at %s" + storeFile.absolutePath)
                 if (!KeystoreHelper.createDebugStore(signingConfig, plugin.getLogger())) {
-                    throw new BuildException("Unable to recreate missing debug keystore.");
+                    throw new BuildException("Unable to recreate missing debug keystore.", null);
                 }
             }
         }
