@@ -222,7 +222,7 @@ public final class KeystoreHelper {
         } catch (Exception e) {
             throw new KeytoolException(
                     String.format("Failed to read key %1$s from store \"%2$s\": %3$s",
-                            signingConfig.getKeyAlias(), signingConfig.getKeyPassword(),
+                            signingConfig.getKeyAlias(), signingConfig.getStoreFile(),
                             e.getMessage()),
                     e);
         }
