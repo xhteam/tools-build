@@ -27,6 +27,9 @@ public class DexOptionsImpl implements DexOptions {
     @Input
     private boolean isIncrementalFlag = true
 
+    @Input
+    private String javaMaxHeapSize
+
     public void setCoreLibrary(boolean coreLibrary) {
         coreLibraryFlag = coreLibrary
     }
@@ -43,5 +46,19 @@ public class DexOptionsImpl implements DexOptions {
     @Override
     boolean getIncremental() {
         return isIncrementalFlag
+    }
+
+    public void setJavaMaxHeapSize(String theJavaMaxHeapSize) {
+        if (theJavaMaxHeapSize.matches("\\d+[kKmMgGtT]?")) {
+            javaMaxHeapSize = theJavaMaxHeapSize
+        } else {
+            throw new IllegalArgumentException(
+                    "Invalid max heap size DexOption. See `man java` for valid -Xmx arguments.")
+        }
+    }
+
+    @Override
+    public String getJavaMaxHeapSize() {
+        return javaMaxHeapSize
     }
 }

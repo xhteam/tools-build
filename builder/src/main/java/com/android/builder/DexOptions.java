@@ -20,4 +20,5 @@ public interface DexOptions {
 
     boolean isCoreLibrary();
     boolean getIncremental();
+    String getJavaMaxHeapSize();
 }

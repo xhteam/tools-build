@@ -933,6 +933,10 @@ public class AndroidBuilder {
 
         command.add(dx);
 
+        if (dexOptions.getJavaMaxHeapSize() != null) {
+            command.add("-JXmx" + dexOptions.getJavaMaxHeapSize());
+        }
+
         command.add("--dex");
 
         if (mVerboseExec) {
