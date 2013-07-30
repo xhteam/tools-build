@@ -1,3 +1,7 @@
+
+- Only package a library's own resources in its aar.
+- Misc fixes
+
 0.5.4
 
 - Fixed incremental compilation issue with declare-styleable
