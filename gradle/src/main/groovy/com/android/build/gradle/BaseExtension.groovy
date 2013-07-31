@@ -194,7 +194,6 @@ public abstract class BaseExtension {
 
     @NonNull
     public DefaultDomainObjectSet<TestVariant> getTestVariants() {
-        plugin.createAndroidTasks(true /*force*/)
         return testVariantList
     }
 
