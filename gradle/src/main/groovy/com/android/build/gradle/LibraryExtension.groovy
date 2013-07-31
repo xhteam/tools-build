@@ -64,7 +64,6 @@ public class LibraryExtension extends BaseExtension {
     }
 
     public DefaultDomainObjectSet<LibraryVariant> getLibraryVariants() {
-        plugin.createAndroidTasks(true /*force*/)
         return libraryVariantList
     }
 

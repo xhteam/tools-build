@@ -43,14 +43,16 @@ public class LibraryPluginDslTest extends BaseTest {
             compileSdkVersion 15
         }
 
-        Set<LibraryVariant> variants = project.android.libraryVariants
-        assertEquals(2, variants.size())
+        project.afterEvaluate {
+            Set<LibraryVariant> variants = project.android.libraryVariants
+            assertEquals(2, variants.size())
 
-        Set<TestVariant> testVariants = project.android.testVariants
-        assertEquals(1, testVariants.size())
+            Set<TestVariant> testVariants = project.android.testVariants
+            assertEquals(1, testVariants.size())
 
-        checkTestedVariant("Debug", "Test", variants, testVariants)
-        checkNonTestedVariant("Release", variants)
+            checkTestedVariant("Debug", "Test", variants, testVariants)
+            checkNonTestedVariant("Release", variants)
+        }
     }
 
     /**

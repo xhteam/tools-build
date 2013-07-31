@@ -71,7 +71,6 @@ public class AppExtension extends BaseExtension {
     }
 
     public DefaultDomainObjectSet<ApplicationVariant> getApplicationVariants() {
-        plugin.createAndroidTasks(true /*force*/)
         return applicationVariantList
     }
 
