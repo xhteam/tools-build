@@ -3,7 +3,7 @@ buildscript {
         maven { url '../../../../out/host/gradle/repo' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.4-SNAPSHOT'
+        classpath 'com.android.tools.build:gradle:0.5.5-SNAPSHOT'
     }
 }
 
@@ -11,5 +11,5 @@ apply plugin: 'android'
 
 android {
     compileSdkVersion 15
-    buildToolsVersion "17.0"
+    buildToolsVersion "18.0.1"
 }

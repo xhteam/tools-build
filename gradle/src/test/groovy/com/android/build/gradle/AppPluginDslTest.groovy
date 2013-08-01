@@ -41,14 +41,16 @@ public class AppPluginDslTest extends BaseTest {
             compileSdkVersion 15
         }
 
-        Set<ApplicationVariant> variants = project.android.applicationVariants
-        assertEquals(2, variants.size())
+        project.afterEvaluate {
+            Set<ApplicationVariant> variants = project.android.applicationVariants
+            assertEquals(2, variants.size())
 
-        Set<TestVariant> testVariants = project.android.testVariants
-        assertEquals(1, testVariants.size())
+            Set<TestVariant> testVariants = project.android.testVariants
+            assertEquals(1, testVariants.size())
 
-        checkTestedVariant("Debug", "Test", variants, testVariants)
-        checkNonTestedVariant("Release", variants)
+            checkTestedVariant("Debug", "Test", variants, testVariants)
+            checkNonTestedVariant("Release", variants)
+        }
     }
 
     /**
@@ -64,14 +66,16 @@ public class AppPluginDslTest extends BaseTest {
             compileSdkVersion = 15
         }
 
-        Set<ApplicationVariant> variants = project.android.applicationVariants
-        assertEquals(2, variants.size())
+        project.afterEvaluate {
+            Set<ApplicationVariant> variants = project.android.applicationVariants
+            assertEquals(2, variants.size())
 
-        Set<TestVariant> testVariants = project.android.testVariants
-        assertEquals(1, testVariants.size())
+            Set<TestVariant> testVariants = project.android.testVariants
+            assertEquals(1, testVariants.size())
 
-        checkTestedVariant("Debug", "Test", variants, testVariants)
-        checkNonTestedVariant("Release", variants)
+            checkTestedVariant("Debug", "Test", variants, testVariants)
+            checkNonTestedVariant("Release", variants)
+        }
     }
 
     public void testBasicWithStringTarget() {
@@ -84,14 +88,16 @@ public class AppPluginDslTest extends BaseTest {
             compileSdkVersion "android-15"
         }
 
-        Set<ApplicationVariant> variants = project.android.applicationVariants
-        assertEquals(2, variants.size())
+        project.afterEvaluate {
+            Set<ApplicationVariant> variants = project.android.applicationVariants
+            assertEquals(2, variants.size())
 
-        Set<TestVariant> testVariants = project.android.testVariants
-        assertEquals(1, testVariants.size())
+            Set<TestVariant> testVariants = project.android.testVariants
+            assertEquals(1, testVariants.size())
 
-        checkTestedVariant("Debug", "Test", variants, testVariants)
-        checkNonTestedVariant("Release", variants)
+            checkTestedVariant("Debug", "Test", variants, testVariants)
+            checkNonTestedVariant("Release", variants)
+        }
     }
 
     public void testMultiRes() {
@@ -132,17 +138,19 @@ public class AppPluginDslTest extends BaseTest {
             }
         }
 
-        // does not include tests
-        Set<ApplicationVariant> variants = project.android.applicationVariants
-        assertEquals(3, variants.size())
+        project.afterEvaluate {
+            // does not include tests
+            Set<ApplicationVariant> variants = project.android.applicationVariants
+            assertEquals(3, variants.size())
 
-        Set<TestVariant> testVariants = project.android.testVariants
-        assertEquals(1, testVariants.size())
+            Set<TestVariant> testVariants = project.android.testVariants
+            assertEquals(1, testVariants.size())
 
-        checkTestedVariant("Staging", "Test", variants, testVariants)
+            checkTestedVariant("Staging", "Test", variants, testVariants)
 
-        checkNonTestedVariant("Debug", variants)
-        checkNonTestedVariant("Release", variants)
+            checkNonTestedVariant("Debug", variants)
+            checkNonTestedVariant("Release", variants)
+        }
     }
 
     public void testFlavors() {
@@ -164,18 +172,20 @@ public class AppPluginDslTest extends BaseTest {
             }
         }
 
-        // does not include tests
-        Set<ApplicationVariant> variants = project.android.applicationVariants
-        assertEquals(4, variants.size())
+        project.afterEvaluate {
+            // does not include tests
+            Set<ApplicationVariant> variants = project.android.applicationVariants
+            assertEquals(4, variants.size())
 
-        Set<TestVariant> testVariants = project.android.testVariants
-        assertEquals(2, testVariants.size())
+            Set<TestVariant> testVariants = project.android.testVariants
+            assertEquals(2, testVariants.size())
 
-        checkTestedVariant("Flavor1Debug", "Flavor1Test", variants, testVariants)
-        checkTestedVariant("Flavor2Debug", "Flavor2Test", variants, testVariants)
+            checkTestedVariant("Flavor1Debug", "Flavor1Test", variants, testVariants)
+            checkTestedVariant("Flavor2Debug", "Flavor2Test", variants, testVariants)
 
-        checkNonTestedVariant("Flavor1Release", variants)
-        checkNonTestedVariant("Flavor2Release", variants)
+            checkNonTestedVariant("Flavor1Release", variants)
+            checkNonTestedVariant("Flavor2Release", variants)
+        }
     }
 
     public void testMultiFlavors() {
@@ -209,26 +219,28 @@ public class AppPluginDslTest extends BaseTest {
             }
         }
 
-        // does not include tests
-        Set<ApplicationVariant> variants = project.android.applicationVariants
-        assertEquals(12, variants.size())
+        project.afterEvaluate {
+            // does not include tests
+            Set<ApplicationVariant> variants = project.android.applicationVariants
+            assertEquals(12, variants.size())
 
-        Set<TestVariant> testVariants = project.android.testVariants
-        assertEquals(6, testVariants.size())
+            Set<TestVariant> testVariants = project.android.testVariants
+            assertEquals(6, testVariants.size())
 
-        checkTestedVariant("F1FaDebug", "F1FaTest", variants, testVariants)
-        checkTestedVariant("F1FbDebug", "F1FbTest", variants, testVariants)
-        checkTestedVariant("F1FcDebug", "F1FcTest", variants, testVariants)
-        checkTestedVariant("F2FaDebug", "F2FaTest", variants, testVariants)
-        checkTestedVariant("F2FbDebug", "F2FbTest", variants, testVariants)
-        checkTestedVariant("F2FcDebug", "F2FcTest", variants, testVariants)
+            checkTestedVariant("F1FaDebug", "F1FaTest", variants, testVariants)
+            checkTestedVariant("F1FbDebug", "F1FbTest", variants, testVariants)
+            checkTestedVariant("F1FcDebug", "F1FcTest", variants, testVariants)
+            checkTestedVariant("F2FaDebug", "F2FaTest", variants, testVariants)
+            checkTestedVariant("F2FbDebug", "F2FbTest", variants, testVariants)
+            checkTestedVariant("F2FcDebug", "F2FcTest", variants, testVariants)
 
-        checkNonTestedVariant("F1FaRelease", variants)
-        checkNonTestedVariant("F1FbRelease", variants)
-        checkNonTestedVariant("F1FcRelease", variants)
-        checkNonTestedVariant("F2FaRelease", variants)
-        checkNonTestedVariant("F2FbRelease", variants)
-        checkNonTestedVariant("F2FcRelease", variants)
+            checkNonTestedVariant("F1FaRelease", variants)
+            checkNonTestedVariant("F1FbRelease", variants)
+            checkNonTestedVariant("F1FcRelease", variants)
+            checkNonTestedVariant("F2FaRelease", variants)
+            checkNonTestedVariant("F2FbRelease", variants)
+            checkNonTestedVariant("F2FcRelease", variants)
+        }
     }
 
     public void testSourceSetsApi() {

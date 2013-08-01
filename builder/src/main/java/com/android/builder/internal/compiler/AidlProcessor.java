@@ -79,7 +79,7 @@ public class AidlProcessor implements SourceSearcher.SourceFileProcessor {
 
         command.add(sourceFile.getAbsolutePath());
 
-        mRunner.runCmdLine(command);
+        mRunner.runCmdLine(command, null);
 
         // send the dependency file to the processor.
         if (mDependencyFileProcessor.processFile(depFile)) {

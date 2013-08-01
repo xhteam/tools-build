@@ -118,14 +118,17 @@ public class VariantConfiguration implements TestData {
      * @param defaultConfig the default configuration. Required.
      * @param defaultSourceProvider the default source provider. Required
      * @param buildType the build type for this variant. Required.
-     * @param buildTypeSourceProvider the source provider for the build type. Required.
+     * @param buildTypeSourceProvider the source provider for the build type.
      * @param type the type of the project.
      * @param debugName an optional debug name
      */
     public VariantConfiguration(
-            @NonNull DefaultProductFlavor defaultConfig, @NonNull SourceProvider defaultSourceProvider,
-            @NonNull DefaultBuildType buildType, @NonNull SourceProvider buildTypeSourceProvider,
-            @NonNull Type type, @Nullable String debugName) {
+            @NonNull DefaultProductFlavor defaultConfig,
+            @NonNull SourceProvider defaultSourceProvider,
+            @NonNull DefaultBuildType buildType,
+            @Nullable SourceProvider buildTypeSourceProvider,
+            @NonNull Type type,
+            @Nullable String debugName) {
         this(defaultConfig, defaultSourceProvider,
                 buildType, buildTypeSourceProvider,
                 type, null /*testedConfig*/,
@@ -138,7 +141,7 @@ public class VariantConfiguration implements TestData {
      * @param defaultConfig the default configuration. Required.
      * @param defaultSourceProvider the default source provider. Required
      * @param buildType the build type for this variant. Required.
-     * @param buildTypeSourceProvider the source provider for the build type. Required.
+     * @param buildTypeSourceProvider the source provider for the build type.
      * @param type the type of the project.
      * @param testedConfig the reference to the tested project. Required if type is Type.TEST
      * @param debugName an optional debug name
@@ -147,7 +150,7 @@ public class VariantConfiguration implements TestData {
             @NonNull DefaultProductFlavor defaultConfig,
             @NonNull SourceProvider defaultSourceProvider,
             @NonNull DefaultBuildType buildType,
-            @NonNull SourceProvider buildTypeSourceProvider,
+            @Nullable SourceProvider buildTypeSourceProvider,
             @NonNull Type type,
             @Nullable VariantConfiguration testedConfig,
             @Nullable String debugName) {
@@ -574,20 +577,27 @@ public class VariantConfiguration implements TestData {
      * overridden by the 2nd one and so on. This is meant to facilitate usage of the list in a
      * {@link com.android.ide.common.res2.ResourceMerger}.
      *
+     * @param generatedResFolder the generated res folder typically the output of the renderscript
+     *                           compilation
+     * @param includeDependencies whether to include in the result the resources of the dependencies
+     *
      * @return a list ResourceSet.
      */
     @NonNull
-    public List<ResourceSet> getResourceSets(@Nullable File generatedResFolder) {
+    public List<ResourceSet> getResourceSets(@Nullable File generatedResFolder,
+                                             boolean includeDependencies) {
         List<ResourceSet> resourceSets = Lists.newArrayList();
 
         // the list of dependency must be reversed to use the right overlay order.
-        for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
-            LibraryDependency dependency = mFlatLibraries.get(n);
-            File resFolder = dependency.getResFolder();
-            if (resFolder.isDirectory()) {
-                ResourceSet resourceSet = new ResourceSet(dependency.getFolder().getName());
-                resourceSet.addSource(resFolder);
-                resourceSets.add(resourceSet);
+        if (includeDependencies) {
+            for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
+                LibraryDependency dependency = mFlatLibraries.get(n);
+                File resFolder = dependency.getResFolder();
+                if (resFolder.isDirectory()) {
+                    ResourceSet resourceSet = new ResourceSet(dependency.getFolder().getName());
+                    resourceSet.addSource(resFolder);
+                    resourceSets.add(resourceSet);
+                }
             }
         }
 
@@ -633,17 +643,19 @@ public class VariantConfiguration implements TestData {
      * @return a list ResourceSet.
      */
     @NonNull
-    public List<AssetSet> getAssetSets() {
+    public List<AssetSet> getAssetSets(boolean includeDependencies) {
         List<AssetSet> assetSets = Lists.newArrayList();
 
-        // the list of dependency must be reversed to use the right overlay order.
-        for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
-            LibraryDependency dependency = mFlatLibraries.get(n);
-            File assetFolder = dependency.getAssetsFolder();
-            if (assetFolder.isDirectory()) {
-                AssetSet assetSet = new AssetSet(dependency.getFolder().getName());
-                assetSet.addSource(assetFolder);
-                assetSets.add(assetSet);
+        if (includeDependencies) {
+            // the list of dependency must be reversed to use the right overlay order.
+            for (int n = mFlatLibraries.size() - 1 ; n >= 0 ; n--) {
+                LibraryDependency dependency = mFlatLibraries.get(n);
+                File assetFolder = dependency.getAssetsFolder();
+                if (assetFolder.isDirectory()) {
+                    AssetSet assetSet = new AssetSet(dependency.getFolder().getName());
+                    assetSet.addSource(assetFolder);
+                    assetSets.add(assetSet);
+                }
             }
         }
 
@@ -702,7 +714,7 @@ public class VariantConfiguration implements TestData {
     public List<File> getRenderscriptSourceList() {
         List<File> sourceList = Lists.newArrayList();
         sourceList.addAll(mDefaultSourceProvider.getRenderscriptDirectories());
-        if (mType != Type.TEST) {
+        if (mType != Type.TEST && mBuildTypeSourceProvider != null) {
             sourceList.addAll(mBuildTypeSourceProvider.getRenderscriptDirectories());
         }
 
@@ -736,7 +748,7 @@ public class VariantConfiguration implements TestData {
     public List<File> getAidlSourceList() {
         List<File> sourceList = Lists.newArrayList();
         sourceList.addAll(mDefaultSourceProvider.getAidlDirectories());
-        if (mType != Type.TEST) {
+        if (mType != Type.TEST && mBuildTypeSourceProvider != null) {
             sourceList.addAll(mBuildTypeSourceProvider.getAidlDirectories());
         }
 

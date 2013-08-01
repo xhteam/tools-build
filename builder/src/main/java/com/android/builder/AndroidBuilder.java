@@ -614,7 +614,7 @@ public class AndroidBuilder {
             command.add(symbolOutputDir);
         }
 
-        mCmdLineRunner.runCmdLine(command);
+        mCmdLineRunner.runCmdLine(command, null);
 
         // now if the project has libraries, R needs to be created for each libraries,
         // but only if the current project is not a library.
@@ -856,7 +856,16 @@ public class AndroidBuilder {
             command.add(sourceFile.getAbsolutePath());
         }
 
-        mCmdLineRunner.runCmdLine(command);
+        Map<String, String> env = null;
+        if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_DARWIN) {
+            env = Maps.newHashMap();
+            env.put("DYLD_LIBRARY_PATH", mBuildTools.getLocation().getAbsolutePath());
+        } else if (SdkConstants.CURRENT_PLATFORM == SdkConstants.PLATFORM_LINUX) {
+            env = Maps.newHashMap();
+            env.put("LD_LIBRARY_PATH", mBuildTools.getLocation().getAbsolutePath());
+        }
+
+        mCmdLineRunner.runCmdLine(command, env);
     }
 
     /**
@@ -982,7 +991,7 @@ public class AndroidBuilder {
             command.add(proguardFile.getAbsolutePath());
         }
 
-        mCmdLineRunner.runCmdLine(command);
+        mCmdLineRunner.runCmdLine(command, null);
     }
 
     /**
