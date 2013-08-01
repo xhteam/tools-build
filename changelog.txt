@@ -1,9 +1,12 @@
+0.5.5
 
+- Fix issue preventing to use Build Tools 18.0.1
 - access to the variants container don't force creating the task.
   This means android.[application|Library|Test]Variants will be empty
   during the evaluation phase. To use it, use .all instead of .each
 - Only package a library's own resources in its aar.
-- Misc fixes
+- Fix incremental issues in the resource merger.
+- Misc bug fixes.
 
 0.5.4
 
