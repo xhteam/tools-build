@@ -55,7 +55,7 @@ class ValidateSigningTask extends BaseTask {
     void validate() {
 
         File storeFile = signingConfig.getStoreFile()
-        if (!storeFile.exists()) {
+        if (storeFile != null && !storeFile.exists()) {
             if (KeystoreHelper.defaultDebugKeystoreLocation().equals(storeFile.absolutePath)) {
                 getLogger().info("Creating default debug keystore at %s" + storeFile.absolutePath)
                 if (!KeystoreHelper.createDebugStore(signingConfig, plugin.getLogger())) {
