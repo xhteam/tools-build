@@ -119,7 +119,7 @@ import static com.android.builder.BuilderConstants.INSTRUMENT_TEST
  */
 public abstract class BasePlugin {
     public static final String GRADLE_MIN_VERSION = "1.6"
-    public static final String[] GRADLE_SUPPORTED_VERSIONS = [ GRADLE_MIN_VERSION ]
+    public static final String[] GRADLE_SUPPORTED_VERSIONS = [ GRADLE_MIN_VERSION, "1.7" ]
 
     public static final String INSTALL_GROUP = "Install"
 
