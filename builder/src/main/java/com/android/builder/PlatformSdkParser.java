@@ -61,7 +61,11 @@ public class PlatformSdkParser implements SdkParser {
                     new File(mPlatformRootFolder, "prebuilts/sdk/tools/lib/dx.jar"),
                     new File(getHostToolsFolder(), SdkConstants.FN_RENDERSCRIPT),
                     new File(mPlatformRootFolder, "prebuilts/sdk/renderscript/include"),
-                    new File(mPlatformRootFolder, "prebuilts/sdk/renderscript/clang-include"));
+                    new File(mPlatformRootFolder, "prebuilts/sdk/renderscript/clang-include"),
+                    new File(getHostToolsFolder(), SdkConstants.FN_BCC_COMPAT),
+                    new File(getHostToolsFolder(), "arm-linux-androideabi-ld"),
+                    new File(getHostToolsFolder(), "i686-linux-android-ld"),
+                    new File(getHostToolsFolder(), "mipsel-linux-android-ld"));
             mInitialized = true;
         }
     }
